@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RPG FitTracker: Shadow Monarch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;700&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --system-purple: #a855f7;
+            --system-bg: #0b0c15;
+            --panel-bg: rgba(15, 15, 25, 0.95);
+            --border-color: rgba(168, 85, 247, 0.3);
+            --text-glow: 0 0 10px rgba(168, 85, 247, 0.4);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--system-bg);
+            color: #e5e7eb;
+            -webkit-tap-highlight-color: transparent;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #2e1065 0%, transparent 40%),
+                linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,1));
+            background-attachment: fixed;
+        }
+
+        h1, h2, h3, .stat-font {
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .system-font {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Glass Panel Styling */
+        .system-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            border-radius: 4px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 2px; height: 100%;
+            background: var(--system-purple);
+            opacity: 0.7;
+        }
+
+        /* Quest Item Styling */
+        .quest-item {
+            background: rgba(30, 30, 40, 0.6);
+            border-left: 2px solid #555;
+            transition: all 0.3s ease;
+        }
+        
+        .quest-item.active {
+            border-left-color: var(--system-purple);
+            background: rgba(45, 20, 60, 0.4);
+        }
+
+        .quest-item.completed {
+            border-left-color: #22c55e;
+            opacity: 0.6;
+            filter: grayscale(0.8);
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); border-color: rgba(168, 85, 247, 0.6); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 3s infinite;
+        }
+
+        @keyframes levelUp {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-in {
+            animation: levelUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake-anim {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Progress Bar */
+        .xp-bar-bg {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #333;
+        }
+        
+        .xp-bar-fill {
+            background: linear-gradient(90deg, #7e22ce, #a855f7);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Calorie Bar */
+        .cal-bar-fill {
+            background: linear-gradient(90deg, #ea580c, #f97316);
+            box-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+            transition: width 1s ease;
+        }
+
+        /* Skill Tree Styles */
+        .skill-node {
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        .skill-node.locked {
+            filter: grayscale(1) opacity(0.5);
+            border-color: #555;
+        }
+        .skill-node.locked i { color: #555; }
+        
+        /* Heatmap Grid */
+        .heatmap-grid {
+            display: grid;
+            grid-template-rows: repeat(7, 1fr);
+            grid-auto-flow: column;
+            gap: 2px;
+        }
+        .heatmap-cell {
+            width: 8px;
+            height: 8px;
+            border-radius: 1px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #444; }
+
+        /* Table Styles */
+        .rank-table th, .rank-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            font-size: 11px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .rank-table th {
+            color: #a855f7;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-gray-300">
+
+    <!-- PENALTY OVERLAY -->
+    <div id="penaltyOverlay" class="fixed inset-0 z-[100] bg-black hidden flex flex-col items-center justify-center p-6 text-center">
+        <div class="system-card w-full max-w-md p-8 border-red-600/50 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
+            <h1 class="text-4xl font-black text-red-600 font-mono mb-2 tracking-tighter">PENALTY ZONE</h1>
+            <p class="text-gray-400 text-xs font-mono mb-6 uppercase">Daily Quests Failed. System Access Restricted.</p>
+            
+            <div class="bg-red-950/30 border border-red-500/30 p-4 mb-6 text-left">
+                <h3 class="text-red-400 font-bold uppercase text-xs tracking-widest mb-1">Survival Quest</h3>
+                <p class="text-white text-lg font-bold system-font">Complete 100 Push Ups</p>
+                <p class="text-[10px] text-gray-500 mt-1">Status: <span id="penaltyProgress">0</span> / 100</p>
+            </div>
+
+            <button onclick="openModal('penalty')" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-3 uppercase tracking-widest text-sm transition-colors">
+                Begin Penalty
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="p-4 z-10">
+        <div class="system-card p-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gray-900 border border-purple-500/30 flex items-center justify-center text-purple-500 rounded cursor-pointer transition-all hover:bg-purple-900/20" onclick="show('profileModal')">
+                    <i id="rankIcon" class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-widest text-white uppercase cursor-pointer" onclick="show('profileModal')" id="heroName">Player</h1>
+                    <div class="flex items-center gap-2 text-[10px] font-mono">
+                        <span class="text-purple-400">LVL <span id="headerLevel">1</span></span>
+                        <span class="text-gray-600">|</span>
+                        <span class="text-white" id="headerRank">E-RANK</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-right">
+                 <!-- Streak & Gold Display -->
+                <div class="flex flex-col items-end gap-0.5 mb-1">
+                    <div class="flex items-center gap-1">
+                         <i class="fa-solid fa-fire text-orange-500 text-[10px] animate-pulse"></i>
+                         <span class="text-[10px] font-mono text-orange-400" id="streakDisplay">1</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <i class="fa-solid fa-coins text-yellow-500 text-[10px]"></i>
+                        <span class="text-[10px] font-mono text-yellow-400" id="goldDisplay">0</span>
+                    </div>
+                </div>
+                
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">XP Progress</div>
+                <div class="text-[10px] font-mono text-purple-300"><span id="currentXP">0</span> / <span id="nextLevelXP">500</span></div>
+            </div>
+        </div>
+        
+        <!-- XP Bar -->
+        <div class="mt-1 xp-bar-bg h-1.5 w-full rounded-sm overflow-hidden relative">
+            <div id="mainXpBar" class="xp-bar-fill h-full w-0"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main id="appContent" class="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
+        
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="space-y-4 animate-in">
+            
+            <!-- Daily Calorie Goal -->
+            <div class="system-card p-3">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-fire mr-1"></i>Daily Burn</span>
+                    <span class="text-[10px] font-mono text-white"><span id="calCurrent">0</span> / <span id="calGoal">500</span> kcal</span>
+                </div>
+                <div class="w-full bg-gray-800 h-1.5 rounded overflow-hidden">
+                    <div id="calBar" class="cal-bar-fill h-full w-0"></div>
+                </div>
+                <div class="text-right mt-1">
+                    <button onclick="setCalorieGoal()" class="text-[9px] text-gray-500 hover:text-orange-300 underline">Set Goal</button>
+                </div>
+            </div>
+
+            <!-- Daily Quests -->
+            <div class="system-card p-4">
+                <div class="flex justify-between items-end mb-4 border-b border-gray-800 pb-2">
+                    <h2 class="text-purple-400 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-scroll mr-2"></i>Daily Quests</h2>
+                    <span class="text-[9px] text-gray-600 font-mono" id="dateDisplay">TODAY</span>
+                </div>
+                <div id="questList" class="space-y-2"></div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-3 gap-2">
+                <div class="system-card p-2 text-center bg-gray-900/40">
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">STR</div>
+                    <div class="text-xl font-bold text-white system-font" id="statStr">10</div>
+                </div>
+                <div class="system-card p-2 text-center bg-gray-900/40">
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">AGI</div>
+                    <div class="text-xl font-bold text-white system-font" id="statAgi">10</div>
+                </div>
+                <div class="system-card p-2 text-center bg-gray-900/40">
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">VIT</div>
+                    <div class="text-xl font-bold text-white system-font" id="statEnd">10</div>
+                </div>
+            </div>
+
+            <!-- Training Menu -->
+            <div>
+                <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 ml-1">Training Protocols</h3>
+                <div class="space-y-2">
+                    <button onclick="openModal('run')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left">
+                        <div class="w-8 h-8 rounded bg-green-900/20 text-green-500 flex items-center justify-center border border-green-500/30">
+                            <i class="fa-solid fa-person-running"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-green-400 transition-colors">Agility Training</div>
+                            <div class="text-[10px] text-gray-500">Run / Sprint (Timer Added)</div>
+                        </div>
+                    </button>
+
+                    <button onclick="openModal('lift')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left">
+                        <div class="w-8 h-8 rounded bg-red-900/20 text-red-500 flex items-center justify-center border border-red-500/30">
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-red-400 transition-colors">Strength Training</div>
+                            <div class="text-[10px] text-gray-500">Weight & Volume</div>
+                        </div>
+                    </button>
+
+                    <button onclick="openModal('punch')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left">
+                        <div class="w-8 h-8 rounded bg-yellow-900/20 text-yellow-500 flex items-center justify-center border border-yellow-500/30">
+                            <i class="fa-solid fa-hand-fist"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-yellow-400 transition-colors">Combat Drills</div>
+                            <div class="text-[10px] text-gray-500">Endurance</div>
+                        </div>
+                    </button>
+                    
+                    <button onclick="openModal('vr')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left relative overflow-hidden">
+                        <div class="absolute inset-0 bg-blue-900/10 pointer-events-none"></div>
+                        <div class="w-8 h-8 rounded bg-cyan-900/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30 z-10">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </div>
+                        <div class="z-10">
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">VR Rhythm Protocol</div>
+                            <div class="text-[10px] text-gray-500">Track Beat Saber / VR Cardio</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+             <!-- Activity Log -->
+             <div class="system-card p-3">
+                 <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-2">System Log</div>
+                 <div id="activityLog" class="space-y-1.5 text-[10px] font-mono text-gray-400"></div>
+             </div>
+
+        </div>
+
+        <!-- SKILLS VIEW -->
+        <div id="view-skills" class="hidden space-y-4 animate-in">
+            <div class="system-card p-4 sticky top-0 z-20 bg-[#0b0c15]/95 backdrop-blur-md border-b border-purple-500/30">
+                <h2 class="text-purple-400 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-tree mr-2"></i>Skill Tree</h2>
+                <p class="text-[10px] text-gray-500">Awaken new abilities to increase your power.</p>
+            </div>
+            
+            <div id="skillTreeContainer" class="pb-20 space-y-6">
+                <!-- Skill paths generated by JS -->
+            </div>
+        </div>
+        
+        <!-- MARKET VIEW -->
+        <div id="view-market" class="hidden space-y-4 animate-in">
+             <div class="system-card p-4">
+                <div class="flex justify-between items-center border-b border-yellow-900/50 pb-2 mb-4">
+                    <h2 class="text-yellow-500 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-shop mr-2"></i>Hunter's Store</h2>
+                    <span class="font-mono text-yellow-400 text-sm"><i class="fa-solid fa-coins mr-1"></i><span id="storeGoldDisplay">0</span></span>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Available Rewards</h3>
+                    <div id="rewardList" class="space-y-2"></div>
+                </div>
+
+                <div class="bg-gray-900/50 p-3 border border-gray-700 rounded">
+                    <h3 class="text-[10px] text-gray-400 uppercase tracking-widest mb-2">Create Custom Reward</h3>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="newRewardName" placeholder="Reward Name (e.g. Cheat Meal)" class="flex-1 bg-black border border-gray-600 text-xs p-2 text-white">
+                        <input type="number" id="newRewardCost" placeholder="Cost" class="w-16 bg-black border border-gray-600 text-xs p-2 text-white">
+                    </div>
+                    <button onclick="addCustomReward()" class="w-full bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 py-2 text-xs uppercase font-bold hover:bg-yellow-900/50">Add to Store</button>
+                </div>
+             </div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div id="view-profile" class="hidden space-y-4 animate-in">
+            <div class="system-card p-4">
+                 <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+                    <h2 class="text-purple-400 font-bold text-sm tracking-widest uppercase">Status</h2>
+                    <div class="flex gap-2">
+                         <button onclick="show('profileModal')" class="text-[10px] bg-gray-800 text-gray-300 px-2 py-1 border border-gray-600 rounded">Profiles</button>
+                        <button onclick="show('rankModal')" class="text-[10px] bg-purple-900/40 text-purple-300 px-2 py-1 border border-purple-500/30 rounded">Guide</button>
+                    </div>
+                 </div>
+                 
+                 <div class="grid grid-cols-2 gap-y-2 text-xs system-font mb-4">
+                     <div class="text-gray-500">NAME</div><div class="text-white text-right" id="profileNameDisplay">Player</div>
+                     <div class="text-gray-500">ARCHETYPE</div><div class="text-white text-right" id="jobTitle">Civilian</div>
+                     <div class="text-gray-500">RANK TITLE</div><div class="text-purple-300 text-right font-bold" id="rankTitle">Okarun</div>
+                     <div class="text-gray-500">SHADOWS</div><div class="text-purple-400 text-right font-bold" id="shadowTraces">0</div>
+                 </div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="system-card p-4">
+                 <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Consistency (90 Days)</h3>
+                 <div id="heatmapContainer" class="w-full overflow-x-auto pb-2">
+                     <div id="heatmapGrid" class="heatmap-grid h-[68px]"></div>
+                 </div>
+                 <div class="flex justify-end gap-2 text-[8px] text-gray-600 mt-1">
+                     <span class="flex items-center gap-1"><div class="w-2 h-2 bg-gray-800 rounded-[1px]"></div> 0</span>
+                     <span class="flex items-center gap-1"><div class="w-2 h-2 bg-purple-900 rounded-[1px]"></div> 1</span>
+                     <span class="flex items-center gap-1"><div class="w-2 h-2 bg-purple-700 rounded-[1px]"></div> 2</span>
+                     <span class="flex items-center gap-1"><div class="w-2 h-2 bg-purple-500 rounded-[1px]"></div> 3+</span>
+                 </div>
+            </div>
+
+            <!-- Physique Section -->
+            <div class="system-card p-4">
+                <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Physique & Goals</h3>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="text-[9px] text-purple-400 uppercase">Weight (kg)</label>
+                        <input type="number" id="currentWeightInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-white" placeholder="Current">
+                        <input type="number" id="goalWeightInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-gray-400 mt-1" placeholder="Goal">
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-purple-400 uppercase">Body Fat (%)</label>
+                        <input type="number" id="currentFatInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-white" placeholder="Current">
+                        <input type="number" id="goalFatInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-gray-400 mt-1" placeholder="Goal">
+                    </div>
+                </div>
+                <button onclick="updatePhysique()" class="w-full py-2 bg-purple-900/30 text-purple-300 text-[10px] uppercase border border-purple-500/30 hover:bg-purple-900/50">Update & Check Goals</button>
+            </div>
+
+            <!-- Muscle Mastery Spider Chart -->
+            <div class="system-card p-4 flex flex-col items-center">
+                 <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3 self-start w-full">Muscle Mastery</h3>
+                 <canvas id="muscleChart" width="280" height="280" class="max-w-full mb-4"></canvas>
+                 <div id="muscleContainer" class="w-full space-y-2">
+                     <!-- Muscle bars re-added here via JS -->
+                 </div>
+            </div>
+
+            <div class="system-card p-4">
+                <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Shadow Records (Best Lifts)</h3>
+                <div id="shadowRecordsList" class="space-y-1"></div>
+            </div>
+            
+            <button onclick="resetData()" class="w-full py-3 text-xs text-red-500 border border-red-900/30 bg-red-900/10 hover:bg-red-900/20 transition-colors uppercase tracking-widest">
+                System Reset
+            </button>
+        </div>
+
+    </main>
+
+    <!-- NAV -->
+    <nav class="fixed bottom-0 w-full bg-[#0b0c15]/95 border-t border-gray-800 z-20 backdrop-blur-md">
+        <div class="flex h-16">
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="flex-1 flex flex-col items-center justify-center text-purple-500">
+                <i class="fa-solid fa-dungeon mb-1"></i>
+                <span class="text-[9px] uppercase tracking-widest">System</span>
+            </button>
+            <button onclick="switchView('skills')" id="nav-skills" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors">
+                <i class="fa-solid fa-sitemap mb-1"></i>
+                <span class="text-[9px] uppercase tracking-widest">Abilities</span>
+            </button>
+            <button onclick="switchView('market')" id="nav-market" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors">
+                <i class="fa-solid fa-shop mb-1"></i>
+                <span class="text-[9px] uppercase tracking-widest">Market</span>
+            </button>
+            <button onclick="switchView('profile')" id="nav-profile" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors">
+                <i class="fa-solid fa-address-card mb-1"></i>
+                <span class="text-[9px] uppercase tracking-widest">Status</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- PROFILES MODAL -->
+    <div id="profileModal" class="fixed inset-0 bg-black/95 z-[99] hidden flex items-center justify-center p-4">
+        <div class="system-card w-full max-w-sm p-4 border-purple-500/50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-purple-400 system-font uppercase text-lg">System Profiles</h3>
+                <button onclick="hide('profileModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="profileList" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></div>
+            
+            <div class="border-t border-gray-700 pt-3">
+                <input type="text" id="newProfileName" placeholder="New Hunter Name" class="w-full bg-gray-900 border border-gray-700 p-2 text-white mb-2 text-sm font-mono">
+                <button onclick="createNewProfile()" class="w-full bg-purple-700 text-white font-bold py-2 uppercase tracking-widest text-xs hover:bg-purple-600">Create Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SKILL DETAILS MODAL -->
+    <div id="skillModal" class="fixed inset-0 bg-black/95 z-[95] hidden flex flex-col items-center justify-center p-6 text-center">
+        <div class="animate-in w-full max-w-sm system-card p-6 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+            <div class="w-16 h-16 mx-auto bg-gray-900 border border-purple-500/50 rounded-full flex items-center justify-center mb-4 text-2xl text-purple-400">
+                <i id="skillIcon" class="fa-solid fa-star"></i>
+            </div>
+            <h2 id="skillTitle" class="text-xl font-bold text-white mb-1 uppercase system-font tracking-wide">Skill Name</h2>
+            <div id="skillCategory" class="text-[10px] text-purple-400 uppercase tracking-widest mb-4">Category</div>
+            
+            <p id="skillDesc" class="text-xs text-gray-400 mb-6 font-mono leading-relaxed">Description goes here.</p>
+            
+            <div class="bg-gray-900/50 p-3 rounded border border-gray-800 mb-6 text-left">
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-2">Requirements</div>
+                <ul id="skillReqs" class="space-y-1 text-xs font-mono text-gray-300">
+                    <!-- JS fills this -->
+                </ul>
+            </div>
+
+            <button id="unlockSkillBtn" onclick="attemptUnlockSkill()" class="w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed">
+                Locked
+            </button>
+            <button onclick="hide('skillModal')" class="mt-3 text-[10px] text-gray-500 hover:text-white uppercase tracking-widest">Close</button>
+        </div>
+    </div>
+
+    <!-- RANK GUIDE MODAL -->
+    <div id="rankModal" class="fixed inset-0 bg-black/95 z-[95] hidden flex items-center justify-center p-4">
+        <div class="system-card w-full max-w-sm p-4 border-purple-500/50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-purple-400 system-font uppercase text-lg">Rank Classification</h3>
+                <button onclick="hide('rankModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <table class="w-full rank-table text-gray-300">
+                <thead>
+                    <tr><th>Character Tier</th><th>Lvl</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="text-gray-500">Mumen Rider (E)</td><td>1-14</td></tr>
+                    <tr><td class="text-gray-400">Okarun (D)</td><td>15+</td></tr>
+                    <tr><td class="text-green-500">Tanjiro (C)</td><td>35+</td></tr>
+                    <tr><td class="text-blue-500">Ranma (B)</td><td>60+</td></tr>
+                    <tr><td class="text-red-500">Ichigo (A)</td><td>100+</td></tr>
+                    <tr><td class="text-yellow-500">Naruto (S)</td><td>150+</td></tr>
+                    <tr><td class="text-purple-400 font-bold">Goku (SS)</td><td>250+</td></tr>
+                    <tr><td class="text-white font-black drop-shadow">Saitama (SSS)</td><td>400+</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- INPUT MODAL -->
+    <div id="inputModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="system-card w-full max-w-sm animate-pulse-glow">
+            <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-900/50">
+                <h3 class="text-purple-400 system-font uppercase text-sm tracking-widest" id="modalTitle">Protocol</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-5">
+                <!-- TIMER SECTION (Hidden by default) -->
+                <div id="timerSection" class="hidden mb-4 p-3 bg-gray-900 border border-gray-700 text-center rounded">
+                    <div class="text-[10px] text-gray-500 uppercase mb-1">Stopwatch</div>
+                    <div id="timerDisplay" class="text-3xl font-mono text-white mb-2">00:00</div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleTimer()" id="timerBtn" class="flex-1 bg-green-900/40 text-green-400 border border-green-500/30 py-1 text-xs uppercase">Start</button>
+                        <button onclick="resetTimer()" class="bg-gray-800 text-gray-400 border border-gray-600 px-3 py-1 text-xs uppercase"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                </div>
+
+                <div id="shadowRecordDisplay" class="mb-3 text-[10px] font-mono text-gray-400 text-center hidden">
+                    Current Shadow Record: <span id="shadowTarget" class="text-white font-bold">0kg</span>
+                </div>
+
+                <form id="workoutForm" onsubmit="submitWorkout(event)" class="space-y-4">
+                    <input type="hidden" id="workoutType">
+                    <div id="fieldsContainer" class="space-y-3"></div>
+                    
+                    <div class="flex justify-between gap-2 mt-4">
+                         <div class="flex-1 bg-gray-900/50 border border-purple-500/20 p-2 text-center">
+                            <div class="text-[9px] text-gray-500 uppercase">Est. XP</div>
+                            <div class="text-purple-300 font-mono text-lg"><span id="xpPreview">0</span></div>
+                        </div>
+                        <div class="flex-1 bg-gray-900/50 border border-orange-500/20 p-2 text-center">
+                            <div class="text-[9px] text-gray-500 uppercase">Est. Burn</div>
+                            <div class="text-orange-300 font-mono text-lg"><span id="calPreview">0</span> <span class="text-[9px]">kcal</span></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 text-xs uppercase tracking-widest border border-purple-500/30">
+                        Confirm
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEVEL UP MODAL -->
+    <div id="levelUpModal" class="fixed inset-0 bg-black/95 z-[60] hidden flex flex-col items-center justify-center p-6 text-center">
+        <div class="animate-in w-full max-w-sm system-card p-8 border-purple-500 shadow-[0_0_50px_rgba(168,85,247,0.15)]">
+            <i class="fa-solid fa-crown text-5xl text-purple-500 mb-4 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]"></i>
+            <h2 class="text-3xl font-black text-white mb-1 uppercase system-font tracking-tighter">Level Up</h2>
+            <div class="flex justify-center items-center gap-4 my-6 font-mono">
+                <div class="text-2xl text-gray-500" id="oldLevelDisplay">1</div>
+                <i class="fa-solid fa-arrow-right text-purple-500"></i>
+                <div class="text-4xl text-white font-bold text-glow" id="newLevelDisplay">2</div>
+            </div>
+            <button onclick="closeLevelUp()" class="w-full bg-purple-600 text-white font-bold py-3 uppercase tracking-widest hover:bg-purple-500">Accept Power</button>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL (Shadow Arise) -->
+    <div id="shadowSuccessModal" class="fixed inset-0 bg-black/95 z-[90] hidden flex flex-col items-center justify-center p-6 text-center">
+        <div class="animate-in w-full max-w-sm system-card p-6 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+            <i class="fa-solid fa-ghost text-4xl text-purple-400 mb-4 animate-bounce"></i>
+            <h2 class="text-2xl font-black text-white mb-2 uppercase tracking-widest system-font">Shadow Arise!</h2>
+            <p class="text-xs text-purple-200 font-mono mb-4">You have surpassed your limits.</p>
+            <div class="text-lg text-white font-bold mb-6">New Record Set</div>
+            <button onclick="hide('shadowSuccessModal')" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 uppercase tracking-widest text-xs">Command</button>
+        </div>
+    </div>
+
+    <!-- MOCKERY MODAL (Shadow Rejection) -->
+    <div id="shadowFailModal" class="fixed inset-0 bg-black/95 z-[90] hidden flex flex-col items-center justify-center p-6 text-center">
+        <div class="shake-anim w-full max-w-sm system-card p-6 border-gray-600">
+            <i class="fa-solid fa-eye-slash text-4xl text-gray-600 mb-4"></i>
+            <h2 class="text-xl font-bold text-gray-400 mb-2 uppercase tracking-widest">Shadow Rejection</h2>
+            <p class="text-xs text-gray-500 font-mono mb-4">You are weaker than your shadow.</p>
+            <div class="text-[10px] text-red-500 font-bold uppercase mb-6 bg-red-900/10 p-1 inline-block px-2 rounded">XP Gain Reduced</div>
+            <button onclick="hide('shadowFailModal')" class="w-full bg-gray-800 text-gray-400 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 hover:bg-gray-700">Accept Shame</button>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION -->
+    <div id="systemMessage" class="fixed top-8 left-1/2 -translate-x-1/2 w-3/4 max-w-sm system-card p-3 z-[70] hidden transition-all duration-500 border-l-4 border-l-purple-500 shadow-lg">
+        <div class="text-[9px] uppercase text-purple-400 mb-0.5">System Notification</div>
+        <div id="sysMsgText" class="font-mono text-xs text-white">Message</div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        const EXERCISE_CONFIG = {
+            'Chest': ['Bench Press', 'Seated Bench Press', 'Chest Flys'],
+            'Back': ['Seated Row', 'Lat Pulldown', 'Deadlifts'],
+            'Shoulders': ['Dumbbell Lateral Raises', 'Overhead Press', 'Front Raises'],
+            'Arms': ['Tricep Cable Extensions', 'Bicep Curls', 'Skullcrushers', 'Hammer Curls'],
+            'Legs': ['Leg Press', 'Calf Raises'], 
+            'Core': ['Russian Twists'] 
+        };
+
+        const BODYWEIGHT_EXERCISES = [
+            'Push Ups', 'Pull Ups', 'Chin Ups', 'Dips', 'Plank', 'Crunches', 'Leg Raises', 'Squats', 'Lunges'
+        ];
+
+        const BW_EXERCISE_MAP = {
+            'Push Ups': 'Chest', 'Pull Ups': 'Back', 'Chin Ups': 'Arms', 'Dips': 'Arms',
+            'Plank': 'Core', 'Crunches': 'Core', 'Leg Raises': 'Core', 'Squats': 'Legs', 'Lunges': 'Legs'
+        };
+
+        const RANK_DATA = { 
+            1: { letter: 'E', title: 'Mumen Rider', icon: 'fa-user' },
+            15: { letter: 'D', title: 'Okarun', icon: 'fa-user-ninja' },
+            35: { letter: 'C', title: 'Tanjiro', icon: 'fa-user-secret' },
+            60: { letter: 'B', title: 'Ranma', icon: 'fa-user-shield' },
+            100: { letter: 'A', title: 'Ichigo', icon: 'fa-user-astronaut' },
+            150: { letter: 'S', title: 'Naruto', icon: 'fa-crown' },
+            250: { letter: 'SS', title: 'Goku', icon: 'fa-dragon' },
+            400: { letter: 'SSS', title: 'Saitama', icon: 'fa-skull' },
+            600: { letter: 'NAT', title: 'Jin Woo', icon: 'fa-eye' }
+        };
+        
+        const MET_VALUES = {
+            lift: 5.0, // Moderate-Vigorous lifting
+            run: 9.8,  // ~6 mph
+            sprint: 12.3, // ~8-9 mph
+            punch: 7.8, // Kickboxing/Combat sports
+            vr: 0 // Handled by manual input
+        };
+        
+        const XP_MODIFIERS = {
+            run: { stat: ['agi', 'end'] },
+            sprint: { stat: ['agi', 'str'] },
+            lift: { stat: ['str'] },
+            punch: { stat: ['end', 'str'] },
+            vr: { stat: ['agi', 'end'] }
+        };
+
+        // --- SKILL TREE DATA ---
+        const SKILL_TREE = [
+            { id: 'push1', name: 'Push Ups', cat: 'Striker', icon: 'fa-hand-back-fist', tier: 1, req: [], desc: 'The foundation of all pushing strength. Master your bodyweight.' },
+            { id: 'push2', name: 'Diamond Push Ups', cat: 'Striker', icon: 'fa-gem', tier: 2, req: ['push1'], desc: 'Close grip push ups targeting triceps and inner chest.' },
+            { id: 'push3', name: 'Dips', cat: 'Striker', icon: 'fa-bars', tier: 2, req: ['push1'], desc: 'Vertical pushing power. The upper body squat.' },
+            { id: 'push4', name: 'Archer Push Ups', cat: 'Striker', icon: 'fa-bow-arrow', tier: 3, req: ['push2'], desc: 'Unilateral loading, preparing for the one arm push up.' },
+            { id: 'push5', name: 'One Arm Push Up', cat: 'Striker', icon: 'fa-hand-fist', tier: 4, req: ['push4'], desc: 'The ultimate display of unilateral pushing strength.' },
+            { id: 'push6', name: 'Handstand Hold', cat: 'Striker', icon: 'fa-person-running', tier: 3, req: ['push3'], desc: 'Static overhead stability. Balance meets strength.' },
+            { id: 'push7', name: 'Handstand Push Up', cat: 'Striker', icon: 'fa-arrows-down-to-line', tier: 4, req: ['push6'], desc: 'Vertical pushing mastery against gravity.' },
+            { id: 'push8', name: 'Planche Lean', cat: 'Striker', icon: 'fa-ruler-horizontal', tier: 3, req: ['push2'], desc: 'Building straight arm strength.' },
+            { id: 'push9', name: 'Full Planche', cat: 'Striker', icon: 'fa-plane', tier: 5, req: ['push8'], desc: 'God-tier static strength. Defy gravity.' },
+
+            { id: 'pull1', name: 'Pull Ups', cat: 'Assassin', icon: 'fa-arrow-up', tier: 1, req: [], desc: 'The king of back exercises.' },
+            { id: 'pull2', name: 'L-Sit Pull Ups', cat: 'Assassin', icon: 'fa-chair', tier: 2, req: ['pull1'], desc: 'Engage the core while pulling.' },
+            { id: 'pull3', name: 'Explosive Pull Ups', cat: 'Assassin', icon: 'fa-explosion', tier: 2, req: ['pull1'], desc: 'Pulling high to the chest or waist.' },
+            { id: 'pull4', name: 'Muscle Up', cat: 'Assassin', icon: 'fa-angle-double-up', tier: 4, req: ['pull3', 'push3'], desc: 'Transition from pull to push in one fluid motion.' },
+            { id: 'pull5', name: 'Front Lever Tuck', cat: 'Assassin', icon: 'fa-anchor', tier: 3, req: ['pull2'], desc: 'Intro to straight arm pulling strength.' },
+            { id: 'pull6', name: 'Front Lever', cat: 'Assassin', icon: 'fa-scale-balanced', tier: 5, req: ['pull5'], desc: 'Horizontal static hold. Pure lat dominance.' },
+            { id: 'pull7', name: 'One Arm Pull Up', cat: 'Assassin', icon: 'fa-1', tier: 5, req: ['pull3'], desc: 'The pinnacle of vertical pulling strength.' },
+
+            { id: 'core1', name: 'Plank', cat: 'Tank', icon: 'fa-minus', tier: 1, req: [], desc: 'Static core stability.' },
+            { id: 'core2', name: 'Leg Raises', cat: 'Tank', icon: 'fa-arrow-turn-up', tier: 2, req: ['core1'], desc: 'Dynamic compression strength.' },
+            { id: 'core3', name: 'L-Sit', cat: 'Tank', icon: 'fa-chair', tier: 3, req: ['core2', 'push3'], desc: 'Support hold requiring immense core and tricep strength.' },
+            { id: 'core4', name: 'Dragon Flag', cat: 'Tank', icon: 'fa-dragon', tier: 4, req: ['core2'], desc: 'The legendary Bruce Lee move.' },
+            { id: 'core5', name: 'Human Flag', cat: 'Tank', icon: 'fa-flag', tier: 5, req: ['core4', 'push6'], desc: 'Lateral chain mastery.' },
+
+            { id: 'leg1', name: 'Squats', cat: 'Legion', icon: 'fa-person', tier: 1, req: [], desc: 'Fundamental leg strength.' },
+            { id: 'leg2', name: 'Jump Squats', cat: 'Legion', icon: 'fa-frog', tier: 2, req: ['leg1'], desc: 'Explosive lower body power.' },
+            { id: 'leg3', name: 'Pistol Squat', cat: 'Legion', icon: 'fa-gun', tier: 4, req: ['leg1'], desc: 'Single leg squat requiring balance and mobility.' },
+            
+            { id: 'god1', name: 'Shadow Step', cat: 'Monarch', icon: 'fa-ghost', tier: 2, req: ['run1'], desc: 'Run 1km in under 4 minutes.' },
+            { id: 'run1', name: 'Runner', cat: 'Monarch', icon: 'fa-person-running', tier: 1, req: [], desc: 'Basic endurance.' }
+        ];
+
+        // --- STATE ---
+        const defaultState = {
+            name: "Player",
+            level: 1, xp: 0, xpToNext: 300, rank: 'E', rankTitle: 'Mumen Rider',
+            gold: 0, shadowTraces: 0, lastLogin: new Date().toDateString(),
+            streak: 1,
+            penaltyActive: false,
+            stats: { str: 10, agi: 10, end: 10, strXp: 0, agiXp: 0, endXp: 0 },
+            muscleMastery: { 'Chest': 1, 'Back': 1, 'Legs': 1, 'Arms': 1, 'Shoulders': 1, 'Core': 1 },
+            shadowRecords: {}, dailyQuests: [], history: [],
+            bodyStats: { weight: 70, fat: 0, weightGoal: 0, fatGoal: 0 },
+            dailyCalories: 0, calorieGoal: 500,
+            unlockedSkills: ['push1', 'pull1', 'core1', 'leg1', 'run1'],
+            customRewards: [
+                {id: 1, name: "Cheat Meal", cost: 500},
+                {id: 2, name: "1 Hour Gaming", cost: 200},
+                {id: 3, name: "Buy New Game", cost: 2000}
+            ]
+        };
+
+        let profiles = JSON.parse(localStorage.getItem('rpgFitProfiles')) || { 'Hunter 1': JSON.parse(JSON.stringify(defaultState)) };
+        let currentProfileId = localStorage.getItem('rpgFitCurrentProfile') || 'Hunter 1';
+        
+        // Migration check
+        if(!profiles['Hunter 1'].unlockedSkills) {
+            profiles['Hunter 1'].unlockedSkills = ['push1', 'pull1', 'core1', 'leg1', 'run1'];
+            profiles['Hunter 1'].customRewards = [...defaultState.customRewards];
+            saveAllProfiles();
+        }
+
+        let gameState = profiles[currentProfileId];
+        // Ensure current state fields
+        if(!gameState.unlockedSkills) gameState.unlockedSkills = ['push1', 'pull1', 'core1', 'leg1', 'run1'];
+        if(!gameState.dailyCalories) gameState.dailyCalories = 0;
+        if(!gameState.calorieGoal) gameState.calorieGoal = 500;
+        if(!gameState.streak) gameState.streak = 1;
+        if(!gameState.customRewards) gameState.customRewards = [...defaultState.customRewards];
+
+        let timerInterval;
+        let timerSeconds = 0;
+        let isTimerRunning = false;
+        let selectedSkillId = null;
+
+        // --- INIT ---
+        function init() {
+            checkDailyReset();
+            updateRank(); 
+            updateUI();
+            renderHistory();
+            renderProfileList();
+            renderSkillTree();
+        }
+
+        // --- HELPERS ---
+        function setText(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
+        function setStyle(id, prop, val) { const el = document.getElementById(id); if(el) el.style[prop] = val; }
+        function show(id) { document.getElementById(id)?.classList.remove('hidden'); }
+        function hide(id) { document.getElementById(id)?.classList.add('hidden'); }
+        function getVal(id) { return document.getElementById(id)?.value; }
+
+        function saveAllProfiles() {
+            localStorage.setItem('rpgFitProfiles', JSON.stringify(profiles));
+            localStorage.setItem('rpgFitCurrentProfile', currentProfileId);
+        }
+
+        function switchProfile(name) {
+            currentProfileId = name;
+            gameState = profiles[name];
+            saveAllProfiles();
+            init();
+            hide('profileModal');
+            showToast(`Logged in as ${name}`);
+        }
+
+        function createNewProfile() {
+            const name = getVal('newProfileName');
+            if(!name) return;
+            if(profiles[name]) { alert("Profile already exists!"); return; }
+            profiles[name] = JSON.parse(JSON.stringify(defaultState));
+            profiles[name].name = name;
+            switchProfile(name);
+            document.getElementById('newProfileName').value = '';
+        }
+
+        function renderProfileList() {
+            const list = document.getElementById('profileList');
+            list.innerHTML = '';
+            for(const name in profiles) {
+                const isActive = name === currentProfileId;
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-2 border border-gray-700 bg-gray-900/50 mb-1 ${isActive ? 'border-purple-500' : ''}">
+                        <div class="text-xs text-white">${name} <span class="text-gray-500">Lv.${profiles[name].level}</span></div>
+                        ${!isActive ? `<button onclick="switchProfile('${name}')" class="text-[9px] bg-purple-900 text-purple-200 px-2 py-1">LOAD</button>` : '<span class="text-[9px] text-green-500">ACTIVE</span>'}
+                    </div>
+                `;
+            }
+        }
+
+        function checkDailyReset() {
+            const today = new Date().toDateString();
+            const lastLogin = gameState.lastLogin;
+            if (lastLogin !== today) {
+                const todayDate = new Date();
+                const yesterdayDate = new Date(todayDate);
+                yesterdayDate.setDate(todayDate.getDate() - 1);
+                const yesterdayString = yesterdayDate.toDateString();
+                if (lastLogin === yesterdayString) {
+                    gameState.streak = (gameState.streak || 0) + 1;
+                } else {
+                    gameState.streak = 1;
+                }
+                gameState.dailyCalories = 0;
+                const allDone = gameState.dailyQuests.length > 0 && gameState.dailyQuests.every(q => q.completed);
+                if (!allDone && gameState.dailyQuests.length > 0) {
+                    gameState.penaltyActive = true;
+                } else {
+                    generateDailyQuests();
+                }
+                gameState.lastLogin = today;
+                saveAllProfiles();
+            } else if (gameState.dailyQuests.length === 0) {
+                generateDailyQuests();
+            }
+            if(gameState.penaltyActive) show('penaltyOverlay');
+        }
+
+        function generateDailyQuests() {
+            gameState.dailyQuests = [
+                generateQuest('lift'),
+                generateQuest('lift'),
+                generateQuest('run')
+            ];
+            saveAllProfiles();
+        }
+
+        function generateQuest(type) {
+            let subType, title, desc, target, unit;
+            const lvl = gameState.level;
+
+            if (type === 'run') {
+                const isSprint = Math.random() > 0.5;
+                subType = isSprint ? 'Sprint' : 'Running';
+                if(isSprint) {
+                    target = Math.min(20, 5 + Math.floor(lvl / 10)); 
+                    unit = 'min';
+                    title = "Agility: Explosive Speed";
+                    desc = `Complete ${target} mins of sprint intervals.`;
+                } else {
+                    target = parseFloat(Math.min(15, 1.5 + (lvl * 0.15)).toFixed(1));
+                    unit = 'km';
+                    title = "Agility: Endurance";
+                    desc = `Run a total distance of ${target}km.`;
+                }
+            } else {
+                const muscles = Object.keys(EXERCISE_CONFIG);
+                const muscle = muscles[Math.floor(Math.random() * muscles.length)];
+                const exercises = EXERCISE_CONFIG[muscle];
+                const exercise = exercises[Math.floor(Math.random() * exercises.length)];
+                subType = exercise;
+                target = Math.min(20, 3 + Math.floor(lvl / 4));
+                unit = 'sets';
+                title = `Strength: ${muscle}`;
+                desc = `Complete ${target} sets of ${exercise}.`;
+            }
+
+            return {
+                id: Date.now() + Math.random(),
+                type: type === 'run' ? 'run' : 'lift', 
+                subType, target, current: 0, completed: false, 
+                title, desc, unit,
+                rewardXP: 50 + (lvl * 5),
+                rewardGold: 100
+            };
+        }
+
+        function setCalorieGoal() {
+            const g = prompt("Set Daily Calorie Goal:", gameState.calorieGoal);
+            if(g && !isNaN(g)) {
+                gameState.calorieGoal = parseInt(g);
+                saveAllProfiles();
+                updateUI();
+            }
+        }
+
+        function updatePhysique() {
+            const w = parseFloat(getVal('currentWeightInput')) || 0;
+            const wg = parseFloat(getVal('goalWeightInput')) || 0;
+            const f = parseFloat(getVal('currentFatInput')) || 0;
+            const fg = parseFloat(getVal('goalFatInput')) || 0;
+            let msg = "Physique Updated.";
+            if (gameState.bodyStats.weightGoal !== 0 && w !== 0 && Math.abs(w - wg) < 0.5) {
+                gameState.xp += 1000;
+                msg += " WEIGHT GOAL REACHED! (+1000 XP)";
+                gameState.bodyStats.weightGoal = 0;
+            }
+             if (gameState.bodyStats.fatGoal !== 0 && f !== 0 && f <= fg) {
+                gameState.xp += 1000;
+                msg += " FAT % GOAL REACHED! (+1000 XP)";
+                gameState.bodyStats.fatGoal = 0;
+            }
+            gameState.bodyStats = { weight: w, fat: f, weightGoal: wg, fatGoal: fg };
+            saveAllProfiles();
+            showToast(msg);
+            checkLevelUp();
+            updateUI();
+        }
+
+        // --- STORE LOGIC ---
+        function renderStore() {
+            const list = document.getElementById('rewardList');
+            if(!list) return;
+            list.innerHTML = '';
+            setText('storeGoldDisplay', gameState.gold);
+
+            if(gameState.customRewards.length === 0) {
+                list.innerHTML = '<div class="text-xs text-gray-600 text-center italic">No rewards set. Add one below.</div>';
+                return;
+            }
+
+            gameState.customRewards.forEach((r, idx) => {
+                const canAfford = gameState.gold >= r.cost;
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-2 border border-gray-800 bg-gray-900/40 rounded">
+                        <div>
+                            <div class="text-xs text-white font-bold">${r.name}</div>
+                            <div class="text-[10px] text-yellow-500 font-mono">${r.cost} G</div>
+                        </div>
+                        <div class="flex gap-2">
+                             <button onclick="buyReward(${idx})" class="${canAfford ? 'bg-yellow-900 text-yellow-200 border-yellow-700' : 'bg-gray-800 text-gray-500 border-gray-700 cursor-not-allowed'} border px-3 py-1 text-[9px] uppercase font-bold rounded">Buy</button>
+                             <button onclick="deleteReward(${idx})" class="text-red-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addCustomReward() {
+            const name = getVal('newRewardName');
+            const cost = parseInt(getVal('newRewardCost'));
+            if(name && cost > 0) {
+                gameState.customRewards.push({ name, cost });
+                saveAllProfiles();
+                renderStore();
+                document.getElementById('newRewardName').value = '';
+                document.getElementById('newRewardCost').value = '';
+            }
+        }
+
+        function deleteReward(idx) {
+            gameState.customRewards.splice(idx, 1);
+            saveAllProfiles();
+            renderStore();
+        }
+
+        function buyReward(idx) {
+            const r = gameState.customRewards[idx];
+            if(gameState.gold >= r.cost) {
+                if(confirm(`Purchase "${r.name}" for ${r.cost} Gold?`)) {
+                    gameState.gold -= r.cost;
+                    gameState.history.push({ type: 'shop', date: new Date().toISOString(), desc: `Bought Reward: ${r.name}`, xp: 0 });
+                    saveAllProfiles();
+                    renderStore();
+                    updateUI();
+                    showToast(`Purchased: ${r.name}`);
+                }
+            } else {
+                showToast("Not enough Gold!");
+            }
+        }
+
+        // --- HEATMAP LOGIC ---
+        function renderHeatmap() {
+            const grid = document.getElementById('heatmapGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            
+            // Generate last 90 days
+            const today = new Date();
+            const dates = [];
+            for(let i=0; i<84; i++) { // 12 weeks = 84 days
+                const d = new Date(today);
+                d.setDate(today.getDate() - (83 - i));
+                dates.push(d);
+            }
+
+            // Map history to dates
+            const activityMap = {};
+            gameState.history.forEach(h => {
+                const dateStr = h.date.split('T')[0];
+                activityMap[dateStr] = (activityMap[dateStr] || 0) + 1;
+            });
+
+            dates.forEach(d => {
+                const dateStr = d.toISOString().split('T')[0];
+                const count = activityMap[dateStr] || 0;
+                let colorClass = 'bg-gray-800/50';
+                if(count > 0) colorClass = 'bg-purple-900';
+                if(count > 1) colorClass = 'bg-purple-700';
+                if(count > 2) colorClass = 'bg-purple-500';
+                
+                const cell = document.createElement('div');
+                cell.className = `heatmap-cell ${colorClass}`;
+                cell.title = `${dateStr}: ${count} activities`;
+                grid.appendChild(cell);
+            });
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timerBtn');
+            if(!isTimerRunning) {
+                isTimerRunning = true;
+                btn.innerText = "Stop";
+                btn.classList.replace('bg-green-900/40', 'bg-red-900/40');
+                btn.classList.replace('text-green-400', 'text-red-400');
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+            } else {
+                isTimerRunning = false;
+                clearInterval(timerInterval);
+                btn.innerText = "Start";
+                btn.classList.replace('bg-red-900/40', 'bg-green-900/40');
+                btn.classList.replace('text-red-400', 'text-green-400');
+                const mins = (timerSeconds / 60).toFixed(2);
+                const tIn = document.getElementById('tIn');
+                if(tIn) {
+                    tIn.value = mins;
+                    calcPrev(); 
+                }
+            }
+        }
+
+        function resetTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            updateTimerDisplay();
+            document.getElementById('timerBtn').innerText = "Start";
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const s = (timerSeconds % 60).toString().padStart(2, '0');
+            setText('timerDisplay', `${m}:${s}`);
+        }
+
+        // --- SKILL TREE LOGIC ---
+        function renderSkillTree() {
+            const container = document.getElementById('skillTreeContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const categories = [...new Set(SKILL_TREE.map(s => s.cat))];
+
+            categories.forEach(cat => {
+                const skills = SKILL_TREE.filter(s => s.cat === cat).sort((a,b) => a.tier - b.tier);
+                
+                let html = `<div class="mb-4">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 pl-2 border-l-2 border-purple-500">${cat} Path</h3>
+                    <div class="flex flex-wrap gap-4 items-center justify-start relative">`;
+                
+                skills.forEach(skill => {
+                    const isUnlocked = gameState.unlockedSkills.includes(skill.id);
+                    const borderColor = isUnlocked ? 'border-purple-500' : 'border-gray-700';
+                    const iconColor = isUnlocked ? 'text-purple-400' : 'text-gray-600';
+                    const bgClass = isUnlocked ? 'bg-purple-900/20 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-gray-900/50 grayscale';
+
+                    html += `
+                        <div onclick="openSkillModal('${skill.id}')" class="skill-node relative cursor-pointer w-16 h-16 rounded-lg border ${borderColor} ${bgClass} flex flex-col items-center justify-center transition-all hover:scale-105 z-10">
+                            <i class="fa-solid ${skill.icon} text-lg ${iconColor} mb-1"></i>
+                            <div class="text-[8px] uppercase font-bold text-center leading-tight px-1 ${isUnlocked ? 'text-white' : 'text-gray-500'}">${skill.name}</div>
+                            ${isUnlocked ? '<div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-black"></div>' : ''}
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function openSkillModal(skillId) {
+            selectedSkillId = skillId;
+            const skill = SKILL_TREE.find(s => s.id === skillId);
+            if(!skill) return;
+
+            const isUnlocked = gameState.unlockedSkills.includes(skillId);
+            
+            // Check Requirements
+            let canUnlock = true;
+            let reqHtml = '';
+            
+            if(skill.req.length === 0) {
+                reqHtml = '<li class="text-green-500">None (Starter Skill)</li>';
+            } else {
+                skill.req.forEach(reqId => {
+                    const reqSkill = SKILL_TREE.find(s => s.id === reqId);
+                    const reqMet = gameState.unlockedSkills.includes(reqId);
+                    if(!reqMet) canUnlock = false;
+                    reqHtml += `<li class="${reqMet ? 'text-green-500' : 'text-red-500'}">
+                        <i class="fa-solid ${reqMet ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${reqSkill ? reqSkill.name : reqId}
+                    </li>`;
+                });
+            }
+
+            document.getElementById('skillIcon').className = `fa-solid ${skill.icon}`;
+            setText('skillTitle', skill.name);
+            setText('skillCategory', `${skill.cat} | Tier ${skill.tier}`);
+            setText('skillDesc', skill.desc);
+            document.getElementById('skillReqs').innerHTML = reqHtml;
+
+            const btn = document.getElementById('unlockSkillBtn');
+            if(isUnlocked) {
+                btn.innerText = "Mastered";
+                btn.className = "w-full bg-green-900/30 text-green-400 font-bold py-3 uppercase tracking-widest text-xs border border-green-500/50 cursor-default";
+                btn.onclick = null;
+            } else if (canUnlock) {
+                btn.innerText = "Awaken Ability";
+                btn.className = "w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-purple-500/50 animate-pulse";
+                btn.onclick = attemptUnlockSkill;
+            } else {
+                btn.innerText = "Locked";
+                btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed";
+                btn.onclick = null;
+            }
+
+            show('skillModal');
+        }
+
+        function attemptUnlockSkill() {
+            if(!selectedSkillId) return;
+            const skill = SKILL_TREE.find(s => s.id === selectedSkillId);
+            
+            if(confirm(`Have you mastered the ${skill.name}? Awakening this skill will add it to your arsenal.`)) {
+                gameState.unlockedSkills.push(selectedSkillId);
+                gameState.xp += (skill.tier * 100); // XP Reward for unlocking
+                saveAllProfiles();
+                renderSkillTree();
+                hide('skillModal');
+                showToast(`Skill Awakened: ${skill.name}`);
+                checkLevelUp();
+                updateUI();
+            }
+        }
+
+
+        function addXP(amount, type, details, calories) {
+            let multiplier = 1.0;
+            let shadowMsg = "";
+            let shadowSuccess = false;
+            let shadowFail = false;
+
+            gameState.dailyCalories += Math.floor(calories);
+
+            if (type === 'lift') {
+                let liftWeight = details.weight || 0;
+                if (BODYWEIGHT_EXERCISES.includes(details.exercise) && gameState.bodyStats.weight > 0) {
+                    liftWeight += gameState.bodyStats.weight;
+                }
+                const record = gameState.shadowRecords[details.exercise] || { maxWeight: 0 };
+                if (liftWeight > record.maxWeight) {
+                    record.maxWeight = liftWeight;
+                    multiplier = 1.5; 
+                    gameState.shadowTraces++;
+                    shadowSuccess = true;
+                } else if (liftWeight > (record.maxWeight * 0.5) && liftWeight < record.maxWeight) {
+                    multiplier = 0.5; 
+                    shadowFail = true;
+                }
+                gameState.shadowRecords[details.exercise] = record;
+            }
+
+            // MUSCLE MASTERY (Volume Load Logic)
+            if (type === 'lift') {
+                const muscle = details.muscle || BW_EXERCISE_MAP[details.exercise] || 'Core';
+                const currentMastery = gameState.muscleMastery[muscle] || 1;
+                let liftWeight = details.weight || 0;
+                // Add bodyweight for volume calc if BW exercise
+                if (BODYWEIGHT_EXERCISES.includes(details.exercise)) liftWeight += (gameState.bodyStats.weight || 70);
+
+                const reps = details.reps || 10;
+                const volume = liftWeight * details.amount * reps;
+                
+                const masteryGain = volume / 10000; 
+                
+                gameState.muscleMastery[muscle] = parseFloat((currentMastery + masteryGain).toFixed(2));
+            }
+
+            const finalXP = Math.floor(amount * multiplier);
+            gameState.xp += finalXP;
+            gameState.gold += Math.floor(amount / 5); // Add Gold
+
+            let stats = XP_MODIFIERS[type].stat;
+            if(type === 'run' && details.isSprint) stats = XP_MODIFIERS.sprint.stat;
+            
+            stats.forEach(s => {
+                let gain = finalXP / stats.length;
+                let liftWeight = details.weight || 0;
+                if (BODYWEIGHT_EXERCISES.includes(details.exercise)) liftWeight += (gameState.bodyStats.weight || 0);
+                if(s === 'str' && liftWeight > 0) gain *= (1 + (liftWeight/100));
+                
+                gameState.stats[s + 'Xp'] += gain;
+                if(gameState.stats[s + 'Xp'] >= (100 + gameState.stats[s]*10)) {
+                    gameState.stats[s]++;
+                    gameState.stats[s + 'Xp'] = 0;
+                    showToast(`${s.toUpperCase()} Increased!`);
+                }
+            });
+
+            gameState.dailyQuests.forEach(q => {
+                if(!q.completed) {
+                    let progress = 0;
+                    if(q.type === 'lift' && details.exercise === q.subType) progress = details.amount;
+                    if(q.type === 'run') {
+                        const isSprintActivity = details.isSprint;
+                        const isSprintQuest = q.subType === 'Sprint';
+                        if(isSprintActivity === isSprintQuest) progress = details.amount;
+                    }
+
+                    if(progress > 0) {
+                        q.current += progress;
+                        if(q.current >= q.target) {
+                            q.current = q.target;
+                            q.completed = true;
+                            gameState.xp += q.rewardXP;
+                            gameState.gold += q.rewardGold; // Quest gold
+                            showToast(`Quest Complete: ${q.title}`);
+                        }
+                    }
+                }
+            });
+
+            checkLevelUp();
+            saveAllProfiles();
+            updateUI();
+            if (shadowSuccess) show('shadowSuccessModal');
+            else if (shadowFail) show('shadowFailModal');
+        }
+
+        function checkLevelUp() {
+            let leveled = false;
+            let startLvl = gameState.level;
+            while(gameState.xp >= gameState.xpToNext) {
+                gameState.level++;
+                gameState.xp -= gameState.xpToNext;
+                gameState.xpToNext = Math.floor(300 * Math.pow(gameState.level, 1.15)); 
+                gameState.stats.str++; gameState.stats.agi++; gameState.stats.end++;
+                leveled = true;
+            }
+            if(leveled) {
+                updateRank(); 
+                showLevelUpModal(startLvl, gameState.level);
+            }
+        }
+
+        function updateRank() {
+            let currentLvl = gameState.level;
+            let newRank = 'E';
+            let newTitle = 'Mumen Rider';
+            const levels = Object.keys(RANK_DATA).map(Number).sort((a,b)=>a-b);
+            for(let lvl of levels) {
+                if(currentLvl >= lvl) {
+                    newRank = RANK_DATA[lvl].letter;
+                    newTitle = RANK_DATA[lvl].title;
+                }
+            }
+            gameState.rank = newRank;
+            gameState.rankTitle = newTitle;
+            
+            // Update Visual Progression Icon
+            const iconClass = RANK_DATA[levels.find(l => gameState.level >= l) || 1]?.icon || 'fa-user';
+            const iconEl = document.getElementById('rankIcon');
+            if(iconEl) iconEl.className = `fa-solid ${iconClass}`;
+        }
+
+        function showToast(msg) {
+            const el = document.getElementById('systemMessage');
+            const txt = document.getElementById('sysMsgText');
+            if(el && txt) {
+                txt.innerText = msg;
+                el.classList.remove('hidden');
+                setTimeout(() => el.classList.add('hidden'), 3000);
+            }
+        }
+
+        function showLevelUpModal(oldLvl, newLvl) {
+            setText('oldLevelDisplay', oldLvl);
+            setText('newLevelDisplay', newLvl);
+            show('levelUpModal');
+        }
+
+        function closeLevelUp() { hide('levelUpModal'); }
+
+        // --- UI UPDATES ---
+
+        function updateUI() {
+            setText('headerLevel', gameState.level);
+            setText('headerRank', gameState.rank + "-RANK");
+            setText('currentXP', Math.floor(gameState.xp));
+            setText('nextLevelXP', gameState.xpToNext);
+            const xpPct = Math.min(100, (gameState.xp / gameState.xpToNext) * 100);
+            setStyle('mainXpBar', 'width', `${xpPct}%`);
+
+            // Update Streak & Gold
+            setText('streakDisplay', gameState.streak || 1);
+            setText('goldDisplay', gameState.gold);
+
+            setText('calCurrent', gameState.dailyCalories);
+            setText('calGoal', gameState.calorieGoal);
+            const calPct = Math.min(100, (gameState.dailyCalories / gameState.calorieGoal) * 100);
+            setStyle('calBar', 'width', `${calPct}%`);
+
+            setText('statStr', gameState.stats.str);
+            setText('statAgi', gameState.stats.agi);
+            setText('statEnd', gameState.stats.end);
+
+            const qList = document.getElementById('questList');
+            if(qList) {
+                qList.innerHTML = '';
+                gameState.dailyQuests.forEach(q => {
+                    const pct = Math.min(100, (q.current / q.target) * 100);
+                    const div = document.createElement('div');
+                    div.className = `quest-item p-2 rounded relative ${q.completed ? 'completed' : 'active'}`;
+                    div.innerHTML = `
+                        <div class="flex justify-between items-center text-[10px] mb-1">
+                            <span class="font-bold text-gray-300 uppercase">${q.title}</span>
+                            <span class="text-purple-400">${q.rewardXP} XP</span>
+                        </div>
+                        <div class="text-[10px] text-gray-500 mb-1">${q.desc}</div>
+                        <div class="w-full bg-gray-800 h-1 rounded overflow-hidden">
+                            <div class="h-full ${q.completed ? 'bg-green-500' : 'bg-purple-500'}" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="text-right text-[9px] text-gray-600 mt-1 font-mono">${q.current.toFixed(1)} / ${q.target}</div>
+                    `;
+                    qList.appendChild(div);
+                });
+            }
+
+            updateProfileUI();
+            updateRank(); // Ensure icon updates
+        }
+
+        function updateProfileUI() {
+            setText('profileNameDisplay', gameState.name);
+            setText('rankTitle', gameState.rankTitle);
+            setText('shadowTraces', gameState.shadowTraces);
+            
+            if(document.getElementById('currentWeightInput')) {
+                document.getElementById('currentWeightInput').value = gameState.bodyStats.weight || '';
+                document.getElementById('goalWeightInput').value = gameState.bodyStats.weightGoal || '';
+                document.getElementById('currentFatInput').value = gameState.bodyStats.fat || '';
+                document.getElementById('goalFatInput').value = gameState.bodyStats.fatGoal || '';
+            }
+
+            const jobEl = document.getElementById('jobTitle');
+            if(jobEl) {
+                const s = gameState.stats;
+                if (s.str > s.agi * 1.5) jobEl.innerText = "Baki Type"; 
+                else if (s.agi > s.str * 1.5) jobEl.innerText = "Killua Type"; 
+                else if (s.end > s.str && s.end > s.agi) jobEl.innerText = "Ippo Type"; 
+                else jobEl.innerText = "Deku Type"; 
+            }
+
+            renderSpiderChart();
+
+            // Re-render Muscle Bars
+            const mContainer = document.getElementById('muscleContainer');
+            if(mContainer) {
+                mContainer.innerHTML = '';
+                for(const [m, val] of Object.entries(gameState.muscleMastery)) {
+                    const pct = (val % 1) * 100;
+                    mContainer.innerHTML += `
+                        <div class="flex items-center text-[10px] font-mono">
+                            <div class="w-16 text-gray-500">${m}</div>
+                            <div class="flex-1 bg-gray-900 h-1.5 mx-2 rounded overflow-hidden">
+                                <div class="bg-purple-600 h-full" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="w-8 text-right text-purple-300">Lv.${Math.floor(val)}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            const recList = document.getElementById('shadowRecordsList');
+            if(recList) {
+                recList.innerHTML = '';
+                let hasRecs = false;
+                for(const [ex, data] of Object.entries(gameState.shadowRecords)) {
+                    if(data.maxWeight > 0) {
+                        hasRecs = true;
+                        recList.innerHTML += `<div class="flex justify-between text-[10px] border-b border-gray-800 pb-1">
+                            <span class="text-gray-400">${ex}</span>
+                            <span class="text-white font-mono">${data.maxWeight}kg</span>
+                        </div>`;
+                    }
+                }
+                if(!hasRecs) recList.innerHTML = '<div class="text-[10px] text-gray-600 italic">No records set. Lift heavy to forge shadows.</div>';
+            }
+        }
+
+        function renderSpiderChart() {
+            const canvas = document.getElementById('muscleChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = Math.min(w, h) / 2 * 0.75; 
+            
+            ctx.clearRect(0, 0, w, h);
+            const keys = ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core'];
+            const labels = ['CHEST', 'BACK', 'SHLDR', 'ARMS', 'LEGS', 'CORE'];
+            const values = keys.map(k => gameState.muscleMastery[k] || 1);
+            const maxVal = Math.max(...values, 10);
+
+            const getCoords = (val, i, max) => {
+                const angle = (Math.PI * 2 / 6) * i - (Math.PI / 2); 
+                const r = (val / max) * radius;
+                return { x: centerX + Math.cos(angle) * r, y: centerY + Math.sin(angle) * r };
+            };
+
+            ctx.strokeStyle = 'rgba(80, 80, 80, 0.5)';
+            ctx.lineWidth = 1;
+            for (let level = 1; level <= 5; level++) {
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const coords = getCoords(maxVal * (level/5), i, maxVal);
+                    if (i === 0) ctx.moveTo(coords.x, coords.y);
+                    else ctx.lineTo(coords.x, coords.y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#a855f7';
+            ctx.font = '10px "Share Tech Mono"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let i = 0; i < 6; i++) {
+                const outer = getCoords(maxVal, i, maxVal);
+                const labelPos = getCoords(maxVal * 1.25, i, maxVal);
+                ctx.fillText(labels[i], labelPos.x, labelPos.y);
+            }
+
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.4)';
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 6; i++) {
+                const coords = getCoords(values[i], i, maxVal);
+                if (i === 0) ctx.moveTo(coords.x, coords.y);
+                else ctx.lineTo(coords.x, coords.y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function renderHistory() {
+            const log = document.getElementById('activityLog');
+            if(!log) return;
+            log.innerHTML = '';
+            if(gameState.history.length === 0) {
+                log.innerHTML = '<div class="text-center text-gray-600 italic py-2">No activity recorded.</div>';
+                return;
+            }
+            gameState.history.slice().reverse().slice(0, 5).forEach(h => {
+                log.innerHTML += `
+                    <div class="flex justify-between border-b border-gray-800 pb-1">
+                        <span class="text-gray-500">[${h.type.toUpperCase().substr(0,3)}]</span>
+                        <span class="text-gray-300 truncate px-2 flex-1">${h.desc}</span>
+                        <span class="text-purple-500">+${h.xp}XP</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- INTERACTION ---
+        function switchView(v) {
+            hide('view-dashboard'); hide('view-profile'); hide('view-skills'); hide('view-market');
+            
+            document.getElementById('nav-dashboard').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
+            document.getElementById('nav-profile').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
+            document.getElementById('nav-skills').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
+            document.getElementById('nav-market').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
+            
+            show(`view-${v}`);
+            document.getElementById(`nav-${v}`).className = 'flex-1 flex flex-col items-center justify-center text-purple-500';
+            
+            if(v === 'profile') { updateProfileUI(); renderHeatmap(); }
+            if(v === 'skills') renderSkillTree();
+            if(v === 'market') renderStore();
+        }
+
+        let currType = '';
+        function openModal(t) {
+            currType = t;
+            if(t === 'penalty') {
+                if(!confirm("Are you ready to perform 100 Pushups?")) return;
+                gameState.penaltyActive = false;
+                hide('penaltyOverlay');
+                generateDailyQuests();
+                showToast("System Unlocked");
+                return;
+            }
+
+            setText('modalTitle', t === 'lift' ? 'Strength Protocol' : (t === 'run' ? 'Agility Protocol' : (t === 'vr' ? 'VR Protocol' : 'Combat Protocol')));
+            show('inputModal');
+            hide('shadowRecordDisplay');
+            hide('timerSection'); 
+            resetTimer();
+
+            const cont = document.getElementById('fieldsContainer');
+            cont.innerHTML = '';
+            
+            if(t === 'lift') {
+                // Add 'Bodyweight' to the start of muscle options
+                const ms = ['Bodyweight', ...Object.keys(EXERCISE_CONFIG)].map(m => `<option value="${m}">${m}</option>`).join('');
+                cont.innerHTML = `
+                    <select id="mSel" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="updEx()">${ms}</select>
+                    <select id="eSel" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="updShadow()"></select>
+                    
+                    <div class="flex gap-2">
+                        <input type="number" id="sIn" placeholder="Sets" class="w-1/2 bg-gray-900 border border-gray-700 p-2 text-white text-xs" oninput="calcPrev()">
+                        <input type="number" id="rIn" placeholder="Reps" class="w-1/2 bg-gray-900 border border-gray-700 p-2 text-white text-xs" oninput="calcPrev()">
+                    </div>
+                    
+                    <input type="number" id="wIn" placeholder="Weight (kg)" class="w-full bg-gray-900 border border-gray-700 p-2 text-white text-xs" oninput="calcPrev()">
+                `;
+                setTimeout(() => { updEx(); }, 0);
+            } else if (t === 'run') {
+                show('timerSection'); 
+                cont.innerHTML = `
+                    <select id="rMode" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="calcPrev()">
+                        <option value="Run">Standard Run</option><option value="Sprint">Sprint</option>
+                    </select>
+                    <input type="number" id="dIn" placeholder="Distance (km)" class="w-full bg-gray-900 border border-gray-700 p-2 text-white" oninput="calcPrev()">
+                    <input type="number" id="tIn" placeholder="Time (min)" class="w-full bg-gray-900 border border-gray-700 p-2 text-white" oninput="calcPrev()">
+                `;
+            } else if (t === 'vr') {
+                cont.innerHTML = `
+                    <input type="number" id="tIn" placeholder="Duration (min)" class="w-full bg-gray-900 border border-gray-700 p-2 text-white" oninput="calcPrev()">
+                    <input type="number" id="cIn" placeholder="Calories Burned" class="w-full bg-gray-900 border border-gray-700 p-2 text-white" oninput="calcPrev()">
+                `;
+            } else {
+                cont.innerHTML = `
+                    <input type="number" id="dIn" placeholder="Duration (min)" class="w-full bg-gray-900 border border-gray-700 p-2 text-white" oninput="calcPrev()">
+                    <select id="iSel" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="calcPrev()">
+                        <option value="1">Moderate</option><option value="1.5">Intense</option>
+                    </select>
+                `;
+            }
+            calcPrev();
+        }
+
+        function updEx() {
+            const m = document.getElementById('mSel').value;
+            const el = document.getElementById('eSel');
+            
+            if (m === 'Bodyweight') {
+                el.innerHTML = BODYWEIGHT_EXERCISES.map(e => `<option value="${e}">${e}</option>`).join('');
+            } else {
+                const filtered = EXERCISE_CONFIG[m].filter(e => !BODYWEIGHT_EXERCISES.includes(e));
+                el.innerHTML = filtered.map(e => `<option value="${e}">${e}</option>`).join('');
+            }
+            updShadow();
+        }
+
+        function updShadow() {
+            const ex = document.getElementById('eSel').value;
+            const wInput = document.getElementById('wIn');
+            
+            if(wInput) {
+                if(BODYWEIGHT_EXERCISES.includes(ex)) {
+                    wInput.classList.add('hidden');
+                    wInput.value = ''; 
+                } else {
+                    wInput.classList.remove('hidden');
+                }
+            }
+
+            if(!ex) return;
+            const rec = gameState.shadowRecords[ex] ? gameState.shadowRecords[ex].maxWeight : 0;
+            const el = document.getElementById('shadowRecordDisplay');
+            const target = document.getElementById('shadowTarget');
+            
+            if (rec > 0 || BODYWEIGHT_EXERCISES.includes(ex)) {
+                el.classList.remove('hidden');
+                target.innerText = rec + "kg";
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function calcPrev() {
+            let xp = 0;
+            let cals = 0;
+            const weight = gameState.bodyStats.weight || 70; 
+
+            if(currType === 'lift') {
+                const s = parseFloat(document.getElementById('sIn')?.value)||0;
+                const r = parseFloat(document.getElementById('rIn')?.value)||10; 
+                let w = parseFloat(document.getElementById('wIn')?.value)||0;
+                const ex = document.getElementById('eSel')?.value;
+                
+                if(ex && BODYWEIGHT_EXERCISES.includes(ex)) w += weight;
+                
+                cals = MET_VALUES.lift * weight * (3 * s / 60);
+                
+                const volume = w * s * r;
+                xp = Math.floor(volume / 20);
+
+            } else if (currType === 'run') {
+                const mode = document.getElementById('rMode')?.value;
+                const d = parseFloat(document.getElementById('dIn')?.value)||0;
+                const t = parseFloat(document.getElementById('tIn')?.value)||0;
+                
+                if(mode === 'Sprint') {
+                    if(t > 0) cals = MET_VALUES.sprint * weight * (t / 60);
+                } else {
+                    if(d > 0) cals = 1.0 * weight * d;
+                    else if(t > 0) cals = MET_VALUES.run * weight * (t/60);
+                }
+                xp = Math.floor(cals * 1.5);
+
+            } else if (currType === 'vr') {
+                const t = parseFloat(document.getElementById('tIn')?.value)||0;
+                cals = parseFloat(document.getElementById('cIn')?.value)||0;
+                xp = Math.floor(cals * 1.5);
+
+            } else {
+                const d = parseFloat(document.getElementById('dIn')?.value)||0;
+                const i = parseFloat(document.getElementById('iSel')?.value)||1;
+                cals = MET_VALUES.punch * weight * (d / 60) * i;
+                xp = Math.floor(cals * 1.5);
+            }
+            setText('xpPreview', Math.floor(xp));
+            setText('calPreview', Math.floor(cals));
+        }
+
+        function submitWorkout(e) {
+            e.preventDefault();
+            const xp = parseInt(document.getElementById('xpPreview').innerText);
+            const cals = parseInt(document.getElementById('calPreview').innerText);
+            let details = {};
+            let desc = "";
+
+            if(currType === 'lift') {
+                details.amount = parseFloat(document.getElementById('sIn').value);
+                details.reps = parseFloat(document.getElementById('rIn').value);
+                details.weight = parseFloat(document.getElementById('wIn').value) || 0;
+                
+                const selectedMuscle = document.getElementById('mSel').value;
+                const selectedEx = document.getElementById('eSel').value;
+                
+                details.exercise = selectedEx;
+                
+                if (selectedMuscle === 'Bodyweight') {
+                    details.muscle = BW_EXERCISE_MAP[selectedEx] || 'Core';
+                } else {
+                    details.muscle = selectedMuscle;
+                }
+
+                desc = `${details.exercise} (${details.amount}x${details.reps} @ ${details.weight}kg)`;
+                
+            } else if (currType === 'run') {
+                const mode = document.getElementById('rMode').value;
+                const d = parseFloat(document.getElementById('dIn').value);
+                const t = parseFloat(document.getElementById('tIn').value);
+                details.isSprint = (mode === 'Sprint');
+                details.amount = details.isSprint ? t : d; 
+                desc = `${mode}: ${details.amount} ${details.isSprint ? 'min' : 'km'}`;
+            } else if (currType === 'vr') {
+                const t = parseFloat(document.getElementById('tIn').value);
+                details.amount = t;
+                desc = `Beat Saber: ${t} min (${cals} kcal)`;
+
+            } else {
+                details.amount = parseFloat(document.getElementById('dIn').value);
+                desc = `Combat: ${details.amount} min`;
+            }
+
+            if(!details.amount && currType !== 'vr') return;
+            if(currType === 'vr' && !cals) return;
+
+            gameState.history.push({ type: currType, date: new Date().toISOString(), desc, xp });
+            addXP(xp, currType, details, cals);
+            renderHistory();
+            closeModal();
+        }
+
+        function closeModal() { 
+            hide('inputModal'); 
+            resetTimer(); 
+        }
+        function resetData() { 
+            if(confirm("Delete current profile data?")) { 
+                profiles[currentProfileId] = JSON.parse(JSON.stringify(defaultState));
+                profiles[currentProfileId].name = currentProfileId;
+                switchProfile(currentProfileId);
+            } 
+        }
+
+        init();
+    </script>
+</body>
+</html>
