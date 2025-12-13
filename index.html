@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RPG FitTracker: Shadow Monarch</title>
+    <!-- iOS / PWA Meta Tags for Add to Home Screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Shadow Monarch">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -869,6 +874,7 @@
         }
 
         function setCalorieGoal() {
+            // Using a simple prompt here, should be replaced by a custom modal for better UX
             const g = prompt("Set Daily Calorie Goal:", gameState.calorieGoal);
             if(g && !isNaN(g)) {
                 gameState.calorieGoal = parseInt(g);
@@ -950,7 +956,8 @@
         function buyReward(idx) {
             const r = gameState.customRewards[idx];
             if(gameState.gold >= r.cost) {
-                if(confirm(`Purchase "${r.name}" for ${r.cost} Gold?`)) {
+                // Using confirm() here, should be replaced by a custom modal for better UX
+                if(window.confirm(`Purchase "${r.name}" for ${r.cost} Gold?`)) {
                     gameState.gold -= r.cost;
                     gameState.history.push({ type: 'shop', date: new Date().toISOString(), desc: `Bought Reward: ${r.name}`, xp: 0 });
                     saveAllProfiles();
@@ -1127,7 +1134,8 @@
             if(!selectedSkillId) return;
             const skill = SKILL_TREE.find(s => s.id === selectedSkillId);
             
-            if(confirm(`Have you mastered the ${skill.name}? Awakening this skill will add it to your arsenal.`)) {
+            // Using confirm() here, should be replaced by a custom modal for better UX
+            if(window.confirm(`Have you mastered the ${skill.name}? Awakening this skill will add it to your arsenal.`)) {
                 gameState.unlockedSkills.push(selectedSkillId);
                 gameState.xp += (skill.tier * 100); // XP Reward for unlocking
                 saveAllProfiles();
@@ -1493,7 +1501,8 @@
         function openModal(t) {
             currType = t;
             if(t === 'penalty') {
-                if(!confirm("Are you ready to perform 100 Pushups?")) return;
+                // Using confirm() here, should be replaced by a custom modal for better UX
+                if(!window.confirm("Are you ready to perform 100 Pushups?")) return;
                 gameState.penaltyActive = false;
                 hide('penaltyOverlay');
                 generateDailyQuests();
@@ -1691,7 +1700,8 @@
             resetTimer(); 
         }
         function resetData() { 
-            if(confirm("Delete current profile data?")) { 
+            // Using confirm() here, should be replaced by a custom modal for better UX
+            if(window.confirm("Delete current profile data?")) { 
                 profiles[currentProfileId] = JSON.parse(JSON.stringify(defaultState));
                 profiles[currentProfileId].name = currentProfileId;
                 switchProfile(currentProfileId);
