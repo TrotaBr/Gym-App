@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GLITCH TECHS: SYSTEM V3.2.1</title>
+    <title>GLITCH TECHS: SYSTEM V3.2.2</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030305">
@@ -13,6 +13,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK Imports (Module type required for modern imports) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // FIX: Corrected createUserWithPassword to createUserWithEmailAndPassword
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Expose Firebase functions globally for use in the main script block
+        window.firebase = { 
+            initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, onSnapshot, setLogLevel,
+            signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut // FIX: Corrected name here as well
+        };
+        
+        // Set Firebase logging level to debug for easier debugging in the console
+        setLogLevel('Debug');
+    </script>
 
     <!-- Tailwind Config -->
     <script>
@@ -72,7 +89,7 @@
         ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 2px; }
 
         /* --- BOOT SEQUENCE --- */
-        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .terminal-text { font-family: 'Share Tech Mono', monospace; color: var(--primary); font-size: 14px; }
 
         /* --- UTILS --- */
@@ -114,17 +131,22 @@
             <div class="leading-none">
                 <h1 class="text-xs font-bold tracking-[0.2em] text-white uppercase">SYSTEM <span class="text-green-500">V3.2</span></h1>
                 <div class="flex items-center gap-2 text-[10px] font-mono text-gray-400 mt-1">
-                    <span id="headerName">HUNTER</span> | LVL <span id="headerLevel" class="text-white">1</span>
+                    <span id="headerName">...</span> | LVL <span id="headerLevel" class="text-white">1</span>
                 </div>
+                <div class="text-[8px] text-gray-500">UID: <span id="headerUserId">...</span></div>
             </div>
         </div>
         <div class="text-right">
-            <div class="flex flex-col items-end">
-                <div class="flex items-center gap-2">
-                    <span id="goldDisplay" class="font-mono font-bold text-lg text-yellow-400">0</span>
-                    <i class="fa-solid fa-coins text-yellow-500 text-xs"></i>
+            <div class="flex items-center gap-4">
+                <button onclick="handleSignOut()" id="signOutBtn" class="hidden text-red-500 hover:text-red-300 text-[10px] font-bold uppercase" data-i18n="sign_out">LOGOUT</button>
+                <button onclick="showLoginModal()" id="signInBtn" class="text-cyan-500 hover:text-cyan-300 text-[10px] font-bold uppercase" data-i18n="sign_in">ACCESS KEY</button>
+                <div class="flex flex-col items-end">
+                    <div class="flex items-center gap-2">
+                        <span id="goldDisplay" class="font-mono font-bold text-lg text-yellow-400">0</span>
+                        <i class="fa-solid fa-coins text-yellow-500 text-xs"></i>
+                    </div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest" data-i18n="credits">DATA CHIPS</div>
                 </div>
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest" data-i18n="credits">CREDITS</div>
             </div>
         </div>
     </header>
@@ -141,7 +163,7 @@
         <div id="view-hub" class="page-view h-full w-full p-4 overflow-y-auto pb-20 scrollbar-hide">
             <div class="mb-6 flex justify-between items-end animate-slide-up">
                 <div>
-                    <div class="text-[10px] text-cyan-500 uppercase tracking-widest mb-1" data-i18n="daily_protocol">Daily Protocol</div>
+                    <div class="text-[10px] text-cyan-500 uppercase tracking-widest mb-1" data-i18n="daily_protocol">DAILY CODE EXECUTION</div>
                     <div class="text-2xl font-bold uppercase font-mono italic text-white" id="greeting">WELCOME BACK</div>
                 </div>
                 <div class="text-center tech-panel px-3 py-1 clip-tech-sm border-orange-500/30">
@@ -158,40 +180,46 @@
                         <i class="fa-solid fa-dumbbell text-8xl text-cyan-500"></i>
                     </div>
                     <div class="relative z-10 h-full flex flex-col justify-center items-center text-center">
-                        <h2 class="text-2xl font-black italic tracking-widest text-white text-glow" data-i18n="engage">ENGAGE</h2>
-                        <p class="font-mono text-xs text-cyan-400 mt-1" data-i18n="engage_desc">START PROTOCOL / LOG DATA</p>
+                        <h2 class="text-2xl font-black italic tracking-widest text-white text-glow" data-i18n="engage">START MISSION</h2>
+                        <p class="font-mono text-xs text-cyan-400 mt-1" data-i18n="engage_desc">INITIATE PROTOCOL / LOG DATA</p>
                     </div>
                     <div class="absolute bottom-0 right-0 p-2"><i class="fa-solid fa-arrow-right text-cyan-500 animate-pulse"></i></div>
                 </div>
 
                 <div onclick="navTo('profile')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-pink-500/50">
                     <div class="flex justify-between items-start"><i class="fa-solid fa-chart-pie text-pink-500 text-xl"></i></div>
-                    <div><div class="text-md font-bold text-white" data-i18n="stats">Stats</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="physique">ANALYTICS</div></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="stats">Data Matrix</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="physique">SYSTEM ANALYTICS</div></div>
                 </div>
 
                 <div onclick="navTo('quests')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-yellow-500/50">
-                    <div class="flex justify-between items-start"><i class="fa-solid fa-scroll text-yellow-500 text-xl"></i><span id="questBadge" class="bg-yellow-500 text-black text-[9px] font-bold px-1.5 rounded">3</span></div>
-                    <div><div class="text-md font-bold text-white" data-i18n="missions">Missions</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="targets">TARGETS</div></div>
+                    <div class="flex justify-between items-start"><i class="fa-solid fa-scroll text-yellow-500 text-xl"></i><span id="questBadge" class="bg-yellow-500 text-black text-[9px] font-bold px-1.5 rounded">0</span></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="missions">MISSION LOG</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="targets">OBJECTIVES</div></div>
                 </div>
                 
                 <div onclick="navTo('skills')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-blue-500/50">
                     <i class="fa-solid fa-dna text-blue-500 text-xl"></i>
-                    <div><div class="text-md font-bold text-white" data-i18n="abilities">Abilities</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="skill_tree">SKILL TREE</div></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="abilities">CORE ABILITIES</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="skill_tree">TRAINING ALGORITHM</div></div>
                 </div>
 
                 <div onclick="navTo('achievements')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-red-500/50">
                     <i class="fa-solid fa-trophy text-red-500 text-xl"></i>
-                    <div><div class="text-md font-bold text-white" data-i18n="trophies">Trophies</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="awards">AWARDS</div></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="trophies">REWARD LOGS</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="awards">SYSTEM REWARDS</div></div>
                 </div>
 
                 <div onclick="navTo('history')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-green-500/50">
                     <i class="fa-solid fa-clock-rotate-left text-green-500 text-xl"></i>
-                    <div><div class="text-md font-bold text-white" data-i18n="log">Log</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="history">HISTORY</div></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="log">DATA LOGS</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="history">SESSION HISTORY</div></div>
+                </div>
+                
+                <!-- NEW INVENTORY BUTTON -->
+                <div onclick="navTo('inventory')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-gray-500/50">
+                    <i class="fa-solid fa-box-open text-gray-400 text-xl"></i>
+                    <div><div class="text-md font-bold text-white" data-i18n="inventory">Inventory</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="assets">ASSETS</div></div>
                 </div>
 
                 <div onclick="navTo('market')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-purple-500/50">
                     <i class="fa-solid fa-shop text-purple-500 text-xl"></i>
-                    <div><div class="text-md font-bold text-white" data-i18n="shop">Shop</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="rewards">REWARDS</div></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="shop">REWARDS TERMINAL</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="rewards">COSMETIC ASSETS</div></div>
                 </div>
             </div>
         </div>
@@ -200,20 +228,20 @@
         <div id="view-operations" class="page-view hidden-page h-full w-full flex flex-col">
             <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between shrink-0">
                 <button onclick="navTo('hub')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-chevron-left"></i> HUB</button>
-                <h2 class="text-cyan-400 font-bold tracking-widest uppercase" data-i18n="command_center">Command Center</h2>
+                <h2 class="text-cyan-400 font-bold tracking-widest uppercase" data-i18n="command_center">MISSION CONTROL</h2>
                 <div class="w-8"></div>
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
                 <!-- AI Generator -->
                 <div>
-                    <h3 class="text-xs text-gray-500 uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="ai_gen">AI Protocol Generator</h3>
+                    <h3 class="text-xs text-gray-500 uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="ai_gen">SYSTEM GENERATOR</h3>
                     <button onclick="openGeneratorModal()" class="w-full tech-panel p-4 clip-tech btn-glitch group relative overflow-hidden mb-2">
                         <div class="absolute inset-0 bg-cyan-900/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div class="relative flex justify-between items-center z-10">
                             <div class="text-left">
-                                <h3 class="text-xl font-black italic text-white uppercase" data-i18n="generate">Generate Protocol</h3>
-                                <p class="text-[10px] text-cyan-400 font-mono" data-i18n="gen_desc">CUSTOMIZED BATTLE ROUTINE (HOME/GYM)</p>
+                                <h3 class="text-xl font-black italic text-white uppercase" data-i18n="generate">Generate Mission File</h3>
+                                <p class="font-mono text-xs text-cyan-400 mt-1" data-i18n="gen_desc">GENERATED ROUTINE (HQ/GYM SIM)</p> 
                             </div>
                             <i class="fa-solid fa-microchip text-2xl text-cyan-500 animate-pulse"></i>
                         </div>
@@ -222,8 +250,8 @@
 
                 <!-- Manual Log -->
                 <div>
-                    <h3 class="text-xs text-gray-500 uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="quick_log">Quick Log</h3>
-                    <div class="grid grid-cols-2 gap-3">
+                    <h3 class="text-xs text-gray-500 uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="quick_log">MANUAL DATA INPUT</h3>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
                         <button onclick="openManualLog('strength')" class="tech-panel p-3 clip-tech-sm text-left hover:border-cyan-500 transition-colors btn-glitch">
                             <i class="fa-solid fa-dumbbell text-cyan-500 text-lg mb-1"></i>
                             <div class="font-bold text-white" data-i18n="strength">Strength</div>
@@ -233,15 +261,45 @@
                             <div class="font-bold text-white" data-i18n="cardio">Cardio</div>
                         </button>
                     </div>
+                    <!-- NEW VR Training Log -->
+                    <button onclick="openManualLog('vr')" class="w-full tech-panel p-3 clip-tech-sm text-left hover:border-purple-500 transition-colors btn-glitch">
+                        <i class="fa-solid fa-vr-cardboard text-purple-500 text-lg mb-1"></i>
+                        <div class="font-bold text-white" data-i18n="vr_training">SIMULATION LOG</div>
+                    </button>
                 </div>
 
                 <!-- Presets -->
                 <div>
                     <div class="flex justify-between items-end mb-3 border-b border-gray-800 pb-1">
-                        <h3 class="text-xs text-gray-500 uppercase tracking-widest" data-i18n="saved_protocols">Saved Protocols</h3>
+                        <h3 class="text-xs text-gray-500 uppercase tracking-widest" data-i18n="saved_protocols">SAVED MISSION FILES</h3>
                         <button onclick="openPresetCreator()" class="text-[10px] text-cyan-500 hover:text-white uppercase"><i class="fa-solid fa-plus mr-1"></i> <span data-i18n="create_new">Create New</span></button>
                     </div>
                     <div id="workout-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INVENTORY VIEW (NEW) -->
+        <div id="view-inventory" class="page-view hidden-page h-full w-full flex flex-col">
+            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between shrink-0">
+                <button onclick="navTo('hub')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-chevron-left"></i> HUB</button>
+                <h2 class="text-white font-bold tracking-widest uppercase" data-i18n="inventory">INVENTORY</h2>
+                <div class="w-8"></div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 pb-20 space-y-6">
+                
+                <div>
+                    <h3 class="text-xs text-pink-500 font-bold uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="flair_assets">ARCHETYPE FLAIR ASSETS</h3>
+                    <div id="flair-inventory" class="grid grid-cols-2 gap-3">
+                        <!-- Flairs rendered here -->
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs text-purple-500 font-bold uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="cosmetic_equipment">COSMETIC EQUIPMENT</h3>
+                    <div id="equipment-inventory" class="grid grid-cols-2 gap-3">
+                         <!-- Equipment rendered here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -250,7 +308,7 @@
         <div id="view-skills" class="page-view hidden-page h-full w-full flex flex-col">
             <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between shrink-0">
                 <button onclick="navTo('hub')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-chevron-left"></i> HUB</button>
-                <h2 class="text-blue-500 font-bold tracking-widest uppercase" data-i18n="skill_tree">Skill Tree</h2>
+                <h2 class="text-blue-500 font-bold tracking-widest uppercase" data-i18n="skill_tree">TRAINING ALGORITHM</h2>
                 <div class="text-xs font-mono text-yellow-400" id="skillCredits">0 CR</div>
             </div>
             <div id="skill-container" class="flex-1 overflow-y-auto p-4 pb-20 relative">
@@ -262,7 +320,7 @@
         <div id="view-achievements" class="page-view hidden-page h-full w-full flex flex-col">
             <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between shrink-0">
                 <button onclick="navTo('hub')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-chevron-left"></i> HUB</button>
-                <h2 class="text-red-500 font-bold tracking-widest uppercase" data-i18n="trophies">Trophies</h2>
+                <h2 class="text-red-500 font-bold tracking-widest uppercase" data-i18n="trophies">REWARD LOGS</h2>
                 <div class="w-8"></div>
             </div>
             <div id="achievement-list" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
@@ -273,7 +331,7 @@
         <!-- OTHER VIEWS (Battle, Profile, Quests, Market, History) -->
         <div id="view-battle" class="page-view hidden-page h-full w-full flex flex-col bg-black">
              <div class="p-3 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center">
-                <div><div class="text-[10px] text-gray-500 uppercase">Protocol</div><div id="activeRoutineName" class="text-white font-bold font-mono text-sm">ROUTINE</div></div>
+                <div><div class="text-[10px] text-gray-500 uppercase" data-i18n="protocol">PROTOCOL</div><div id="activeRoutineName" class="text-white font-bold font-mono text-sm">ROUTINE</div></div>
                 <div id="sessionTimer" class="font-mono text-xl text-cyan-400">00:00</div>
             </div>
             <div class="flex-1 overflow-y-auto p-4 flex flex-col" id="battle-container">
@@ -281,7 +339,7 @@
                      <div class="text-center mb-4">
                         <div class="inline-block border border-cyan-500/30 bg-cyan-900/10 px-3 py-1 text-cyan-400 text-xs font-bold uppercase mb-2 rounded">Ex <span id="currentExIndex">1</span> / <span id="totalExCount">5</span></div>
                         <h2 id="currentExName" class="text-3xl font-black text-white uppercase italic">PUSH UPS</h2>
-                        <p id="currentExTarget" class="text-gray-400 font-mono text-sm">Target</p>
+                        <p id="currentExTarget" class="text-gray-400 font-mono text-sm" data-i18n="target">Target</p>
                     </div>
                     <div id="setsContainer" class="space-y-2 mb-6"></div>
                 </div>
@@ -290,10 +348,11 @@
                 <button onclick="endSession()" class="bg-red-900/50 border border-red-500/50 text-red-500 py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" data-i18n="abort">Abort</button>
                 <button onclick="nextExercise()" id="nextExBtn" class="bg-cyan-600 hover:bg-cyan-500 text-white py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" data-i18n="next">Next</button>
             </div>
+            <!-- Rest Overlay Fix: Added skip button visibility logic -->
             <div id="restOverlay" class="absolute inset-0 bg-black/95 z-50 hidden flex flex-col items-center justify-center">
-                <div class="text-gray-500 text-xs uppercase tracking-[0.3em] mb-4">Recovering</div>
+                <div class="text-gray-500 text-xs uppercase tracking-[0.3em]" data-i18n="recovering">Recovering</div>
                 <div id="restTimerDisplay" class="text-8xl font-mono font-bold text-cyan-400 mb-8 animate-pulse">00:45</div>
-                <button onclick="skipRest()" class="bg-white text-black font-bold px-8 py-2 clip-tech-sm hover:bg-cyan-400" data-i18n="engage">ENGAGE</button>
+                <button onclick="skipRest()" id="skipRestBtn" class="bg-white text-black font-bold px-8 py-2 clip-tech-sm hover:bg-cyan-400" data-i18n="engage">ENGAGE</button>
             </div>
         </div>
 
@@ -301,24 +360,31 @@
             <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4">
                 <button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button>
                 <h2 class="text-white font-bold uppercase" data-i18n="profile">System Analytics</h2>
-                <button onclick="toggleLanguage()" class="text-cyan-400 border border-cyan-500/30 px-2 py-0.5 text-[10px] rounded hover:bg-cyan-900/20"><i class="fa-solid fa-globe mr-1"></i> <span id="langDisplay">EN</span></button>
+                <div class="flex gap-2">
+                    <!-- QOL: Language Toggle -->
+                    <button onclick="toggleLanguage()" class="text-cyan-400 border border-cyan-500/30 px-2 py-0.5 text-[10px] rounded hover:bg-cyan-900/20"><i class="fa-solid fa-globe mr-1"></i> <span id="langDisplay">EN</span></button>
+                    <!-- QOL: Unit Toggle -->
+                    <button onclick="toggleUnit()" class="text-pink-400 border border-pink-500/30 px-2 py-0.5 text-[10px] rounded hover:bg-pink-900/20"><i class="fa-solid fa-weight-hanging mr-1"></i> <span id="unitDisplay">KG</span></button>
+                </div>
             </div>
             
             <!-- Header Profile Card -->
             <div class="tech-panel p-6 clip-tech mb-6 bg-gradient-to-b from-gray-900 to-black">
                 <div class="flex items-center gap-4">
                     <div class="w-20 h-20 border-2 border-cyan-500 bg-gray-800 flex items-center justify-center text-4xl text-white relative overflow-hidden group">
-                        <i class="fa-solid fa-user-ninja z-10"></i>
+                        <!-- Flair Icon -->
+                        <i id="archetype-icon" class="fa-solid fa-user-ninja z-10"></i>
                         <div class="absolute inset-0 bg-cyan-500/10 animate-pulse"></div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">IDENTITY</div>
-                        <div class="text-xl font-bold text-white uppercase leading-none mb-1" id="pName">HUNTER</div>
-                        <div class="text-[10px] text-cyan-500 font-bold uppercase tracking-wider mb-0.5">ARCHETYPE</div>
+                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5" data-i18n="identity">IDENTITY</div>
+                        <!-- EDITABLE NAME FIELD -->
+                        <input id="pName" type="text" onblur="updateUserName(this.value)" class="text-xl font-bold text-white uppercase leading-none mb-1 bg-transparent border-b border-cyan-700/50 focus:border-cyan-500 outline-none w-full max-w-[200px]" />
+                        <div class="text-[10px] text-cyan-500 font-bold uppercase tracking-wider mb-0.5" data-i18n="archetype">ARCHETYPE</div>
                         <div class="text-xl font-black text-white uppercase italic leading-none mb-2 text-glow" id="pClass">SHADOW MONARCH</div>
                         <div class="flex items-center gap-2">
                             <span class="bg-gray-800 px-2 py-0.5 text-[10px] text-white rounded border border-gray-700 font-mono" id="pRank">E-RANK</span>
-                            <span class="text-gray-500 text-xs font-mono">LVL <span id="pLvl" class="text-white">1</span></span>
+                            <span class="text-gray-500 text-xs font-mono" data-i18n="level_short">LVL</span> <span id="pLvl" class="text-white">1</span>
                         </div>
                     </div>
                 </div>
@@ -329,37 +395,37 @@
                 <!-- Stat Block: Strength -->
                 <div class="tech-panel p-3 border-l-2 border-red-500">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-red-500 font-bold text-xs uppercase">STRENGTH</span>
+                        <span class="text-red-500 font-bold text-xs uppercase" data-i18n="stat_str">STRENGTH</span>
                         <span class="text-white font-mono font-bold" id="statStrVal">10</span>
                     </div>
                     <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mb-1">
                         <div id="barStr" class="h-full bg-red-600 transition-all duration-500" style="width: 0%"></div>
                     </div>
-                    <div class="text-[9px] text-gray-500 font-mono text-right">XP: <span id="xpStr">0</span> / <span id="xpStrNext">100</span></div>
+                    <div class="text-[9px] text-gray-500 font-mono text-right" data-i18n="xp_tracker">XP: <span id="xpStr">0</span> / <span id="xpStrNext">100</span></div>
                 </div>
 
                 <!-- Stat Block: Agility -->
                 <div class="tech-panel p-3 border-l-2 border-green-500">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-green-500 font-bold text-xs uppercase">AGILITY</span>
+                        <span class="text-green-500 font-bold text-xs uppercase" data-i18n="stat_agi">AGILITY</span>
                         <span class="text-white font-mono font-bold" id="statAgiVal">10</span>
                     </div>
                     <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mb-1">
                         <div id="barAgi" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
                     </div>
-                    <div class="text-[9px] text-gray-500 font-mono text-right">XP: <span id="xpAgi">0</span> / <span id="xpAgiNext">100</span></div>
+                    <div class="text-[9px] text-gray-500 font-mono text-right" data-i18n="xp_tracker">XP: <span id="xpAgi">0</span> / <span id="xpAgiNext">100</span></div>
                 </div>
 
                 <!-- Stat Block: Endurance -->
                 <div class="tech-panel p-3 border-l-2 border-yellow-500">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-yellow-500 font-bold text-xs uppercase">ENDURANCE</span>
+                        <span class="text-yellow-500 font-bold text-xs uppercase" data-i18n="stat_end">ENDURANCE</span>
                         <span class="text-white font-mono font-bold" id="statEndVal">10</span>
                     </div>
                     <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mb-1">
                         <div id="barEnd" class="h-full bg-yellow-500 transition-all duration-500" style="width: 0%"></div>
                     </div>
-                    <div class="text-[9px] text-gray-500 font-mono text-right">XP: <span id="xpEnd">0</span> / <span id="xpEndNext">100</span></div>
+                    <div class="text-[9px] text-gray-500 font-mono text-right" data-i18n="xp_tracker">XP: <span id="xpEnd">0</span> / <span id="xpEndNext">100</span></div>
                 </div>
             </div>
 
@@ -367,7 +433,7 @@
             <div class="grid grid-cols-1 gap-6">
                 <!-- Radar Chart -->
                 <div class="tech-panel p-3">
-                    <div class="text-[10px] text-gray-500 text-center uppercase mb-2 tracking-widest">MUSCLE MATRIX</div>
+                    <div class="text-[10px] text-gray-500 text-center uppercase mb-2 tracking-widest" data-i18n="muscle_matrix">MUSCLE MATRIX</div>
                     <div class="h-64 relative">
                         <canvas id="radarChart"></canvas>
                     </div>
@@ -375,7 +441,7 @@
                 
                 <!-- Activity Chart -->
                 <div class="tech-panel p-3">
-                    <div class="text-[10px] text-gray-500 text-center uppercase mb-2 tracking-widest">7-DAY ACTIVITY VOLUME</div>
+                    <div class="text-[10px] text-gray-500 text-center uppercase mb-2 tracking-widest" data-i18n="activity_volume">7-DAY ACTIVITY VOLUME</div>
                     <div class="h-40 relative">
                         <canvas id="activityChart"></canvas>
                     </div>
@@ -383,7 +449,7 @@
 
                 <!-- 1RM Calculator Section -->
                 <div class="tech-panel p-4">
-                    <h3 class="text-xs text-cyan-500 font-bold uppercase mb-3 border-b border-gray-800 pb-2">THEORETICAL 1RM ESTIMATOR</h3>
+                    <h3 class="text-xs text-cyan-500 font-bold uppercase mb-3 border-b border-gray-800 pb-2" data-i18n="orm_title">THEORETICAL 1RM ESTIMATOR</h3>
                     <div class="flex gap-2 mb-4">
                         <select id="ormSelect" class="bg-black border border-gray-700 text-white text-xs p-2 flex-1 font-mono outline-none" onchange="calculate1RM()">
                             <!-- Populated by JS -->
@@ -391,41 +457,89 @@
                     </div>
                     <div class="flex items-end justify-between bg-gray-900/50 p-3 rounded border border-gray-800">
                         <div>
-                            <div class="text-[9px] text-gray-500 uppercase">ESTIMATED MAX</div>
+                            <div class="text-[9px] text-gray-500 uppercase" data-i18n="estimated_max">ESTIMATED MAX</div>
                             <div class="text-3xl font-mono font-bold text-white" id="ormDisplay">0 <span class="text-sm text-gray-600">kg</span></div>
                         </div>
                         <div class="text-right">
-                             <div class="text-[9px] text-gray-500 uppercase">BASED ON RECORD</div>
                              <div class="text-xs text-cyan-400 font-mono" id="ormBasis">-</div>
                         </div>
                     </div>
-                    <p class="text-[9px] text-gray-600 mt-2 text-center italic">*Calculated using Epley Formula based on log history.</p>
+                    <p class="text-[9px] text-gray-600 mt-2 text-center italic" data-i18n="orm_disclaimer">*Calculated using Epley Formula based on log history.</p>
                 </div>
             </div>
 
             <div class="mt-8 border-t border-gray-800 pt-4 text-center">
-                <button onclick="resetData()" class="text-red-900 hover:text-red-500 text-[10px] uppercase font-bold tracking-widest transition-colors">FACTORY RESET SYSTEM</button>
+                <button onclick="resetData()" class="text-red-900 hover:text-red-500 text-[10px] uppercase font-bold tracking-widest transition-colors" data-i18n="factory_reset">FACTORY RESET SYSTEM</button>
             </div>
         </div>
 
         <div id="view-quests" class="page-view hidden-page h-full w-full overflow-y-auto p-4 pb-20">
-            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-yellow-500 font-bold uppercase" data-i18n="missions">Missions</h2><div class="w-8"></div></div>
+            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-yellow-500 font-bold uppercase" data-i18n="missions">MISSION LOG</h2><div class="w-8"></div></div>
             <div id="quest-list" class="space-y-4"></div>
         </div>
 
         <div id="view-market" class="page-view hidden-page h-full w-full overflow-y-auto p-4 pb-20">
-             <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-purple-500 font-bold uppercase" data-i18n="shop">Shop</h2><div class="w-8"></div></div>
-             <div class="tech-panel p-4 mb-6 border-l-2 border-purple-500"><div class="flex justify-between items-center"><span class="text-gray-400 text-xs uppercase" data-i18n="credits">Credits</span><span class="text-xl font-mono font-bold text-yellow-400" id="marketCredits">0</span></div></div>
-             <div id="market-list" class="space-y-3"></div>
-             <div class="mt-8 border-t border-gray-800 pt-4"><h4 class="text-[10px] text-gray-500 uppercase mb-2">Custom Reward</h4><div class="flex gap-2"><input type="text" id="newRewardName" placeholder="Item Name" class="flex-1 bg-gray-900 border border-gray-700 text-xs p-3 text-white font-mono"><input type="number" id="newRewardCost" placeholder="Cost" class="w-20 bg-gray-900 border border-gray-700 text-xs p-3 text-white font-mono"><button onclick="addCustomReward()" class="bg-gray-800 px-3 text-gray-300"><i class="fa-solid fa-plus"></i></button></div></div>
+             <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-purple-500 font-bold uppercase" data-i18n="shop">REWARDS TERMINAL</h2><div class="w-8"></div></div>
+             <div class="tech-panel p-4 mb-6 border-l-2 border-purple-500"><div class="flex justify-between items-center"><span class="text-gray-400 text-xs uppercase" data-i18n="credits">DATA CHIPS</span><span class="text-xl font-mono font-bold text-yellow-400" id="marketCredits">0</span></div></div>
+             
+             <!-- Market Content -->
+             <div id="market-content" class="space-y-6">
+                <!-- Flair Shop -->
+                <div>
+                    <h3 class="text-xs text-pink-500 font-bold uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="flair_assets">ARCHETYPE FLAIR ASSETS</h3>
+                    <div id="market-flair-list" class="space-y-3"></div>
+                </div>
+                <!-- Equipment Shop -->
+                <div>
+                    <h3 class="text-xs text-purple-500 font-bold uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="cosmetic_equipment">COSMETIC EQUIPMENT</h3>
+                    <div id="market-equipment-list" class="space-y-3"></div>
+                </div>
+             </div>
+             
+             <div class="mt-8 border-t border-gray-800 pt-4"><h4 class="text-[10px] text-gray-500 uppercase mb-2" data-i18n="custom_reward">Custom Reward</h4><div class="flex gap-2"><input type="text" id="newRewardName" placeholder="ASSET ID" class="flex-1 bg-gray-900 border border-gray-700 text-xs p-3 text-white font-mono" data-i18n-placeholder="item_name"><input type="number" id="newRewardCost" placeholder="Cost" class="w-20 bg-gray-900 border border-gray-700 text-xs p-3 text-white font-mono" data-i18n-placeholder="cost"><button onclick="addCustomReward()" class="bg-gray-800 text-white px-2"><i class="fa-solid fa-plus"></i></button></div></div>
         </div>
 
         <div id="view-history" class="page-view hidden-page h-full w-full overflow-y-auto p-4 pb-20">
-            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-green-500 font-bold uppercase" data-i18n="log">Logs</h2><div class="w-8"></div></div>
+            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-green-500 font-bold uppercase" data-i18n="log">DATA LOGS</h2><div class="w-8"></div></div>
             <div id="history-list" class="space-y-2 font-mono text-xs"></div>
         </div>
 
     </main>
+    
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="fixed inset-0 bg-black/95 backdrop-blur z-[180] hidden flex items-center justify-center p-4">
+        <div class="tech-panel w-full max-w-sm clip-tech border-pink-500/50">
+            <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-pink-900/10">
+                <h3 class="text-pink-400 font-mono uppercase text-lg" id="authTitle">SYSTEM LOGIN</h3>
+                <button onclick="closeLoginModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p id="authMessage" class="text-xs text-gray-400 font-mono mb-4 text-center"></p>
+                <input type="email" id="authEmail" placeholder="Access Email" class="w-full bg-black border border-gray-700 p-3 text-white text-sm font-mono outline-none" data-i18n-placeholder="access_email">
+                <input type="password" id="authPassword" placeholder="Decryption Key (Password)" class="w-full bg-black border border-gray-700 p-3 text-white text-sm font-mono outline-none" data-i18n-placeholder="decryption_key">
+                <button onclick="submitAuth()" id="authSubmitBtn" class="w-full py-3 bg-pink-700 hover:bg-pink-600 text-white font-bold uppercase tracking-widest text-sm clip-tech-sm btn-glitch">SUBMIT</button>
+                <div class="text-center">
+                    <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-xs text-gray-500 hover:text-cyan-400 font-mono" data-i18n="auth_toggle_login">Need Access? Register New User.</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRMATION MODAL (FIX for confirm()) -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/90 backdrop-blur z-[170] hidden flex items-center justify-center p-4">
+        <div class="tech-panel w-full max-w-xs clip-tech border-red-500/50">
+            <div class="p-4 bg-red-900/10 border-b border-red-800">
+                <h3 id="confirmTitle" class="text-red-400 font-mono uppercase text-lg" data-i18n="confirm_action_title">CONFIRM ACTION</h3>
+            </div>
+            <div class="p-6">
+                <p id="confirmMessage" class="text-sm text-gray-300 mb-6"></p>
+                <div class="flex gap-3">
+                    <button onclick="confirmCallback(false)" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white font-bold uppercase text-xs clip-tech-sm btn-glitch" data-i18n="cancel">CANCEL</button>
+                    <button id="confirmBtn" onclick="confirmCallback(true)" class="flex-1 py-2 bg-red-700 hover:bg-red-600 text-white font-bold uppercase text-xs clip-tech-sm btn-glitch" data-i18n="confirm">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- GENERATOR MODAL -->
     <div id="generatorModal" class="fixed inset-0 bg-black/90 backdrop-blur z-[150] hidden flex items-center justify-center p-4">
@@ -439,13 +553,13 @@
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="generateProtocol('Home')" class="tech-panel p-4 hover:border-cyan-500 btn-glitch transition-colors">
                         <i class="fa-solid fa-house-laptop text-2xl text-cyan-500 mb-2"></i>
-                        <div class="font-bold text-white" data-i18n="home">HOME</div>
-                        <div class="text-[9px] text-gray-500">BODYWEIGHT / DUMBBELL</div>
+                        <div class="font-bold text-white" data-i18n="home">HQ (HOME)</div>
+                        <div class="text-[9px] text-gray-500" data-i18n="home_desc">BODYWEIGHT / DUMBBELL</div>
                     </button>
                     <button onclick="generateProtocol('Gym')" class="tech-panel p-4 hover:border-pink-500 btn-glitch transition-colors">
                         <i class="fa-solid fa-dumbbell text-2xl text-pink-500 mb-2"></i>
-                        <div class="font-bold text-white" data-i18n="gym">GYM</div>
-                        <div class="text-[9px] text-gray-500">MACHINES / BARBELL</div>
+                        <div class="font-bold text-white" data-i18n="gym">GYM SIM</div>
+                        <div class="text-[9px] text-gray-500" data-i18n="gym_desc">MACHINES / BARBELL</div>
                     </button>
                 </div>
             </div>
@@ -458,8 +572,8 @@
             <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-cyan-900/10"><h3 class="text-cyan-400 font-mono uppercase text-lg" id="modalTitle">LOG DATA</h3><button onclick="closeInputModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="p-5 space-y-4">
                 <div id="modalFields"></div>
-                <div class="grid grid-cols-2 gap-2"><div class="bg-gray-900 border border-gray-800 p-2 text-center"><div class="text-[9px] text-gray-500 uppercase">XP EST</div><div class="text-cyan-400 font-mono text-lg" id="xpPreview">0</div></div><div class="bg-gray-900 border border-gray-800 p-2 text-center"><div class="text-[9px] text-gray-500 uppercase">CREDITS</div><div class="text-yellow-400 font-mono text-lg" id="goldPreview">0</div></div></div>
-                <button onclick="submitManualLog()" class="w-full py-3 bg-cyan-700 hover:bg-cyan-600 text-white font-bold uppercase tracking-widest text-sm clip-tech-sm">TRANSMIT DATA</button>
+                <div class="grid grid-cols-2 gap-2"><div class="bg-gray-900 border border-gray-800 p-2 text-center"><div class="text-[9px] text-gray-500 uppercase" data-i18n="xp_est">XP EST</div><div class="text-cyan-400 font-mono text-lg" id="xpPreview">0</div></div><div class="bg-gray-900 border border-gray-800 p-2 text-center"><div class="text-[9px] text-gray-500 uppercase" data-i18n="credits">DATA CHIPS</div><div class="text-yellow-400 font-mono text-lg" id="goldPreview">0</div></div></div>
+                <button onclick="submitManualLog()" class="w-full py-3 bg-cyan-700 hover:bg-cyan-600 text-white font-bold uppercase tracking-widest text-sm clip-tech-sm btn-glitch" data-i18n="transmit_data">TRANSMIT DATA</button>
             </div>
         </div>
     </div>
@@ -467,13 +581,18 @@
     <!-- PRESET CREATOR MODAL -->
     <div id="createPresetModal" class="fixed inset-0 bg-black/90 backdrop-blur z-[150] hidden flex items-center justify-center p-4">
         <div class="tech-panel w-full max-w-sm clip-tech border-purple-500/50">
-            <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-purple-900/10"><h3 class="text-purple-400 font-mono uppercase text-lg">NEW PROTOCOL</h3><button onclick="closePresetModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-purple-900/10"><h3 class="text-purple-400 font-mono uppercase text-lg" data-i18n="new_protocol">NEW MISSION FILE</h3><button onclick="closePresetModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="p-4 space-y-3">
-                <input type="text" id="cpName" placeholder="Protocol Name" class="w-full bg-black border border-gray-700 p-2 text-white text-sm font-mono outline-none">
-                <div class="text-xs text-gray-500 uppercase mt-2">Exercises</div>
+                <input type="text" id="cpName" placeholder="Protocol Name" class="w-full bg-black border border-gray-700 p-2 text-white text-sm font-mono outline-none" data-i18n-placeholder="protocol_name">
+                <div class="text-xs text-gray-500 uppercase mt-2" data-i18n="exercises">Exercises</div>
                 <div id="cpExerciseList" class="max-h-32 overflow-y-auto space-y-1 bg-gray-900/50 p-2 border border-gray-800"></div>
-                <div class="flex gap-2"><select id="cpExSelect" class="flex-1 bg-black border border-gray-700 text-white text-xs p-2 font-mono"></select><input type="number" id="cpSets" placeholder="Sets" class="w-12 bg-black border border-gray-700 text-white text-xs p-2 text-center"><input type="number" id="cpReps" placeholder="Reps" class="w-12 bg-black border border-gray-700 text-white text-xs p-2 text-center"><button onclick="addExToPreset()" class="bg-gray-800 text-white px-2"><i class="fa-solid fa-plus"></i></button></div>
-                <button onclick="saveCustomPreset()" class="w-full py-3 bg-purple-700 hover:bg-purple-600 text-white font-bold uppercase tracking-widest text-sm clip-tech-sm mt-2">SAVE SYSTEM</button>
+                <div class="flex gap-2">
+                    <select id="cpExSelect" class="flex-1 bg-black border border-gray-700 text-white text-xs p-2 font-mono"></select>
+                    <input type="number" id="cpSets" data-i18n-placeholder="sets" placeholder="Sets" class="w-12 bg-black border border-gray-700 text-white text-xs p-2 text-center">
+                    <input type="number" id="cpReps" data-i18n-placeholder="reps" placeholder="Reps" class="w-12 bg-black border border-gray-700 text-white text-xs p-2 text-center">
+                    <button onclick="addExToPreset()" class="bg-gray-800 text-white px-2"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <button onclick="saveCustomPreset()" class="w-full py-3 bg-purple-700 hover:bg-purple-600 text-white font-bold uppercase tracking-widest text-sm clip-tech-sm btn-glitch mt-2" data-i18n="save_system">SAVE SYSTEM</button>
             </div>
         </div>
     </div>
@@ -488,54 +607,226 @@
             <div id="smCat" class="text-[10px] text-cyan-400 uppercase tracking-widest mb-4">Category</div>
             <p id="smDesc" class="text-xs text-gray-400 mb-6 font-mono leading-relaxed">Description goes here.</p>
             <div class="bg-gray-900/50 p-3 rounded border border-gray-800 mb-6 text-left">
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-2">Requirements</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-2" data-i18n="requirements">Requirements</div>
                 <ul id="smReqs" class="space-y-1 text-xs font-mono text-gray-300"></ul>
             </div>
-            <button id="smUnlockBtn" onclick="unlockSelectedSkill()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50">Awaken Ability</button>
-            <button onclick="closeSkillModal()" class="mt-3 text-[10px] text-gray-500 hover:text-white uppercase tracking-widest">Close</button>
+            <button id="smUnlockBtn" onclick="unlockSelectedSkill()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 btn-glitch" data-i18n="awaken_ability">Awaken Ability</button>
+            <button onclick="closeSkillModal()" class="mt-3 text-[10px] text-gray-500 hover:text-white uppercase tracking-widest" data-i18n="close">Close</button>
         </div>
     </div>
+    
+    <!-- SESSION SUMMARY MODAL (NEW) -->
+    <div id="sessionSummaryModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[190] hidden flex items-center justify-center p-4">
+        <div class="tech-panel w-full max-w-sm clip-tech border-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-green-900/10">
+                <h3 id="summaryTitle" class="text-green-400 font-mono uppercase text-lg" data-i18n="session_complete">MISSION SUCCESS</h3>
+                <i class="fa-solid fa-circle-check text-2xl text-green-500"></i>
+            </div>
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="text-[10px] text-gray-500 uppercase" data-i18n="protocol">PROTOCOL</div>
+                    <h2 id="summaryRoutine" class="text-2xl font-black italic text-white mb-2">ROUTINE NAME</h2>
+                    <div class="text-xs text-cyan-400 font-mono">
+                        <i class="fa-solid fa-clock mr-1"></i> <span id="summaryDuration">0 min</span>
+                    </div>
+                </div>
 
+                <h4 class="text-xs text-gray-500 uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="rewards_earned">REWARDS EARNED</h4>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-gray-900 border border-cyan-500/50 p-3 text-center rounded">
+                        <div class="text-[9px] text-gray-400 uppercase">XP</div>
+                        <div id="summaryXP" class="text-2xl font-mono font-bold text-cyan-400">+0</div>
+                    </div>
+                    <div class="bg-gray-900 border border-yellow-500/50 p-3 text-center rounded">
+                        <div class="text-[9px] text-gray-400 uppercase" data-i18n="credits">DATA CHIPS</div>
+                        <div id="summaryGold" class="text-2xl font-mono font-bold text-yellow-400">+0</div>
+                    </div>
+                </div>
+
+                <h4 class="text-xs text-gray-500 uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="new_rewards">New Rewards</h4>
+                <div id="summaryAchievements" class="space-y-2 mb-8">
+                    <!-- Achievements listed here -->
+                </div>
+
+                <button onclick="closeSessionSummary()" class="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold uppercase tracking-widest text-sm clip-tech-sm btn-glitch" data-i18n="summary_acknowledge">ACKNOWLEDGE</button>
+            </div>
+        </div>
+        
     <!-- TOAST & LEVEL UP -->
-    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 bg-black border border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.3)] p-4 z-[200] transition-all duration-300 translate-y-[-150%] flex items-center gap-3 min-w-[300px] clip-tech-sm"><i class="fa-solid fa-circle-info text-cyan-500"></i><div><div class="text-[10px] text-cyan-500 uppercase font-bold tracking-widest">System Alert</div><div id="toastMsg" class="text-white text-xs font-mono">Message content</div></div></div>
-    <div id="levelUpModal" class="fixed inset-0 bg-black/95 z-[200] hidden flex flex-col items-center justify-center p-6 text-center"><div class="text-cyan-500 text-6xl mb-4 animate-bounce"><i class="fa-solid fa-arrow-up-from-bracket"></i></div><h1 class="text-4xl font-black text-white italic uppercase mb-2 tracking-widest text-glow">Level Up!</h1><div class="text-2xl font-bold text-white mb-8 border-y border-gray-800 py-4 w-full">LEVEL <span id="oldLvl" class="text-gray-500">1</span> <i class="fa-solid fa-right-long mx-2 text-cyan-500"></i> <span id="newLvl" class="text-cyan-400">2</span></div><button onclick="closeLevelModal()" class="bg-cyan-600 text-white py-3 px-8 uppercase font-bold tracking-widest clip-tech btn-glitch">ACKNOWLEDGE</button></div>
+    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 bg-black border border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.3)] p-4 z-[200] transition-all duration-300 translate-y-[-150%] flex items-center gap-3 min-w-[300px] clip-tech-sm"><i class="fa-solid fa-circle-info text-cyan-500"></i><div><div class="text-[10px] text-cyan-500 uppercase font-bold tracking-widest" data-i18n="system_alert">GLITCH ALERT</div><div id="toastMsg" class="text-white text-xs font-mono">Message content</div></div></div>
+    <div id="levelUpModal" class="fixed inset-0 bg-black/95 z-[200] hidden flex flex-col items-center justify-center p-6 text-center"><div class="text-cyan-500 text-6xl mb-4 animate-bounce"><i class="fa-solid fa-arrow-up-from-bracket"></i></div><h1 class="text-4xl font-black text-white italic uppercase mb-2 tracking-widest text-glow" data-i18n="level_up">RANK PROMOTED!</h1><div class="text-2xl font-bold text-white mb-8 border-y border-gray-800 py-4 w-full" data-i18n="level_transition">LEVEL <span id="oldLvl" class="text-gray-500">1</span> <i class="fa-solid fa-right-long mx-2 text-cyan-500"></i> <span id="newLvl" class="text-cyan-400">2</span></div><button onclick="closeLevelModal()" class="bg-cyan-600 text-white py-3 px-8 uppercase font-bold tracking-widest clip-tech btn-glitch" data-i18n="acknowledge">ACKNOWLEDGE</button></div>
 
     <script>
-        // --- TRANSLATIONS & CONSTANTS ---
+        // --- FIREBASE SETUP ---
+        // Global variables for Firebase instances
+        let app, db, auth, userId, appIdGlobal; // Added appIdGlobal
+        let isAuthReady = false;
+        let resolveConfirm;
+        let isLoginMode = true; // State for Auth Modal (true = Login, false = Register)
+
+        // Note: Global Firebase functions are attached to window.firebase by the <script type="module"> block
+        
+        // --- USER CONFIGURATION (FOR STANDALONE USE) ---
+        // If running this file directly (e.g., on GitHub Pages), you MUST paste your Firebase config here.
+        // NOTE: For Canvas environment, leave this object empty, as the config is automatically injected.
+        const FIREBASE_STANDALONE_CONFIG = {
+            // NOTE: I've included the values from your context for demonstration, but if you are 
+            // running standalone, you must ensure these are correct and Email/Password Sign-in is enabled
+            // in your Firebase Console -> Authentication tab.
+            apiKey: "AIzaSyCLZhRzIucOad_OaU0oP7Cs7jz8S3iHZ20", 
+            authDomain: "gymapp-ec4f2.firebaseapp.com",
+            projectId: "gymapp-ec4f2", 
+            storageBucket: "gymapp-ec4f2.firebasestorage.app",
+            messagingSenderId: "328863201584",
+            appId: "1:328863201584:web:484fdc8b8525fcdf99b0f5", 
+        };
+
+
+        // --- TRANSLATIONS & CONSTANTS (UPDATED FOR VIDEOGAMY THEME) ---
         const TRANSLATIONS = {
             en: {
-                credits: "CREDITS", daily_protocol: "Daily Protocol", streak: "Streak",
-                engage: "ENGAGE", engage_desc: "START PROTOCOL / LOG DATA",
-                stats: "Stats", physique: "ANALYTICS",
-                missions: "Missions", targets: "TARGETS",
-                abilities: "Abilities", skill_tree: "SKILL TREE",
-                trophies: "Trophies", awards: "AWARDS",
-                log: "Log", history: "HISTORY",
-                shop: "Shop", rewards: "REWARDS",
-                command_center: "Command Center", ai_gen: "AI Protocol Generator",
-                generate: "Generate Protocol", gen_desc: "CUSTOMIZED BATTLE ROUTINE (HOME/GYM)",
-                quick_log: "Quick Log", strength: "Strength", cardio: "Cardio",
-                saved_protocols: "Saved Protocols", create_new: "Create New",
-                abort: "Abort", next: "Next", profile: "System Analytics",
+                credits: "DATA CHIPS", daily_protocol: "DAILY CODE EXECUTION", streak: "Streak",
+                engage: "START MISSION", engage_desc: "INITIATE PROTOCOL / LOG DATA",
+                stats: "Data Matrix", physique: "SYSTEM ANALYTICS",
+                missions: "MISSION LOG", targets: "OBJECTIVES", 
+                abilities: "CORE ABILITIES", skill_tree: "TRAINING ALGORITHM",
+                trophies: "REWARD LOGS", awards: "SYSTEM REWARDS",
+                log: "DATA LOGS", history: "SESSION HISTORY",
+                shop: "REWARDS TERMINAL", rewards: "COSMETIC ASSETS",
+                command_center: "MISSION CONTROL", ai_gen: "SYSTEM GENERATOR",
+                generate: "Generate Mission File", gen_desc: "GENERATED ROUTINE (HQ/GYM SIM)",
+                quick_log: "MANUAL DATA INPUT", strength: "Strength", cardio: "Cardio",
+                vr_training: "SIMULATION LOG", 
+                saved_protocols: "SAVED MISSION FILES", create_new: "Create New",
+                abort: "Abort", next: "Next", finish: "Mission Complete",
+                profile: "System Analytics",
                 params: "PROTOCOL PARAMETERS", select_env: "SELECT ENVIRONMENT",
-                home: "HOME", gym: "GYM"
+                home: "HQ (HOME)", gym: "GYM SIM",
+                rhythm: "Rhythm", combat: "Combat", 
+                good_morning: "GOOD MORNING", good_afternoon: "GOOD AFTERNOON", good_evening: "GOOD EVENING",
+                sign_out: "LOGOUT", sign_in: "ACCESS KEY", protocol: "PROTOCOL", recovering: "RECOVERING",
+                identity: "IDENTITY", archetype: "ARCHETYPE", level_short: "LVL", stat_str: "STRENGTH", 
+                stat_agi: "AGILITY", stat_end: "ENDURANCE", xp_tracker: "XP:", 
+                muscle_matrix: "MUSCLE MATRIX", activity_volume: "7-DAY ACTIVITY VOLUME",
+                orm_title: "THEORETICAL 1RM ESTIMATOR", estimated_max: "ESTIMATED MAX",
+                orm_disclaimer: "*Calculated using Epley Formula based on log history.",
+                factory_reset: "FACTORY RESET SYSTEM", custom_reward: "Custom Reward",
+                item_name: "ASSET ID", cost: "Cost", confirm_action_title: "CONFIRM ACTION",
+                cancel: "CANCEL", confirm: "CONFIRM", access_email: "Access Email", decryption_key: "Decryption Key (Password)",
+                auth_toggle_login: "Need Access? Register New User.",
+                home_desc: "BODYWEIGHT / DUMBBELL", gym_desc: "MACHINES / BARBELL",
+                xp_est: "XP EST", transmit_data: "TRANSMIT DATA", target: "Target",
+                new_protocol: "NEW MISSION FILE", protocol_name: "Protocol Name", exercises: "Exercises",
+                sets: "Sets", reps: "Reps", time: "Time", weight: "Weight",
+                save_system: "SAVE SYSTEM", requirements: "Requirements", awaken_ability: "Awaken Ability",
+                close: "CLOSE", system_alert: "GLITCH ALERT", level_up: "RANK PROMOTED!", 
+                level_transition: "LEVEL", acknowledge: "ACKNOWLEDGE",
+                session_complete: "MISSION SUCCESS", rewards_earned: "REWARDS EARNED",
+                new_rewards: "NEW REWARDS", summary_acknowledge: "RETURN TO HUB",
+                
+                // Inventory & Shop Additions
+                inventory: "Inventory", assets: "ASSETS",
+                flair_assets: "ARCHETYPE FLAIR ASSETS",
+                cosmetic_equipment: "COSMETIC EQUIPMENT",
+                equipped: "EQUIPPED", equip: "EQUIP", owned: "OWNED",
+                
+                // Functional keys
+                complete_sets_prompt: "Complete all sets first.",
+                unlocked: "UNLOCKED",
+                unlock: "UNLOCK",
+                need_credits: "NEED",
+                locked: "LOCKED",
+                invalid_protocol: "Invalid Protocol Name or No Exercises Added",
+                custom: "Custom",
+                protocol_saved: "Protocol Saved",
+                quest_complete: "Quest Complete",
+                factory_reset_title: "FACTORY RESET WARNING",
+                factory_reset_confirm: "DANGER: All progress, stats, and logs will be permanently erased. Proceed?",
+                system_reset_initiated: "System Reset Initiated.",
+                confirm_purchase: "Confirm purchase of",
+                for_credits: "for",
+                bought: "Acquired",
+                insufficient_credits: "Insufficient Data Chips",
+                no_data: "NO DATA",
+                no_new_rewards: "No new trophies earned in this session.",
+                new_user_registration: "NEW USER REGISTRATION",
+                access_system: "ACCESS SYSTEM",
+                register_user: "REGISTER USER",
+                auth_toggle_register: "Already Registered? Sign In.",
+                delete_protocol_confirm: "Are you sure you want to permanently delete this custom protocol?",
+                protocol_deleted: "Protocol deleted."
             },
             pt: {
                 credits: "CRÉDITOS", daily_protocol: "Protocolo Diário", streak: "Sequência",
                 engage: "INICIAR", engage_desc: "INICIAR TREINO / REGISTRO",
                 stats: "Status", physique: "ANÁLISE",
-                missions: "Missões", targets: "ALVOS",
+                missions: "Missões", targets: "ALVOS", 
                 abilities: "Habilidades", skill_tree: "ÁRVORE DE SKILLS",
                 trophies: "Troféus", awards: "PRÊMIOS",
                 log: "Registro", history: "HISTÓRICO",
                 shop: "Loja", rewards: "RECOMPENSAS",
                 command_center: "Centro de Comando", ai_gen: "Gerador IA",
-                generate: "Gerar Protocolo", gen_desc: "ROTINA DE BATALHA (CASA/ACADEMIA)",
+                generate: "Gerar Protocolo", gen_desc: "ROTINA GERADA PELO SISTEMA (CASA/ACADEMIA)",
                 quick_log: "Registro Rápido", strength: "Força", cardio: "Cardio",
+                vr_training: "Treinamento VR", 
                 saved_protocols: "Protocolos Salvos", create_new: "Criar Novo",
-                abort: "Abortar", next: "Próximo", profile: "Análise de Sistema",
+                abort: "Abortar", next: "Próximo", finish: "Concluir",
+                profile: "Análise de Sistema",
                 params: "PARÂMETROS", select_env: "SELECIONAR AMBIENTE",
-                home: "CASA", gym: "ACADEMIA"
+                home: "CASA", gym: "ACADEMIA",
+                rhythm: "Ritmo", combat: "Combate", 
+                good_morning: "BOM DIA", good_afternoon: "BOA TARDE", good_evening: "BOA NOITE",
+                sign_out: "SAIR", sign_in: "ENTRAR", protocol: "PROTOCOLO", recovering: "RECUPERANDO",
+                identity: "IDENTIDADE", archetype: "ARQUÉTIPO", level_short: "NÍVEL", stat_str: "FORÇA", 
+                stat_agi: "AGILIDADE", stat_end: "RESISTÊNCIA", xp_tracker: "EXP:", 
+                muscle_matrix: "MATRIZ MUSCULAR", activity_volume: "VOLUME DE ATIVIDADE DE 7 DIAS",
+                orm_title: "ESTIMADOR TEÓRICO DE 1RM", estimated_max: "MÁXIMO ESTIMADO",
+                orm_disclaimer: "*Calculado usando a Fórmula de Epley com base no histórico de registro.",
+                factory_reset: "RESET DE FÁBRICA DO SISTEMA", custom_reward: "Recompensa Personalizada",
+                item_name: "Nome do Item", cost: "Custo", confirm_action_title: "CONFIRMAR AÇÃO",
+                cancel: "CANCELAR", confirm: "CONFIRMAR", access_email: "Email de Acesso", decryption_key: "Chave de Decifração (Senha)",
+                auth_toggle_login: "Precisa de Acesso? Registre Novo Usuário.",
+                home_desc: "PESO CORPORAL / HALTERES", gym_desc: "MÁQUINAS / BARRA",
+                xp_est: "EST XP", transmit_data: "TRANSMITIR DADOS", target: "Alvo",
+                new_protocol: "NOVO PROTOCOLO", protocol_name: "Nome do Protocolo", exercises: "Exercícios",
+                sets: "Séries", reps: "Repetições", time: "Tempo", weight: "Peso",
+                save_system: "SALVAR SISTEMA", requirements: "Requisitos", awaken_ability: "Despertar Habilidade",
+                close: "FECHAR", system_alert: "Alerta do Sistema", level_up: "SUBIU DE NÍVEL!", 
+                level_transition: "NÍVEL", acknowledge: "RECONHECER",
+                session_complete: "SESSÃO COMPLETA", rewards_earned: "RECOMPENSAS GANHAS",
+                new_rewards: "NOVAS RECOMPENSAS", summary_acknowledge: "RECONHECER E VOLTAR AO HUB",
+
+                // Inventory & Shop Additions
+                inventory: "Inventário", assets: "ASSETS",
+                flair_assets: "ASSETS DE FLAIR DE ARQUÉTIPO",
+                cosmetic_equipment: "EQUIPAMENTO COSMÉTICO",
+                equipped: "EQUIPADO", equip: "EQUIPAR", owned: "ADQUIRIDO",
+                
+                // Functional keys
+                complete_sets_prompt: "Complete todas as séries primeiro.",
+                unlocked: "DESBLOQUEADO",
+                unlock: "DESBLOQUEAR",
+                need_credits: "NECESSITA",
+                locked: "BLOQUEADO",
+                invalid_protocol: "Nome do Protocolo Inválido ou Nenhum Exercício Adicionado",
+                custom: "Personalizado",
+                protocol_saved: "Protocolo Salvo",
+                quest_complete: "Missão Completa",
+                factory_reset_title: "AVISO DE RESET DE FÁBRICA",
+                factory_reset_confirm: "PERIGO: Todo o progresso, estatísticas e registros serão permanentemente apagados. Continuar?",
+                system_reset_initiated: "Reset do Sistema Iniciado.",
+                confirm_purchase: "Confirmar compra de",
+                for_credits: "por",
+                bought: "Comprou",
+                insufficient_credits: "Créditos Insuficientes",
+                no_data: "SEM DADOS",
+                no_new_rewards: "Nenhum novo troféu ganho nesta sessão.",
+                new_user_registration: "REGISTRO DE NOVO USUÁRIO",
+                access_system: "ACESSAR SISTEMA",
+                register_user: "REGISTRAR USUÁRIO",
+                auth_toggle_register: "Já Registrado? Entrar.",
+                delete_protocol_confirm: "Tem certeza de que deseja excluir permanentemente este protocolo personalizado?",
+                protocol_deleted: "Protocolo excluído."
             }
         };
 
@@ -560,7 +851,10 @@
             { name: "Bench Press", type: "Gym", muscle: "Chest", cat: "Push" },
             { name: "Deadlift", type: "Gym", muscle: "Back", cat: "Pull" },
             { name: "Overhead Press", type: "Gym", muscle: "Shoulders", cat: "Push" },
-            { name: "Leg Press", type: "Gym", muscle: "Legs", cat: "Legs" }
+            { name: "Leg Press", type: "Gym", muscle: "Legs", cat: "Legs" },
+            // NEW VR Exercises
+            { name: "Beat Saber", type: "VR", muscle: "Cardio", cat: "Cardio", isTime: true },
+            { name: "Thrill of the Fight", type: "VR", muscle: "Arms", cat: "Push", isTime: true }
         ];
 
         const ACHIEVEMENTS = [
@@ -577,54 +871,49 @@
                 { name: "Plank", sets: 3, time: 60, type: "Time Based" }
             ]}
         };
+        
+        // --- NEW SHOP ITEMS ---
+        const SHOP_ITEMS = {
+            flairs: [
+                { id: 'juggernaut', name: 'Juggernaut Seal', cost: 1000, archetype: 'JUGGERNAUT', icon: 'fa-fist-raised' },
+                { id: 'shadow_dancer', name: 'Shadow Cloak', cost: 1000, archetype: 'SHADOW DANCER', icon: 'fa-shoe-prints' },
+                { id: 'ironclad', name: 'Ironclad Frame', cost: 1000, archetype: 'IRONCLAD', icon: 'fa-shield-alt' },
+                { id: 'novice', name: 'Rookie Badge', cost: 0, archetype: 'NOVICE', icon: 'fa-seedling' }
+            ],
+            equipment: [
+                { id: 'lightsaber', name: 'Data Saber (Cosmetic)', cost: 500, desc: 'A holographic sword for flexing.', icon: 'fa-wand-magic-sparkles' },
+                { id: 'cat_ears', name: 'Tactical Cat Ears', cost: 800, desc: 'Maximum Stealth. Zero Effect.', icon: 'fa-cat' }
+            ]
+        };
 
-        // --- NEW DATA STRUCTURE ---
+        // --- CORE DATABASE STATE ---
         const DEFAULT_STATE = {
             name: "Hunter", level: 1, xp: 0, xpNext: 500, gold: 0, streak: 0, lastLogin: null,
             lang: 'en',
-            // Updated Stats Structure
+            unit: 'kg', // QOL: Default unit is kg
             stats: { 
                 str: 10, strXp: 0, 
                 agi: 10, agiXp: 0, 
                 end: 10, endXp: 0 
             },
+            initialSkillsApplied: false, 
             mastery: { Chest: 1, Back: 1, Legs: 1, Arms: 1, Core: 1 },
             quests: [], history: [], customPresets: {},
             skills: ['push1', 'pull1', 'core1', 'leg1', 'run1'],
             achievements: [],
             rewards: [{ id: 1, name: "Cheat Meal", cost: 500 }, { id: 2, name: "Rest Day", cost: 300 }],
             totalReps: 0,
-            shadowRecords: {} // Stores max weights for 1RM calc
+            shadowRecords: {},
+            // NEW INVENTORY STATE
+            inventory: {
+                equippedFlair: 'novice', // Default flair ID
+                equippedEquipment: null, // Currently equipped equipment ID
+                ownedFlairs: ['novice'],
+                ownedEquipment: []
+            } 
         };
-
-        let db = JSON.parse(localStorage.getItem('glitchGymDB_v3.2')) || JSON.parse(JSON.stringify(DEFAULT_STATE));
         
-        // --- MIGRATION LOGIC (V3 to V3.2) ---
-        let oldV3 = localStorage.getItem('glitchGymDB_v3');
-        if (oldV3 && !db.migratedV3) {
-            try {
-                let old = JSON.parse(oldV3);
-                db.level = old.level || 1;
-                db.xp = old.xp || 0;
-                db.gold = old.gold || 0;
-                db.streak = old.streak || 0;
-                db.history = old.history || [];
-                db.achievements = old.achievements || [];
-                db.skills = old.skills || [];
-                // Migrate simple stats to new structure if needed
-                if(old.stats) {
-                    db.stats.str = old.stats.str || 10;
-                    db.stats.agi = old.stats.agi || 10;
-                    db.stats.end = old.stats.end || 10;
-                }
-                db.migratedV3 = true;
-                localStorage.setItem('glitchGymDB_v3.2', JSON.stringify(db));
-            } catch(e) { console.error("Migration Error", e); }
-        }
-
-        // Safety checks for new fields
-        if(db.stats.strXp === undefined) { db.stats.strXp = 0; db.stats.agiXp = 0; db.stats.endXp = 0; }
-        if(!db.shadowRecords) db.shadowRecords = {};
+        let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
         let activeSession = null;
         let restInterval = null;
@@ -634,11 +923,296 @@
         let manualLogType = '';
         let tempPresetExercises = [];
         let selectedSkillId = null;
+        let sessionRewards = { xp: 0, gold: 0, newAchievements: [], duration: 0, routine: '' }; // Global to hold session summary data
 
-        // --- INIT ---
-        window.onload = function() { runBootSequence(); };
+
+        // --- QOL: UNIT CONVERSION HELPERS ---
+        const LB_PER_KG = 2.20462;
+        function kgToLb(kg) { return kg * LB_PER_KG; }
+        function lbToKg(lb) { return lb / LB_PER_KG; }
+        function getUnitDisplay() { return appState.unit === 'kg' ? 'kg' : 'lbs'; }
+        
+        // --- FIREBASE / INIT FUNCTIONS ---
+
+        function getDBRef(appId, currentUserId) {
+            // Correct path structure: artifacts/{appId}/users/{userId}/app_data/glitch_data
+            return window.firebase.doc(db, 'artifacts', appId, 'users', currentUserId, 'app_data', 'glitch_data');
+        }
+
+        function applyInitialSkillBonuses() {
+            let modified = false;
+            // Apply initial stat bonuses for starting skills (Skill Inconsistency Fix)
+            if (!appState.initialSkillsApplied) {
+                appState.skills.forEach(skillId => {
+                    const skill = SKILL_TREE.find(s => s.id === skillId);
+                    if (skill) {
+                        if (skill.cat === 'Striker') appState.stats.str += 1;
+                        if (skill.cat === 'Assassin') appState.stats.agi += 1;
+                        if (skill.cat === 'Tank') appState.stats.end += 1;
+                        if (skill.id === 'leg1') appState.stats.agi += 1; // Squats boost Agi/Legion
+                        if (skill.id === 'run1') appState.stats.end += 1; // Runner boost End/Monarch
+                    }
+                });
+                appState.initialSkillsApplied = true;
+                modified = true;
+            }
+            return modified;
+        }
+
+        function setupFirestoreListener(appId, currentUserId) {
+            const docRef = getDBRef(appId, currentUserId);
+            
+            // LOGGING UPDATE: Explicitly log the User ID and the monitoring path
+            console.log(`[AUTH STATUS] User ID for this session: ${currentUserId}`);
+            console.log(`[FS LISTENER] Monitoring path: artifacts/${appId}/users/${currentUserId}/app_data/glitch_data`);
+            
+            window.firebase.onSnapshot(docRef, (docSnap) => {
+                let shouldSave = false;
+                let loadedState = null;
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const dataKeys = Object.keys(data);
+                    console.log(`[FS LISTENER] Document Exists. Data structure keys: ${dataKeys.join(', ')}`);
+                    
+                    if (data && data.data) {
+                        try {
+                            loadedState = JSON.parse(data.data);
+                            console.log("Data successfully parsed from Firestore.");
+                        } catch (e) {
+                            console.error("Failed to parse Firestore data (JSON error). Reverting to default state:", e);
+                            loadedState = JSON.parse(JSON.stringify(DEFAULT_STATE)); // Revert
+                            shouldSave = true; 
+                        }
+                    } else {
+                        console.log("[FS LISTENER] Document exists but 'data' field is missing or empty. Initializing default state.");
+                        loadedState = JSON.parse(JSON.stringify(DEFAULT_STATE)); // Revert
+                        shouldSave = true;
+                    }
+                } else {
+                    console.log("[FS LISTENER] Document does not exist. Initializing default state.");
+                    loadedState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                    shouldSave = true;
+                }
+                
+                // --- APPLY LOADED STATE & SANITIZE ---
+                appState = loadedState;
+                
+                // Sanity checks (in case old data is missing fields)
+                if(appState.stats.strXp === undefined) { appState.stats.strXp = 0; appState.stats.agiXp = 0; appState.stats.endXp = 0; shouldSave = true; }
+                if(!appState.shadowRecords) { appState.shadowRecords = {}; shouldSave = true; }
+                if(appState.initialSkillsApplied === undefined) { appState.initialSkillsApplied = false; shouldSave = true; }
+                if(appState.unit === undefined) { appState.unit = 'kg'; shouldSave = true; } 
+                // NEW: Ensure inventory structure exists
+                if(!appState.inventory) { appState.inventory = DEFAULT_STATE.inventory; shouldSave = true; }
+                if(!appState.inventory.ownedFlairs) { appState.inventory.ownedFlairs = DEFAULT_STATE.inventory.ownedFlairs; shouldSave = true; }
+
+
+                // Apply initial skill bonuses only on a truly fresh start (must run before checkDailyLogin)
+                if (applyInitialSkillBonuses()) { shouldSave = true; }
+                
+                // Check daily login synchronously, and update the save flag.
+                if (checkDailyLogin()) { shouldSave = true; }
+
+                startAppRender();
+
+                // If any synchronous operation (init, corruption revert, daily check) changed the state, save it asynchronously.
+                if (shouldSave) {
+                    console.log("[FS LISTENER] State was modified during load/init. Triggering background save.");
+                    saveDB(); 
+                }
+            }, (error) => {
+                console.error("Error setting up Firestore listener:", error);
+                showToast("Error loading data. Check console.");
+            });
+        }
+        
+        function getUserIdDisplay(id) {
+            return id.substring(0, 8).toUpperCase();
+        }
+
+        function initApp() {
+            // Determine the configuration source
+            let firebaseConfig = {};
+            let appId = 'default-app-id';
+            let isCanvas = false;
+
+            // 1. Determine Config (Canvas vs Standalone)
+            // FIX: Prioritize Canvas-injected config over pre-populated standalone config.
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                // Canvas environment mode: use injected config
+                firebaseConfig = JSON.parse(__firebase_config);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                isCanvas = true;
+            } else if (Object.keys(FIREBASE_STANDALONE_CONFIG).some(key => FIREBASE_STANDALONE_CONFIG[key])) {
+                // Standalone mode: use user-provided config (Fallback only if not Canvas)
+                firebaseConfig = FIREBASE_STANDALONE_CONFIG;
+                // FIX: Use a simple, fixed ID for standalone version
+                appId = 'glitch-techs-v3-standalone'; 
+            }
+            
+            // NEW: Set the consistent global app ID.
+            appIdGlobal = appId;
+            
+            // 2. Check if Config is Valid AND Firebase Module Functions are loaded
+            const firebaseFunctions = window.firebase;
+            if (Object.keys(firebaseConfig).length > 0 && firebaseFunctions && firebaseFunctions.initializeApp) {
+                
+                const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, getFirestore, onAuthStateChanged } = firebaseFunctions;
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app); 
+                
+                // 3. Authentication Handler
+                onAuthStateChanged(auth, async (user) => {
+                    if (user && user.uid && user.uid !== 'DEMO_USER_LOCAL') {
+                        // Authenticated user found (either via persistence or just signed in)
+                        userId = user.uid;
+                        console.log(`[AUTH SUCCESS] Established persistent session for UID: ${userId}`); // NEW LOG
+                        document.getElementById('headerName').innerText = getUserIdDisplay(userId);
+                        document.getElementById('headerUserId').innerText = userId;
+                        document.getElementById('signInBtn').classList.add('hidden');
+                        document.getElementById('signOutBtn').classList.remove('hidden');
+                        isAuthReady = true;
+                        
+                        // Close modal if open
+                        closeLoginModal();
+                        
+                        // Start listening for data (using the determined global ID)
+                        setupFirestoreListener(appIdGlobal, userId);
+                    } else if (isCanvas) {
+                        // Canvas environment, but not authenticated yet (use token)
+                        try {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                            // This will trigger the success path above
+                        } catch (e) {
+                            console.error("Canvas Auth failed, falling back to anonymous:", e);
+                            await signInAnonymously(auth);
+                            // This will also trigger the success path above
+                        }
+                    } else {
+                        // Standalone environment, no user found, and not Canvas. Force login/register.
+                        userId = 'DEMO_USER_LOCAL';
+                        console.warn(`[AUTH FAIL] Falling back to local Demo Mode with UID: ${userId}`); // NEW LOG
+                        document.getElementById('headerName').innerText = 'GUEST';
+                        document.getElementById('headerUserId').innerText = userId;
+                        document.getElementById('signInBtn').classList.remove('hidden');
+                        document.getElementById('signOutBtn').classList.add('hidden');
+                        isAuthReady = true;
+                        
+                        // Show login prompt and run initial render with default data
+                        showLoginModal();
+                        startAppRender(); 
+                    }
+                });
+            } else {
+                // 4. Fallback to Demo Mode (Config missing or SDK functions failed to load)
+                // This console error message is now less likely to occur due to the module import fix.
+                console.error("Firebase SDK not initialized correctly. Check config or module script loading.");
+                userId = 'DEMO_USER_LOCAL';
+                isAuthReady = true;
+                startAppRender();
+            }
+        }
+
+        function startAppRender() {
+            // FIX: History Fix - Check hash on load
+            const currentHash = window.location.hash.substring(1) || 'hub';
+            navTo(currentHash, true); 
+            
+            applyLanguage();
+            updateHeader();
+            checkAchievements(); // Initial achievement check
+            // Start listening for back/forward events
+            window.addEventListener('popstate', handlePopState);
+        }
+        
+        // --- AUTH MODAL LOGIC (New) ---
+
+        function showLoginModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('authModal').classList.add('flex');
+            toggleAuthMode(true); // Default to login mode
+        }
+
+        function closeLoginModal() {
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('authModal').classList.remove('flex');
+            document.getElementById('authMessage').innerText = ''; // Clear message
+        }
+
+        function toggleAuthMode(forceLogin = false) {
+            isLoginMode = forceLogin || !isLoginMode;
+            const T = TRANSLATIONS[appState.lang];
+            
+            document.getElementById('authTitle').innerText = isLoginMode ? 'SYSTEM LOGIN' : T.new_user_registration.toUpperCase();
+            document.getElementById('authSubmitBtn').innerText = isLoginMode ? T.access_system.toUpperCase() : T.register_user.toUpperCase();
+            document.getElementById('authToggleBtn').innerText = isLoginMode ? T.auth_toggle_login : T.auth_toggle_register;
+            document.getElementById('authMessage').innerText = ''; 
+        }
+
+        async function submitAuth() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const msgEl = document.getElementById('authMessage');
+
+            if (!email || password.length < 6) {
+                msgEl.innerText = 'Error: Email/Password must be valid (min 6 chars).';
+                return;
+            }
+
+            try {
+                if (isLoginMode) {
+                    await window.firebase.signInWithEmailAndPassword(auth, email, password);
+                    showToast('Access Granted!');
+                } else {
+                    await window.firebase.createUserWithEmailAndPassword(auth, email, password);
+                    showToast('Registration Complete! Signing In...');
+                }
+                // onAuthStateChanged handler will pick up the new user and proceed with app initialization
+            } catch (error) {
+                console.error("Auth error:", error);
+                
+                let errorMessage = error.message;
+
+                if (errorMessage.includes('auth/configuration-not-found')) {
+                    // Specific error handling for missing provider
+                    msgEl.innerHTML = '<span class="text-red-500 font-bold">FATAL ERROR: Provider Disabled.</span><br>Please ensure **Email/Password** sign-in is enabled in your Firebase Console.';
+                } else {
+                    // Simplify the Firebase error message for the user
+                    let displayMessage = errorMessage.replace(/Firebase: /, '');
+                    msgEl.innerText = `Error: ${displayMessage}`;
+                }
+            }
+        }
+
+        async function handleSignOut() {
+            try {
+                await window.firebase.signOut(auth);
+                showToast("System Logged Out.");
+                // Reload or navigate to a guest state
+                location.reload(); 
+            } catch (error) {
+                console.error("Sign out error:", error);
+                showToast("Sign Out Failed.");
+            }
+        }
+
+        // --- EVENT HANDLERS ---
+        
+        function handlePopState(event) {
+            const pageId = window.location.hash.substring(1) || 'hub';
+            // FIX: Navigation Fix - Use replace=true to prevent history loop
+            navTo(pageId, true);
+        }
+
+        window.onload = function() { 
+            runBootSequence(); 
+        };
 
         function runBootSequence() {
+            // ... (Boot sequence remains the same)
             const screen = document.getElementById('boot-screen');
             const log = document.getElementById('boot-log');
             const bar = document.getElementById('boot-bar');
@@ -659,63 +1233,24 @@
             }, 200);
         }
 
-        function initApp() {
-            checkDailyLogin();
-            applyLanguage();
-            updateHeader();
-            renderHub();
-            checkAchievements();
-        }
-
-        // --- LANGUAGE & TRANSLATION ---
-        function toggleLanguage() {
-            db.lang = db.lang === 'en' ? 'pt' : 'en';
-            saveDB();
-            applyLanguage();
-        }
-
-        function applyLanguage() {
-            const t = TRANSLATIONS[db.lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.innerText = t[key];
-            });
-            document.getElementById('langDisplay').innerText = db.lang.toUpperCase();
-            renderHub(); 
-            if(!document.getElementById('view-skills').classList.contains('hidden-page')) renderSkills();
-            if(!document.getElementById('view-profile').classList.contains('hidden-page')) renderProfile();
-        }
-
-        function checkDailyLogin() {
-            const today = new Date().toDateString();
-            if (db.lastLogin !== today) {
-                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-                if (db.lastLogin === yesterday.toDateString()) { db.streak++; } 
-                else if (db.lastLogin !== null && db.lastLogin !== today) { db.streak = 0; }
-                if (db.lastLogin === null) db.streak = 1;
-                db.lastLogin = today;
-                generateDailyQuests();
-                saveDB();
-            }
-        }
-
-        function generateDailyQuests() {
-            const types = ['Push Ups', 'Squats', 'Burpees', 'Plank'];
-            const quests = [];
-            for(let i=0; i<3; i++) {
-                const type = types[Math.floor(Math.random() * types.length)];
-                const amt = Math.floor(Math.random() * 3 + 1) * 10;
-                quests.push({ id: Date.now() + i, title: `${type} Drill`, desc: `Complete ${amt} ${type}`, target: amt, current: 0, reward: amt * 5, done: false, type: type });
-            }
-            db.quests = quests;
-        }
-
-        function navTo(pageId) {
+        function navTo(pageId, replace = false) {
             document.querySelectorAll('.page-view').forEach(p => { p.classList.add('hidden-page'); p.classList.remove('flex-page'); });
             const page = document.getElementById('view-' + pageId);
-            page.classList.remove('hidden-page');
-            if(['battle', 'skills', 'achievements'].includes(pageId)) page.classList.add('flex-page');
+            if (page) {
+                page.classList.remove('hidden-page');
+                if (['battle', 'skills', 'achievements', 'inventory'].includes(pageId)) page.classList.add('flex-page');
+            }
             
+            // FIX: Navigation Fix (Use HTML5 History API)
+            if (window.location.hash !== '#' + pageId) {
+                if (replace) {
+                    window.history.replaceState({ page: pageId }, '', '#' + pageId);
+                } else {
+                    window.history.pushState({ page: pageId }, '', '#' + pageId);
+                }
+            }
+            
+            // Render call logic
             if (pageId === 'profile') renderProfile();
             if (pageId === 'operations') renderOperations();
             if (pageId === 'quests') renderQuests();
@@ -724,63 +1259,288 @@
             if (pageId === 'hub') renderHub();
             if (pageId === 'skills') renderSkills();
             if (pageId === 'achievements') renderAchievements();
+            if (pageId === 'inventory') renderInventory(); // NEW RENDER CALL
+        }
+
+        // --- CUSTOM CONFIRMATION MODAL LOGIC (FIX for confirm()) ---
+
+        function showConfirmModal(title, message, callback) {
+            const T = TRANSLATIONS[appState.lang];
+            
+            document.getElementById('confirmTitle').innerText = T.confirm_action_title.toUpperCase();
+            document.getElementById('confirmMessage').innerText = message;
+            document.getElementById('confirmBtn').innerText = T.confirm.toUpperCase();
+            document.getElementById('confirmModal').classList.remove('hidden');
+            document.getElementById('confirmModal').classList.add('flex');
+            resolveConfirm = callback;
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            document.getElementById('confirmModal').classList.remove('flex');
+        }
+
+        function confirmCallback(result) {
+            closeConfirmModal();
+            if (resolveConfirm) {
+                resolveConfirm(result);
+                resolveConfirm = null;
+            }
+        }
+        
+        // --- FIREBASE SAVE FUNCTION (FIX for localStorage) ---
+        async function saveDB() {
+            // Check essential dependencies and app state readiness
+            if (!isAuthReady || !db || !window.firebase || !window.firebase.setDoc || !appState) {
+                console.warn("SAVE SKIPPED: Firebase dependencies not ready.");
+                updateHeader();
+                return;
+            }
+            
+            // Prevent saving if user is still in local demo mode
+            if (userId === 'DEMO_USER_LOCAL') {
+                console.warn("SAVE SKIPPED: Currently in Demo Mode (Saving disabled).");
+                updateHeader();
+                return;
+            }
+            
+            // Use the consistent global ID determined during initApp.
+            const effectiveAppId = appIdGlobal;
+            
+            if (!effectiveAppId || effectiveAppId === 'default-app-id') {
+                console.error("SAVE FAILED: App ID not properly initialized or using default ID.");
+                showToast("CRITICAL SAVE ERROR: App ID Missing.");
+                return;
+            }
+
+            try {
+                const docRef = getDBRef(effectiveAppId, userId);
+                
+                // Store the entire appState object as a JSON string under a 'data' field.
+                await window.firebase.setDoc(docRef, { data: JSON.stringify(appState), lastUpdated: new Date().toISOString() }, { merge: true });
+                // NEW LOG: Confirming save path
+                console.log(`[FS SAVE SUCCESS] Data saved successfully to path: artifacts/${effectiveAppId}/users/${userId}/app_data/glitch_data`);
+                updateHeader();
+            } catch(e) {
+                // Catch any Firestore errors during the write operation
+                const attemptedPath = `artifacts/${effectiveAppId}/users/${userId}/app_data/glitch_data`;
+                console.error(`[FS SAVE FAILED] Critical error attempting to write to path: ${attemptedPath}`, e);
+                showToast("CRITICAL SAVE ERROR: Check console for permissions issue.");
+            }
+        }
+
+
+        // --- LANGUAGE & UNIT TOGGLES (QOL) ---
+        async function toggleLanguage() {
+            appState.lang = appState.lang === 'en' ? 'pt' : 'en';
+            await saveDB();
+            applyLanguage();
+        }
+        
+        async function toggleUnit() {
+            appState.unit = appState.unit === 'kg' ? 'lb' : 'kg';
+            await saveDB();
+            applyLanguage(); // Re-render everything that uses units
+        }
+
+        // QOL: Function to set placeholders and text attributes for translation
+        function applyLanguage() {
+            const t = TRANSLATIONS[appState.lang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.innerText = t[key];
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (t[key]) el.setAttribute('placeholder', t[key]);
+            });
+            
+            document.getElementById('langDisplay').innerText = appState.lang.toUpperCase();
+            
+            // QOL: Update Unit Display immediately
+            const unitEl = document.getElementById('unitDisplay');
+            if(unitEl) unitEl.innerText = getUnitDisplay().toUpperCase();
+            
+            // Re-render necessary views to update dynamic text
+            renderHub(); 
+            if(!document.getElementById('view-skills').classList.contains('hidden-page')) renderSkills();
+            if(!document.getElementById('view-profile').classList.contains('hidden-page')) renderProfile();
+            if(!document.getElementById('view-operations').classList.contains('hidden-page')) renderOperations();
+            if(!document.getElementById('view-quests').classList.contains('hidden-page')) renderQuests();
+            if(!document.getElementById('view-market').classList.contains('hidden-page')) renderMarket();
+            if(!document.getElementById('view-inventory').classList.contains('hidden-page')) renderInventory();
+            
+            // Update auth modal dynamic text if open
+            if (!document.getElementById('authModal').classList.contains('hidden')) {
+                toggleAuthMode(isLoginMode);
+            }
+        }
+
+        function checkDailyLogin() {
+            const today = new Date().toDateString();
+            if (appState.lastLogin !== today) {
+                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                if (appState.lastLogin === yesterday.toDateString()) { appState.streak++; } 
+                else if (appState.lastLogin !== null && appState.lastLogin !== today) { appState.streak = 0; }
+                if (appState.lastLogin === null) appState.streak = 1;
+                appState.lastLogin = today;
+                generateDailyQuests();
+                return true; // Indicate that appState was modified and needs saving
+            }
+            return false;
+        }
+
+        function generateDailyQuests() {
+            const types = ['Push Ups', 'Squats', 'Burpees', 'Plank'];
+            const quests = [];
+            
+            // Difficulty Scaling: Base target factor calculation
+            const { str, agi, end } = appState.stats;
+            const primaryStat = Math.max(str, agi, end);
+            // Base target factor: primaryStat * 0.5 + level * 0.2 (minimum 10)
+            const baseFactor = Math.max(10, Math.floor(primaryStat * 0.5 + appState.level * 0.2));
+
+            for(let i=0; i<3; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                // Scale target amount based on the base factor, multiply by a random difficulty multiplier (1x to 3x)
+                const amt = Math.floor(Math.random() * 3 + 1) * baseFactor;
+                quests.push({ id: Date.now() + i, title: `${type} Drill`, desc: `Complete ${amt} ${type}`, target: amt, current: 0, reward: amt * 5, done: false, type: type });
+            }
+            appState.quests = quests;
         }
 
         function updateHeader() {
             const headerLevel = document.getElementById('headerLevel');
-            if (headerLevel) headerLevel.innerText = db.level;
+            if (headerLevel) headerLevel.innerText = appState.level;
             
             const goldDisplay = document.getElementById('goldDisplay');
-            if (goldDisplay) goldDisplay.innerText = db.gold;
+            if (goldDisplay) goldDisplay.innerText = appState.gold;
             
             const xpBar = document.getElementById('xpBar');
-            if (xpBar) xpBar.style.width = (db.xp / db.xpNext * 100) + "%";
+            if (xpBar) xpBar.style.width = (appState.xp / appState.xpNext * 100) + "%";
             
             const questBadge = document.getElementById('questBadge');
-            if (questBadge) questBadge.innerText = db.quests.filter(q => !q.done).length;
+            if (questBadge) questBadge.innerText = appState.quests.filter(q => !q.done).length;
+            
+            // Display User ID
+            const headerNameEl = document.getElementById('headerName');
+            const headerUserIdEl = document.getElementById('headerUserId');
+            if (headerNameEl && userId) headerNameEl.innerText = getUserIdDisplay(userId);
+            if (headerUserIdEl && userId) headerUserIdEl.innerText = userId;
         }
 
         function renderHub() {
-            document.getElementById('streakDisplay').innerText = db.streak;
+            document.getElementById('streakDisplay').innerText = appState.streak;
+            const T = TRANSLATIONS[appState.lang];
             const hour = new Date().getHours();
-            let greet = hour < 12 ? "GOOD MORNING" : hour < 18 ? "GOOD AFTERNOON" : "GOOD EVENING";
-            if(db.lang === 'pt') greet = hour < 12 ? "BOM DIA" : hour < 18 ? "BOA TARDE" : "BOA NOITE";
+            let greet = hour < 12 ? T.good_morning : hour < 18 ? T.good_afternoon : T.good_evening;
             document.getElementById('greeting').innerText = greet;
+        }
+        
+        // FIX: Added missing function definition
+        function renderOperations() {
+            const presetKeys = Object.keys(PRESETS).concat(Object.keys(appState.customPresets));
+            const listEl = document.getElementById('workout-list');
+            listEl.innerHTML = '';
+            const T = TRANSLATIONS[appState.lang];
+
+            const allPresets = { ...PRESETS, ...appState.customPresets };
+
+            presetKeys.forEach(key => {
+                const preset = allPresets[key];
+                const isCustom = key.startsWith('custom_');
+                
+                // QOL: Delete button for custom presets only
+                const deleteBtn = isCustom ? 
+                    `<button onclick="deletePreset('${key}')" class="text-red-500 hover:text-red-300 text-[10px] ml-2"><i class="fa-solid fa-trash"></i></button>` 
+                    : '';
+
+                listEl.innerHTML += `
+                    <div class="tech-panel p-3 flex justify-between items-center clip-tech-sm border-l-4 border-cyan-500/50">
+                        <div>
+                            <div class="text-white font-bold">${preset.name}</div>
+                            <div class="text-[9px] text-gray-500 font-mono">${preset.desc}</div>
+                        </div>
+                        <div class="flex items-center">
+                            ${deleteBtn}
+                            <button onclick="startSession('${key}')" class="bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold px-3 py-1 clip-tech-sm btn-glitch ml-2">${T.engage.toUpperCase()}</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        // QOL: Delete Preset Function
+        async function deletePreset(key) {
+            const T = TRANSLATIONS[appState.lang];
+            showConfirmModal(T.confirm_action_title.toUpperCase(), T.delete_protocol_confirm, async (confirmed) => {
+                if (confirmed) {
+                    if (appState.customPresets[key]) {
+                        delete appState.customPresets[key];
+                        await saveDB();
+                        renderOperations();
+                        showToast(T.protocol_deleted);
+                    }
+                }
+            });
         }
 
         // --- ADVANCED STATS & ANALYTICS ---
 
         function calculateArchetype() {
-            const { str, agi, end } = db.stats;
-            if (str >= agi && str >= end) return "JUGGERNAUT"; // High Str
-            if (agi >= str && agi >= end) return "SHADOW DANCER"; // High Agi
-            if (end >= str && end >= agi) return "IRONCLAD"; // High End
-            if (Math.abs(str - agi) < 2 && Math.abs(str - end) < 2) return "HYBRID";
+            const { str, agi, end } = appState.stats;
+            // Check for Juggernaut, Shadow Dancer, Ironclad
+            if (str > agi && str > end && str > 15) return "JUGGERNAUT";
+            if (agi > str && agi > end && agi > 15) return "SHADOW DANCER";
+            if (end > str && end > agi && end > 15) return "IRONCLAD";
+            // Check for hybrids
+            if (Math.abs(str - agi) < 2 && str > 12) return "BLADE MASTER";
+            if (Math.abs(str - end) < 2 && str > 12) return "WARDEN";
+            if (Math.abs(agi - end) < 2 && agi > 12) return "MONARCH";
+            // Default
             return "NOVICE";
         }
         
         function calculateRank() {
-            if (db.level >= 50) return "S-RANK";
-            if (db.level >= 30) return "A-RANK";
-            if (db.level >= 20) return "B-RANK";
-            if (db.level >= 10) return "C-RANK";
-            if (db.level >= 5) return "D-RANK";
+            if (appState.level >= 50) return "S-RANK";
+            if (appState.level >= 30) return "A-RANK";
+            if (appState.level >= 20) return "B-RANK";
+            if (appState.level >= 10) return "C-RANK";
+            if (appState.level >= 5) return "D-RANK";
             return "E-RANK";
+        }
+
+        async function updateUserName(newName) {
+            const trimmedName = newName.trim();
+            if (trimmedName && trimmedName !== appState.name) {
+                appState.name = trimmedName.toUpperCase();
+                await saveDB();
+                showToast(`Name updated to ${appState.name}`);
+            } else {
+                // Revert to current name if input is invalid or unchanged
+                const pNameEl = document.getElementById('pName');
+                if (pNameEl) pNameEl.value = appState.name;
+            }
         }
 
         function renderProfile() {
             // Header Info
-            const pNameEl = document.getElementById('pName');
-            if (pNameEl) pNameEl.innerText = db.name;
+            document.getElementById('pName').value = appState.name;
+            document.getElementById('pLvl').innerText = appState.level;
+            const currentArchetype = calculateArchetype();
+            document.getElementById('pClass').innerText = currentArchetype;
+            document.getElementById('pRank').innerText = calculateRank();
             
-            const pLvlEl = document.getElementById('pLvl');
-            if (pLvlEl) pLvlEl.innerText = db.level;
-            
-            const pClassEl = document.getElementById('pClass');
-            if (pClassEl) pClassEl.innerText = calculateArchetype();
-            
-            const pRankEl = document.getElementById('pRank');
-            if (pRankEl) pRankEl.innerText = calculateRank();
+            // Render Flair
+            const flairId = appState.inventory.equippedFlair || 'novice';
+            const flair = SHOP_ITEMS.flairs.find(f => f.id === flairId);
+            const iconClass = flair ? flair.icon : 'fa-user-ninja';
+            document.getElementById('archetype-icon').className = `fa-solid ${iconClass} z-10`;
+
+            // QOL: Update Unit Display
+            document.getElementById('unitDisplay').innerText = getUnitDisplay().toUpperCase();
 
             // Render Specific Stat Bars
             const renderStatBar = (stat, val, xp, max) => {
@@ -797,16 +1557,16 @@
                 if(xpNextEl) xpNextEl.innerText = Math.floor(max);
             };
 
-            renderStatBar('Str', db.stats.str, db.stats.strXp, db.stats.str * 50);
-            renderStatBar('Agi', db.stats.agi, db.stats.agiXp, db.stats.agi * 50);
-            renderStatBar('End', db.stats.end, db.stats.endXp, db.stats.end * 50);
+            renderStatBar('Str', appState.stats.str, appState.stats.strXp, appState.stats.str * 50);
+            renderStatBar('Agi', appState.stats.agi, appState.stats.agiXp, appState.stats.agi * 50);
+            renderStatBar('End', appState.stats.end, appState.stats.endXp, appState.stats.end * 50);
 
             // Radar Chart
             const ctx = document.getElementById('radarChart').getContext('2d');
             if(chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, { 
                 type: 'radar', 
-                data: { labels: Object.keys(db.mastery), datasets: [{ label: 'Mastery', data: Object.values(db.mastery), backgroundColor: 'rgba(6, 182, 212, 0.2)', borderColor: '#06b6d4', borderWidth: 2, pointBackgroundColor: '#fff' }] }, 
+                data: { labels: Object.keys(appState.mastery), datasets: [{ label: 'Mastery', data: Object.values(appState.mastery), backgroundColor: 'rgba(6, 182, 212, 0.2)', borderColor: '#06b6d4', borderWidth: 2, pointBackgroundColor: '#fff' }] }, 
                 options: { scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#94a3b8', font: { family: 'Share Tech Mono' } }, ticks: { display: false } } }, plugins: { legend: { display: false } }, maintainAspectRatio: false } 
             });
 
@@ -816,6 +1576,79 @@
             // 1RM Init
             updateORMSelector();
         }
+        
+        // NEW: INVENTORY RENDER FUNCTION
+        function renderInventory() {
+            const T = TRANSLATIONS[appState.lang];
+            const currentArchetype = calculateArchetype();
+
+            const flairInvEl = document.getElementById('flair-inventory');
+            flairInvEl.innerHTML = '';
+            
+            // 1. Render Flairs
+            SHOP_ITEMS.flairs.forEach(flair => {
+                const isOwned = appState.inventory.ownedFlairs.includes(flair.id);
+                if (isOwned) {
+                    const isEquipped = appState.inventory.equippedFlair === flair.id;
+                    const isUsable = flair.archetype === 'NOVICE' || flair.archetype === currentArchetype;
+                    
+                    let btnText = isEquipped ? T.equipped.toUpperCase() : T.equip.toUpperCase();
+                    let btnClass = isEquipped ? 
+                        'bg-green-700/50 text-green-400 cursor-default' : 
+                        isUsable ? 'bg-cyan-700 hover:bg-cyan-600 text-white btn-glitch' : 'bg-gray-800 text-gray-500 cursor-not-allowed';
+                    let btnAction = isEquipped ? '' : isUsable ? `equipFlair('${flair.id}')` : `showToast('Incompatible Archetype.')`;
+                    
+                    flairInvEl.innerHTML += `
+                        <div class="tech-panel p-3 clip-tech-sm flex flex-col items-center ${isEquipped ? 'border-green-500/50' : 'border-cyan-500/30'}">
+                            <i class="fa-solid ${flair.icon} text-3xl text-pink-400 mb-2"></i>
+                            <div class="font-bold text-white text-sm text-center">${flair.name}</div>
+                            <div class="text-[9px] text-gray-500 mb-2">${flair.archetype}</div>
+                            <button onclick="${btnAction}" class="w-full text-xs font-bold py-1 clip-tech-sm ${btnClass}">${btnText}</button>
+                        </div>
+                    `;
+                }
+            });
+
+            // 2. Render Equipment
+            const equipInvEl = document.getElementById('equipment-inventory');
+            equipInvEl.innerHTML = '';
+            
+            SHOP_ITEMS.equipment.forEach(item => {
+                const isOwned = appState.inventory.ownedEquipment.includes(item.id);
+                if (isOwned) {
+                    const isEquipped = appState.inventory.equippedEquipment === item.id;
+                    
+                    let btnText = isEquipped ? T.equipped.toUpperCase() : T.equip.toUpperCase();
+                    let btnClass = isEquipped ? 'bg-green-700/50 text-green-400 cursor-default' : 'bg-purple-700 hover:bg-purple-600 text-white btn-glitch';
+                    let btnAction = isEquipped ? `equipEquipment(null)` : `equipEquipment('${item.id}')`;
+                    
+                    equipInvEl.innerHTML += `
+                        <div class="tech-panel p-3 clip-tech-sm flex flex-col items-center ${isEquipped ? 'border-green-500/50' : 'border-purple-500/30'}">
+                            <i class="fa-solid ${item.icon} text-3xl text-purple-400 mb-2"></i>
+                            <div class="font-bold text-white text-sm text-center">${item.name}</div>
+                            <div class="text-[9px] text-gray-500 mb-2">${item.desc}</div>
+                            <button onclick="${btnAction}" class="w-full text-xs font-bold py-1 clip-tech-sm ${btnClass}">${btnText}</button>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        async function equipFlair(flairId) {
+            appState.inventory.equippedFlair = flairId;
+            await saveDB();
+            renderInventory();
+            renderProfile(); // Update the profile icon instantly
+            showToast(`Flair Equipped: ${SHOP_ITEMS.flairs.find(f => f.id === flairId).name}`);
+        }
+        
+        async function equipEquipment(itemId) {
+            appState.inventory.equippedEquipment = itemId;
+            await saveDB();
+            renderInventory();
+            showToast(itemId ? `Equipment Equipped: ${SHOP_ITEMS.equipment.find(e => e.id === itemId).name}` : "Equipment Un-equipped.");
+        }
+
 
         function renderActivityChart() {
             const ctx = document.getElementById('activityChart').getContext('2d');
@@ -830,7 +1663,7 @@
                 labels.push(i===0 ? 'Today' : d.getDate()); // Show number date
                 
                 // Count logs for this date
-                const logs = db.history.filter(h => new Date(h.date).toLocaleDateString() === dateStr).length;
+                const logs = appState.history.filter(h => new Date(h.date).toLocaleDateString() === dateStr).length;
                 data.push(logs);
             }
 
@@ -861,7 +1694,7 @@
             if (!sel) return;
             sel.innerHTML = '';
             // Only weighted exercises for 1RM
-            const weightedEx = FULL_EXERCISE_DB.filter(e => e.type === 'Gym' && e.cat === 'Push' || e.cat === 'Pull' || e.cat === 'Legs');
+            const weightedEx = FULL_EXERCISE_DB.filter(e => e.type === 'Gym' && (e.cat === 'Push' || e.cat === 'Pull' || e.cat === 'Legs'));
             weightedEx.forEach(e => {
                 sel.innerHTML += `<option value="${e.name}">${e.name}</option>`;
             });
@@ -871,18 +1704,26 @@
 
         function calculate1RM() {
             const exName = document.getElementById('ormSelect').value;
-            const record = db.shadowRecords[exName];
+            const record = appState.shadowRecords[exName];
+            const unit = getUnitDisplay();
             
             const display = document.getElementById('ormDisplay');
             const basis = document.getElementById('ormBasis');
 
             if(record && record.weight > 0) {
-                // Epley Formula: w * (1 + r/30)
-                const orm = Math.floor(record.weight * (1 + record.reps / 30));
-                display.innerHTML = `${orm} <span class="text-sm text-gray-600">kg</span>`;
-                basis.innerText = `Record: ${record.weight}kg x ${record.reps}`;
+                // record.weight is stored in KG. Convert to display unit.
+                let displayWeight = record.weight;
+                if (unit === 'lbs') {
+                    displayWeight = kgToLb(record.weight);
+                }
+                
+                // Epley Formula: w * (1 + r/30) - Applies to the displayed weight/reps
+                const orm = Math.floor(displayWeight * (1 + record.reps / 30));
+                
+                display.innerHTML = `${orm} <span class="text-sm text-gray-600">${unit}</span>`;
+                basis.innerText = `Record: ${displayWeight.toFixed(0)}${unit} x ${record.reps}`;
             } else {
-                display.innerHTML = `0 <span class="text-sm text-gray-600">kg</span>`;
+                display.innerHTML = `0 <span class="text-sm text-gray-600">${unit}</span>`;
                 basis.innerText = "NO DATA";
             }
         }
@@ -891,118 +1732,160 @@
 
         // Helper to update specific stat XP
         function addStatXP(type, amt) {
-            // Config: Which stat gets XP based on exercise type
-            let targetStat = 'str'; // default
+            let targetStat = 'str';
             if(type === 'Pull' || type === 'Push') targetStat = 'str';
             else if(type === 'Legs' || type === 'Cardio') targetStat = 'agi';
             else if(type === 'Core') targetStat = 'end';
 
             const xpKey = `${targetStat}Xp`;
-            db.stats[xpKey] += amt;
+            appState.stats[xpKey] += amt;
 
             // Level up Stat check
-            const threshold = db.stats[targetStat] * 50;
-            if(db.stats[xpKey] >= threshold) {
-                db.stats[xpKey] -= threshold;
-                db.stats[targetStat]++;
+            const threshold = appState.stats[targetStat] * 50;
+            if(appState.stats[xpKey] >= threshold) {
+                appState.stats[xpKey] -= threshold;
+                appState.stats[targetStat]++;
                 showToast(`${targetStat.toUpperCase()} INCREASED!`);
             }
         }
 
-        function completeSet(idx) {
+        async function completeSet(idx) {
             const ex = activeSession.exercises[activeSession.currentExIndex];
             const val = parseInt(document.getElementById(`set-val-${idx}`).value);
             ex.setsData[idx].val = val;
             ex.setsData[idx].completed = true;
             
-            if(ex.type !== 'Time Based') db.totalReps += val;
+            if(ex.type !== 'Time Based') appState.totalReps += val;
             
-            // Find exercise reference for stats
             const ref = FULL_EXERCISE_DB.find(e => e.name === ex.name);
             if(ref) {
-                // Add Mastery
                 const muscle = ref.muscle || 'Core';
-                db.mastery[muscle] = (db.mastery[muscle] || 1) + 0.05;
-                
-                // Add Specific Stat XP
-                // Rough formula: 1 rep = 0.5 XP (scaled down)
+                appState.mastery[muscle] = (appState.mastery[muscle] || 1) + 0.05;
                 const xpGain = ex.type === 'Time Based' ? (val / 10) : (val * 0.5);
                 addStatXP(ref.cat, xpGain);
             }
 
-            checkQuestProgress(ex.name, val);
-            addXP(15); saveDB(); renderActiveExercise();
-            if (idx < ex.setsData.length - 1) triggerRest(45);
+            await checkQuestProgress(ex.name, val);
+            addXP(15); await saveDB(); renderActiveExercise();
+            
+            // FIX: Rest Timer Trigger: Auto-trigger rest on set completion, but still allow immediate skip.
+            if (idx < ex.setsData.length - 1) {
+                // Ensure rest is only triggered if the session is still active
+                if (activeSession) {
+                    triggerRest(45); 
+                }
+            }
         }
 
-        // Manual Log Submission Update to include Shadow Records
-        function submitManualLog() {
+        async function submitManualLog() {
             const xp = parseInt(document.getElementById('xpPreview').innerText);
             const gold = parseInt(document.getElementById('goldPreview').innerText);
             const exName = document.getElementById('mlEx').value;
-            
             const ref = FULL_EXERCISE_DB.find(e => e.name === exName);
 
             if(manualLogType === 'strength') {
                  const r = parseInt(document.getElementById('mlReps').value || 0);
                  const s = parseInt(document.getElementById('mlSets').value || 0);
+                 const wInput = parseInt(document.getElementById('mlWeight')?.value || 0); // Input in KG or LB
                  
-                 db.totalReps += (r * s);
-                 checkQuestProgress(exName, r*s);
+                 let w = wInput; // Default to input value
+                 
+                 // QOL: Convert input weight to KG if user is operating in LB mode (for consistent storage)
+                 if (appState.unit === 'lb' && wInput > 0) {
+                     w = lbToKg(wInput);
+                 }
+                 
+                 appState.totalReps += (r * s);
+                 await checkQuestProgress(exName, r*s);
                  
                  if(ref) addStatXP(ref.cat, (r*s)*0.5);
-                 checkShadowRecord();
+                 
+                 // FIX: Shadow Record Inaccuracy Fix - use 'w' (which is guaranteed to be KG)
+                 if (w > 0 && r > 0) {
+                    const current = appState.shadowRecords[exName] || { weight: 0, reps: 0 };
+                    // Convert stored weight (KG) and reps to a comparable 1RM score
+                    const newOrm = w * (1 + r / 30); 
+                    const currentOrm = current.weight * (1 + current.reps / 30);
+                    let updateNeeded = false;
 
-            } else {
+                    // Condition 1: New 1RM is clearly better
+                    if (newOrm > currentOrm) {
+                        updateNeeded = true;
+                    // Condition 2: 1RM is virtually the same, but weight is higher (more efficient lift)
+                    } else if (Math.abs(newOrm - currentOrm) < 0.1 && w > current.weight) {
+                         updateNeeded = true;
+                    // Condition 3: Weight and 1RM are the same, but reps are higher (better endurance)
+                    } else if (w === current.weight && r > current.reps) {
+                         updateNeeded = true;
+                    }
+                    
+                    if (updateNeeded) {
+                        appState.shadowRecords[exName] = { weight: w, reps: r }; // Store in KG
+                        showToast(`NEW 1RM Record: ${exName} - Est. ${Math.floor(newOrm)}kg!`);
+                    }
+                 }
+                 // End Shadow Record Inaccuracy Fix
+
+            } else if (manualLogType === 'cardio' || manualLogType === 'vr') {
                  const t = parseInt(document.getElementById('mlTime').value || 0);
-                 checkQuestProgress(exName, t);
+                 const exName = document.getElementById('mlEx').value; // Need to redefine exName inside conditional for VR
+                 await checkQuestProgress(exName, t);
                  if(ref) addStatXP(ref.cat, t/5);
             }
             
-            addXP(xp); db.gold += gold; 
-            db.history.unshift({date: new Date().toLocaleString(), desc: "Manual: " + exName, xp: xp});
-            saveDB(); closeInputModal(); checkAchievements(); showToast("Logged");
+            addXP(xp); appState.gold += gold; 
+            appState.history.unshift({date: new Date().toLocaleString(), desc: "Manual: " + exName, xp: xp});
+            await saveDB(); // Save all updates, including shadowRecords
+            closeInputModal(); await checkAchievements(); showToast("Logged");
+            // Rerender profile in case 1RM changed
+            if(!document.getElementById('view-profile').classList.contains('hidden-page')) renderProfile();
         }
         
-        // Manual Log Modal Update
         function openManualLog(type) {
             manualLogType = type;
             document.getElementById('inputModal').classList.remove('hidden'); document.getElementById('inputModal').classList.add('flex');
             const f = document.getElementById('modalFields');
+            const unitDisplay = getUnitDisplay();
+            const T = TRANSLATIONS[appState.lang];
+
             if(type==='strength') {
-                const opts = FULL_EXERCISE_DB.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+                const opts = FULL_EXERCISE_DB.filter(e => e.cat === 'Push' || e.cat === 'Pull' || e.cat === 'Legs').map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+                document.getElementById('modalTitle').innerText = (T.strength + ' LOG').toUpperCase();
+
                 f.innerHTML = `
                     <select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3">${opts}</select>
                     <div class="flex gap-2 mb-2">
-                        <input type="number" id="mlSets" placeholder="Sets" class="w-1/2 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
-                        <input type="number" id="mlReps" placeholder="Reps" class="w-1/2 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                        <input type="number" id="mlSets" placeholder="${T.sets}" class="w-1/3 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                        <input type="number" id="mlReps" placeholder="${T.reps}" class="w-1/3 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                        <input type="number" id="mlWeight" placeholder="${T.weight} (${unitDisplay})" class="w-1/3 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
                     </div>
-                    <input type="number" id="mlWeight" placeholder="Weight (kg) [Optional]" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono" onchange="checkShadowRecord()">
                 `;
-            } else {
-                f.innerHTML = `<select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3"><option>Running</option><option>Cycling</option></select><input type="number" id="mlTime" placeholder="Time (min)" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">`;
+            } else if (type==='cardio') { 
+                document.getElementById('modalTitle').innerText = (T.cardio + ' LOG').toUpperCase();
+
+                f.innerHTML = `
+                    <select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3">
+                        <option>Running</option><option>Cycling</option><option>Walking</option>
+                    </select>
+                    <input type="number" id="mlTime" placeholder="${T.time} (min)" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                `;
+            } else if (type === 'vr') { // NEW VR log
+                document.getElementById('modalTitle').innerText = T.vr_training.toUpperCase();
+
+                f.innerHTML = `
+                    <select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3">
+                        <option value="Beat Saber">${T.rhythm}: Beat Saber</option>
+                        <option value="Thrill of the Fight">${T.combat}: Thrill of the Fight</option>
+                    </select>
+                    <input type="number" id="mlTime" placeholder="${T.time} (min)" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                `;
             }
             calcManualPreview();
         }
 
-        function checkShadowRecord() {
-            // Update shadow record if new weight is higher
-            const w = parseInt(document.getElementById('mlWeight')?.value || 0);
-            const r = parseInt(document.getElementById('mlReps')?.value || 0);
-            const ex = document.getElementById('mlEx')?.value;
-            
-            if(w > 0 && r > 0 && ex) {
-                const current = db.shadowRecords[ex] || { weight: 0 };
-                if(w > current.weight) {
-                    db.shadowRecords[ex] = { weight: w, reps: r };
-                    showToast(`NEW RECORD: ${ex} ${w}kg!`);
-                }
-            }
-        }
-
         // --- SKILL & ACHIEVEMENTS (Standard) ---
         function renderSkills() {
-            document.getElementById('skillCredits').innerText = db.gold + ' CR';
+            document.getElementById('skillCredits').innerText = appState.gold + ' CR';
             const c = document.getElementById('skill-container');
             c.innerHTML = '';
             const categories = [...new Set(SKILL_TREE.map(s => s.cat))];
@@ -1010,7 +1893,7 @@
                 const skills = SKILL_TREE.filter(s => s.cat === cat).sort((a,b) => a.tier - b.tier);
                 let html = `<div class="mb-6"><h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 pl-2 border-l-2 border-cyan-500">${cat} PATH</h3><div class="flex flex-wrap gap-3 items-center justify-start">`;
                 skills.forEach(skill => {
-                    const isUnlocked = db.skills.includes(skill.id);
+                    const isUnlocked = appState.skills.includes(skill.id);
                     const borderColor = isUnlocked ? 'border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'border-gray-700 opacity-60 grayscale';
                     const iconColor = isUnlocked ? 'text-cyan-400' : 'text-gray-600';
                     const bgClass = isUnlocked ? 'bg-cyan-900/20' : 'bg-gray-900/50';
@@ -1024,7 +1907,7 @@
             selectedSkillId = skillId;
             const skill = SKILL_TREE.find(s => s.id === skillId);
             if(!skill) return;
-            const isUnlocked = db.skills.includes(skillId);
+            const isUnlocked = appState.skills.includes(skillId);
             const m = document.getElementById('skillUnlockModal');
             document.getElementById('smIcon').className = `fa-solid ${skill.icon}`;
             document.getElementById('smTitle').innerText = skill.name;
@@ -1033,54 +1916,393 @@
             let reqHtml = '';
             let canUnlock = true;
             if(skill.req.length === 0) reqHtml = '<li class="text-green-500">Starter Skill</li>';
-            else skill.req.forEach(reqId => { const reqSkill = SKILL_TREE.find(s => s.id === reqId); const reqMet = db.skills.includes(reqId); if(!reqMet) canUnlock = false; reqHtml += `<li class="${reqMet ? 'text-green-500' : 'text-red-500'}"><i class="fa-solid ${reqMet ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${reqSkill ? reqSkill.name : reqId}</li>`; });
+            else skill.req.forEach(reqId => { const reqSkill = SKILL_TREE.find(s => s.id === reqId); const reqMet = appState.skills.includes(reqId); if(!reqMet) canUnlock = false; reqHtml += `<li class="${reqMet ? 'text-green-500' : 'text-red-500'}"><i class="fa-solid ${reqMet ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${reqSkill ? reqSkill.name : reqId}</li>`; });
             document.getElementById('smReqs').innerHTML = reqHtml;
             const btn = document.getElementById('smUnlockBtn');
             const cost = skill.tier * 200; 
-            if(isUnlocked) { btn.innerText = "UNLOCKED"; btn.className = "w-full bg-green-900/30 text-green-400 font-bold py-3 uppercase tracking-widest text-xs border border-green-500/50 cursor-default"; btn.onclick = null; } 
-            else if (canUnlock) { if(db.gold >= cost) { btn.innerText = `UNLOCK (${cost} CR)`; btn.className = "w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 btn-glitch"; btn.onclick = () => unlockSelectedSkill(cost); } else { btn.innerText = `NEED ${cost} CR`; btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed"; btn.onclick = null; } } 
-            else { btn.innerText = "LOCKED"; btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed"; btn.onclick = null; }
+            if(isUnlocked) { btn.innerText = TRANSLATIONS[appState.lang].unlocked.toUpperCase(); btn.className = "w-full bg-green-900/30 text-green-400 font-bold py-3 uppercase tracking-widest text-xs border border-green-500/50 cursor-default"; btn.onclick = null; } 
+            else if (canUnlock) { if(appState.gold >= cost) { btn.innerText = `${TRANSLATIONS[appState.lang].unlock.toUpperCase()} (${cost} CR)`; btn.className = "w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 btn-glitch"; btn.onclick = () => unlockSelectedSkill(cost); } else { btn.innerText = `${TRANSLATIONS[appState.lang].need_credits.toUpperCase()} ${cost} CR`; btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed"; btn.onclick = null; } } 
+            else { btn.innerText = TRANSLATIONS[appState.lang].locked.toUpperCase(); btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed"; btn.onclick = null; }
             m.classList.remove('hidden'); m.classList.add('flex');
         }
         function closeSkillModal() { document.getElementById('skillUnlockModal').classList.add('hidden'); document.getElementById('skillUnlockModal').classList.remove('flex'); }
-        function unlockSelectedSkill(cost) { if(db.gold >= cost) { db.gold -= cost; db.skills.push(selectedSkillId); const skill = SKILL_TREE.find(s => s.id === selectedSkillId); if(skill.cat === 'Striker') db.stats.str += 1; if(skill.cat === 'Assassin') db.stats.agi += 1; if(skill.cat === 'Tank') db.stats.end += 1; saveDB(); renderSkills(); closeSkillModal(); updateHeader(); showToast(`Skill Unlocked: ${skill.name}`); } }
+        async function unlockSelectedSkill(cost) { 
+            if(appState.gold >= cost) { 
+                appState.gold -= cost; 
+                appState.skills.push(selectedSkillId); 
+                const skill = SKILL_TREE.find(s => s.id === selectedSkillId); 
+                if(skill.cat === 'Striker') appState.stats.str += 1; 
+                if(skill.cat === 'Assassin') appState.stats.agi += 1; 
+                if(skill.cat === 'Tank') appState.stats.end += 1; 
+                await saveDB(); renderSkills(); closeSkillModal(); updateHeader(); 
+                showToast(`Skill Unlocked: ${skill.name}`); 
+            } 
+        }
 
         // --- STANDARD UTILS ---
-        function renderAchievements() { const c = document.getElementById('achievement-list'); c.innerHTML = ''; ACHIEVEMENTS.forEach(a => { const unlocked = db.achievements.includes(a.id); c.innerHTML += `<div class="tech-panel p-3 flex gap-3 ${unlocked ? 'border-green-500/50 bg-green-900/10' : 'grayscale opacity-50'}"><div class="text-2xl ${unlocked ? 'text-yellow-400' : 'text-gray-600'}"><i class="fa-solid fa-trophy"></i></div><div><div class="text-sm font-bold text-white">${a.name}</div><div class="text-[10px] text-gray-400 font-mono">${a.desc}</div></div>${unlocked ? '<div class="ml-auto text-green-500 text-xs"><i class="fa-solid fa-check"></i></div>' : ''}</div>`; }); }
-        function checkAchievements() { let newlyUnlocked = false; if(!db.achievements.includes('first_blood') && db.history.length > 0) { unlockAchievement('first_blood'); newlyUnlocked = true; } if(!db.achievements.includes('consistent') && db.streak >= 3) { unlockAchievement('consistent'); newlyUnlocked = true; } if(!db.achievements.includes('veteran') && db.level >= 5) { unlockAchievement('veteran'); newlyUnlocked = true; } if(!db.achievements.includes('rich') && db.gold >= 1000) { unlockAchievement('rich'); newlyUnlocked = true; } if(!db.achievements.includes('iron_body') && db.totalReps >= 1000) { unlockAchievement('iron_body'); newlyUnlocked = true; } if(newlyUnlocked) saveDB(); }
-        function unlockAchievement(id) { const a = ACHIEVEMENTS.find(x => x.id === id); db.achievements.push(id); db.gold += a.reward; showToast(`🏆 Unlocked: ${a.name}`); }
-        function renderMarket() { document.getElementById('marketCredits').innerText = db.gold; document.getElementById('market-list').innerHTML = db.rewards.map(r => `<div class="tech-panel p-3 flex justify-between items-center group"><span class="text-white text-sm font-bold">${r.name}</span><button onclick="buyItem('${r.name}', ${r.cost})" class="text-[10px] bg-purple-900/30 border border-purple-500/50 text-purple-400 px-3 py-1 hover:bg-purple-500 hover:text-white transition-colors uppercase">${r.cost} CR</button></div>`).join(''); }
-        function buyItem(n, c) { if(db.gold >= c) { if(confirm("Buy?")) { db.gold -= c; saveDB(); renderMarket(); updateHeader(); showToast("Bought " + n); } } else showToast("Insufficient"); }
-        function addCustomReward() { const n = document.getElementById('newRewardName').value, c = parseInt(document.getElementById('newRewardCost').value); if(n && c) { db.rewards.push({id:Date.now(), name:n, cost:c}); saveDB(); renderMarket(); } }
-        function renderHistory() { document.getElementById('history-list').innerHTML = db.history.length ? db.history.map(h => `<div class="flex justify-between items-center border-b border-gray-800 pb-2"><div><div class="text-white">${h.desc}</div><div class="text-[9px] text-gray-500">${h.date}</div></div><div class="text-cyan-500">+${h.xp} XP</div></div>`).join('') : '<div class="text-gray-600 text-center">NO DATA</div>'; }
+        function renderAchievements() { 
+            const c = document.getElementById('achievement-list'); 
+            c.innerHTML = ''; 
+            ACHIEVEMENTS.forEach(a => { 
+                const unlocked = appState.achievements.includes(a.id); 
+                c.innerHTML += `<div class="tech-panel p-3 flex gap-3 ${unlocked ? 'border-green-500/50 bg-green-900/10' : 'grayscale opacity-50'}"><div class="text-2xl ${unlocked ? 'text-yellow-400' : 'text-gray-600'}"><i class="fa-solid fa-trophy"></i></div><div><div class="text-sm font-bold text-white">${a.name}</div><div class="text-[10px] text-gray-400 font-mono">${a.desc}</div></div>${unlocked ? '<div class="ml-auto text-green-500 text-xs"><i class="fa-solid fa-check"></i></div>' : ''}</div>`; 
+            }); 
+        }
+        // MODIFIED: Takes initialAchievements to determine newly unlocked ones for summary screen.
+        async function checkAchievements(initialAchievements = new Set(appState.achievements)) { 
+            let newlyUnlocked = [];
+            let changed = false;
+            
+            // Note: unlockAchievement only adds the ID and Gold, it no longer saves or shows toast.
+            
+            if(!appState.achievements.includes('first_blood') && appState.history.length > 0) { 
+                if(!initialAchievements.has('first_blood')) { unlockAchievement('first_blood', false); newlyUnlocked.push('first_blood'); changed=true; }
+            } 
+            if(!appState.achievements.includes('consistent') && appState.streak >= 3) { 
+                 if(!initialAchievements.has('consistent')) { unlockAchievement('consistent', false); newlyUnlocked.push('consistent'); changed=true; }
+            } 
+            if(!appState.achievements.includes('veteran') && appState.level >= 5) { 
+                 if(!initialAchievements.has('veteran')) { unlockAchievement('veteran', false); newlyUnlocked.push('veteran'); changed=true; }
+            } 
+            if(!appState.achievements.includes('iron_body') && appState.totalReps >= 1000) { 
+                 if(!initialAchievements.has('iron_body')) { unlockAchievement('iron_body', false); newlyUnlocked.push('iron_body'); changed=true; }
+            } 
+
+            // If called outside of endSession (like from initApp), we save here.
+            if(changed && initialAchievements.size === 0) { await saveDB(); }
+            
+            return newlyUnlocked; 
+        }
+        // MODIFIED: Removed saving/toasting
+        function unlockAchievement(id, showToastMsg = true) { 
+            const a = ACHIEVEMENTS.find(x => x.id === id); 
+            if (!appState.achievements.includes(id)) { 
+                appState.achievements.push(id); 
+                appState.gold += a.reward; 
+                if(showToastMsg) showToast(`🏆 Unlocked: ${a.name}`); 
+            }
+        }
+        
+        // MODIFIED: RENDER MARKET TO INCLUDE FLAIRS AND EQUIPMENT
+        function renderMarket() { 
+            document.getElementById('marketCredits').innerText = appState.gold; 
+            const T = TRANSLATIONS[appState.lang];
+            
+            // 1. Render Flairs
+            const flairListEl = document.getElementById('market-flair-list');
+            flairListEl.innerHTML = SHOP_ITEMS.flairs.map(f => {
+                if (f.cost === 0) return ''; // Skip Novice/Free items from purchase list
+                const isOwned = appState.inventory.ownedFlairs.includes(f.id);
+                const buttonHtml = isOwned ? 
+                    `<span class="text-[10px] bg-green-900/30 border border-green-500/50 text-green-400 px-3 py-1 uppercase">${T.owned}</span>` :
+                    `<button onclick="buyItem('flair', '${f.id}', ${f.cost})" class="text-[10px] bg-pink-900/30 border border-pink-500/50 text-pink-400 px-3 py-1 hover:bg-pink-500 hover:text-white transition-colors uppercase">${f.cost} ${T.credits}</button>`;
+                
+                return `<div class="tech-panel p-3 flex justify-between items-center group">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid ${f.icon} text-xl text-pink-400"></i>
+                                <div>
+                                    <span class="text-white text-sm font-bold">${f.name}</span>
+                                    <div class="text-[9px] text-gray-500">${f.archetype}</div>
+                                </div>
+                            </div>
+                            ${buttonHtml}
+                        </div>`;
+            }).join('');
+            
+            // 2. Render Equipment
+            const equipListEl = document.getElementById('market-equipment-list');
+            equipListEl.innerHTML = SHOP_ITEMS.equipment.map(e => {
+                const isOwned = appState.inventory.ownedEquipment.includes(e.id);
+                const buttonHtml = isOwned ? 
+                    `<span class="text-[10px] bg-green-900/30 border border-green-500/50 text-green-400 px-3 py-1 uppercase">${T.owned}</span>` :
+                    `<button onclick="buyItem('equipment', '${e.id}', ${e.cost})" class="text-[10px] bg-purple-900/30 border border-purple-500/50 text-purple-400 px-3 py-1 hover:bg-purple-500 hover:text-white transition-colors uppercase">${e.cost} ${T.credits}</button>`;
+
+                return `<div class="tech-panel p-3 flex justify-between items-center group">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid ${e.icon} text-xl text-purple-400"></i>
+                                <div>
+                                    <span class="text-white text-sm font-bold">${e.name}</span>
+                                    <div class="text-[9px] text-gray-500">${e.desc}</div>
+                                </div>
+                            </div>
+                            ${buttonHtml}
+                        </div>`;
+            }).join('');
+            
+            // 3. Render Custom Rewards
+            document.getElementById('market-list').innerHTML = appState.rewards.map(r => `<div class="tech-panel p-3 flex justify-between items-center group"><span class="text-white text-sm font-bold">${r.name}</span><button onclick="buyItem('reward', '${r.name}', ${r.cost})" class="text-[10px] bg-purple-900/30 border border-purple-500/50 text-purple-400 px-3 py-1 hover:bg-purple-500 hover:text-white transition-colors uppercase">${r.cost} ${T.credits}</button></div>`).join(''); 
+        }
+        
+        // MODIFIED: buyItem to handle flair and equipment
+        async function buyItem(type, id, cost) { 
+            const T = TRANSLATIONS[appState.lang];
+            const itemName = type === 'flair' ? SHOP_ITEMS.flairs.find(f => f.id === id)?.name : type === 'equipment' ? SHOP_ITEMS.equipment.find(e => e.id === id)?.name : id;
+            
+            if (!itemName) return showToast("Error: Item ID not found.");
+            
+            if (appState.gold >= cost) {
+                showConfirmModal(T.confirm_action_title.toUpperCase(), `${T.confirm_purchase} "${itemName}" ${T.for_credits} ${cost} ${T.credits}?`, async (confirmed) => {
+                    if (confirmed) {
+                        appState.gold -= cost;
+                        
+                        if (type === 'flair') {
+                            if (!appState.inventory.ownedFlairs.includes(id)) {
+                                appState.inventory.ownedFlairs.push(id);
+                            }
+                        } else if (type === 'equipment') {
+                            if (!appState.inventory.ownedEquipment.includes(id)) {
+                                appState.inventory.ownedEquipment.push(id);
+                            }
+                        } else if (type === 'reward') {
+                            // Logic for consumption/removal of non-cosmetic rewards would go here.
+                            // For simplicity, we just log the purchase for now.
+                        }
+                        
+                        await saveDB();
+                        renderMarket();
+                        updateHeader();
+                        showToast(`${T.bought}: ${itemName}`);
+                    }
+                });
+            } else {
+                showToast(T.insufficient_credits);
+            }
+        }
+        
+        async function addCustomReward() { 
+            const n = document.getElementById('newRewardName').value, c = parseInt(document.getElementById('newRewardCost').value); 
+            if(n && c) { 
+                appState.rewards.push({id:Date.now(), name:n, cost:c}); 
+                await saveDB(); renderMarket(); 
+            } 
+        }
+        function renderHistory() { 
+            const T = TRANSLATIONS[appState.lang];
+            document.getElementById('history-list').innerHTML = appState.history.length ? appState.history.map(h => `<div class="flex justify-between items-center border-b border-gray-800 pb-2"><div><div class="text-white">${h.desc}</div><div class="text-[9px] text-gray-500">${h.date}</div></div><div class="text-cyan-500">+${h.xp} XP</div></div>`).join('') : `<div class="text-gray-600 text-center">${T.no_data}</div>`; 
+        }
         
         // Modal & Utils
         function openGeneratorModal() { document.getElementById('generatorModal').classList.remove('hidden'); document.getElementById('generatorModal').classList.add('flex'); }
         function closeGeneratorModal() { document.getElementById('generatorModal').classList.add('hidden'); document.getElementById('generatorModal').classList.remove('flex'); }
         function generateProtocol(env) { closeGeneratorModal(); const available = FULL_EXERCISE_DB.filter(e => e.type === env || e.type === 'Home'); const getEx = (cat) => { const pool = available.filter(e => e.cat === cat); return pool[Math.floor(Math.random() * pool.length)]; }; const routine = [getEx('Push'), getEx('Pull'), getEx('Legs'), getEx('Core'), available[Math.floor(Math.random() * available.length)]]; const exercises = routine.map(e => ({ name: e.name, sets: 3, reps: e.isTime ? null : (env === 'Home' ? 15 : 10), time: e.isTime ? 45 : null, type: e.isTime ? 'Time Based' : 'Rep Based' })); const routineName = `AI-${env.toUpperCase()}`; startSessionDirect({ name: routineName, desc: `${env} Auto-Gen`, exercises: exercises }); }
-        function startSession(key) { startSessionDirect({ ...PRESETS, ...db.customPresets }[key]); }
+        function startSession(key) { startSessionDirect({ ...PRESETS, ...appState.customPresets }[key]); }
         function startSessionDirect(presetData) { activeSession = { id: Date.now(), routine: presetData.name, startTime: Date.now(), exercises: JSON.parse(JSON.stringify(presetData.exercises)), currentExIndex: 0, logs: [] }; activeSession.exercises.forEach(ex => { ex.setsData = []; for(let i=0; i<ex.sets; i++) { ex.setsData.push({ completed: false, val: ex.reps || ex.time }); } }); document.getElementById('activeRoutineName').innerText = presetData.name; startSessionTimer(); renderActiveExercise(); navTo('battle'); }
         function startSessionTimer() { clearInterval(sessionTimerInterval); const start = Date.now(); const display = document.getElementById('sessionTimer'); sessionTimerInterval = setInterval(() => { const diff = Math.floor((Date.now() - start) / 1000); const m = Math.floor(diff / 60).toString().padStart(2, '0'); const s = (diff % 60).toString().padStart(2, '0'); display.innerText = `${m}:${s}`; }, 1000); }
-        function renderActiveExercise() { const ex = activeSession.exercises[activeSession.currentExIndex]; document.getElementById('currentExIndex').innerText = activeSession.currentExIndex + 1; document.getElementById('totalExCount').innerText = activeSession.exercises.length; document.getElementById('currentExName').innerText = ex.name; document.getElementById('currentExTarget').innerText = ex.type === 'Time Based' ? `Target: ${ex.sets} Sets x ${ex.time}s` : `Target: ${ex.sets} Sets x ${ex.reps} Reps`; const container = document.getElementById('setsContainer'); container.innerHTML = ''; ex.setsData.forEach((set, idx) => { container.innerHTML += `<div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded border ${set.completed ? 'border-green-500/50' : 'border-gray-700'} transition-all"><div class="w-8 text-center text-gray-500 font-mono text-xs">SET ${idx+1}</div><input type="number" value="${set.val}" id="set-val-${idx}" class="bg-black border border-gray-600 w-16 text-center text-white py-2 rounded focus:border-cyan-500 outline-none font-mono" ${set.completed?'disabled':''}><button onclick="completeSet(${idx})" class="flex-1 py-2 font-bold uppercase text-xs rounded transition-colors ${set.completed ? 'bg-green-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}">${set.completed ? '<i class="fa-solid fa-check"></i>' : 'LOG'}</button></div>`; }); const allDone = ex.setsData.every(s => s.completed); const btn = document.getElementById('nextExBtn'); if (activeSession.currentExIndex >= activeSession.exercises.length - 1) { btn.innerHTML = 'FINISH'; btn.onclick = allDone ? endSession : () => showToast("Complete sets!"); btn.className = allDone ? "bg-green-600 hover:bg-green-500 text-white py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" : "bg-gray-700 text-gray-500 py-3 font-bold uppercase text-xs clip-tech-sm cursor-not-allowed"; } else { btn.innerHTML = 'NEXT'; btn.onclick = nextExercise; } }
-        function triggerRest(s) { const o = document.getElementById('restOverlay'); const d = document.getElementById('restTimerDisplay'); o.classList.remove('hidden'); let t = s; d.innerText = `00:${t}`; if(restInterval) clearInterval(restInterval); restInterval = setInterval(() => { t--; d.innerText = `00:${t.toString().padStart(2,'0')}`; if(t<=0) skipRest(); }, 1000); }
+        function renderActiveExercise() { 
+            const ex = activeSession.exercises[activeSession.currentExIndex]; 
+            const T = TRANSLATIONS[appState.lang];
+            
+            document.getElementById('currentExIndex').innerText = activeSession.currentExIndex + 1; 
+            document.getElementById('totalExCount').innerText = activeSession.exercises.length; 
+            document.getElementById('currentExName').innerText = ex.name; 
+            document.getElementById('currentExTarget').innerText = ex.type === 'Time Based' ? `${T.target}: ${ex.sets} ${T.sets} x ${ex.time}s` : `${T.target}: ${ex.sets} ${T.sets} x ${ex.reps} ${T.reps}`; 
+            
+            const container = document.getElementById('setsContainer'); container.innerHTML = ''; 
+            ex.setsData.forEach((set, idx) => { 
+                container.innerHTML += `<div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded border ${set.completed ? 'border-green-500/50' : 'border-gray-700'} transition-all"><div class="w-8 text-center text-gray-500 font-mono text-xs">${T.sets.toUpperCase().substring(0,1)} ${idx+1}</div><input type="number" value="${set.val}" id="set-val-${idx}" class="bg-black border border-gray-600 w-16 text-center text-white py-2 rounded focus:border-cyan-500 outline-none font-mono" ${set.completed?'disabled':''}><button onclick="completeSet(${idx})" class="flex-1 py-2 font-bold uppercase text-xs rounded transition-colors ${set.completed ? 'bg-green-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}">${set.completed ? '<i class="fa-solid fa-check"></i>' : T.log.toUpperCase()}</button></div>`; 
+            }); 
+            const allDone = ex.setsData.every(s => s.completed); 
+            const btn = document.getElementById('nextExBtn'); 
+            if (activeSession.currentExIndex >= activeSession.exercises.length - 1) { 
+                btn.innerHTML = T.finish.toUpperCase(); 
+                btn.onclick = allDone ? endSession : () => showToast(T.complete_sets_prompt); 
+                btn.className = allDone ? "bg-green-600 hover:bg-green-500 text-white py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" : "bg-gray-700 text-gray-500 py-3 font-bold uppercase text-xs clip-tech-sm cursor-not-allowed"; 
+            } else { 
+                btn.innerHTML = T.next.toUpperCase(); 
+                btn.onclick = allDone ? nextExercise : () => showToast(T.complete_sets_prompt); 
+                btn.className = allDone ? "bg-cyan-600 hover:bg-cyan-500 text-white py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" : "bg-gray-700 text-gray-500 py-3 font-bold uppercase text-xs clip-tech-sm cursor-not-allowed"; 
+            } 
+        }
+        
+        // FIX: Rest Timer Trigger: Auto-triggers, but skip is immediate.
+        function triggerRest(s) { 
+            const o = document.getElementById('restOverlay'); 
+            const d = document.getElementById('restTimerDisplay'); 
+            o.classList.remove('hidden'); 
+            let t = s; 
+            d.innerText = `00:${t.toString().padStart(2,'0')}`; 
+            if(restInterval) clearInterval(restInterval); 
+            restInterval = setInterval(() => { 
+                t--; 
+                d.innerText = `00:${t.toString().padStart(2,'0')}`; 
+                if(t<=0) skipRest(); 
+            }, 1000); 
+        }
         function skipRest() { clearInterval(restInterval); document.getElementById('restOverlay').classList.add('hidden'); }
+        
         function nextExercise() { if(activeSession.currentExIndex < activeSession.exercises.length - 1) { activeSession.currentExIndex++; renderActiveExercise(); } }
-        function endSession() { clearInterval(sessionTimerInterval); const duration = Math.floor((Date.now() - activeSession.startTime)/1000/60); const totalSets = activeSession.exercises.reduce((acc, ex) => acc + ex.setsData.filter(s=>s.completed).length, 0); let xp = totalSets * 20 + duration * 5; let gold = Math.floor(xp / 2); addXP(xp); db.gold += gold; db.history.unshift({ date: new Date().toLocaleString(), desc: `${activeSession.routine} (${duration}m)`, xp: xp }); if(db.history.length > 20) db.history.pop(); saveDB(); checkAchievements(); showToast(`Mission Complete! +${xp} XP`); navTo('hub'); activeSession = null; }
+        
+        // MODIFIED: Separated state update and UI update
+        async function endSession() { 
+            const T = TRANSLATIONS[appState.lang];
+            const initialAchievements = new Set(appState.achievements);
+
+            // 1. Calculations
+            clearInterval(sessionTimerInterval); 
+            const duration = Math.floor((Date.now() - activeSession.startTime)/1000/60); 
+            const totalSets = activeSession.exercises.reduce((acc, ex) => acc + ex.setsData.filter(s=>s.completed).length, 0); 
+            let xp = totalSets * 20 + duration * 5; 
+            let gold = Math.floor(xp / 2); 
+            
+            // 2. State Updates
+            addXP(xp); 
+            appState.gold += gold; 
+            appState.history.unshift({ date: new Date().toLocaleString(), desc: `${activeSession.routine} (${duration}m)`, xp: xp }); 
+            if(appState.history.length > 20) appState.history.pop(); 
+            
+            // 3. Find New Achievements
+            const newlyUnlockedIds = await checkAchievements(initialAchievements);
+
+            // 4. Populate summary data
+            sessionRewards = { 
+                xp: xp, 
+                gold: gold, 
+                newAchievements: newlyUnlockedIds, 
+                duration: duration, 
+                routine: activeSession.routine 
+            };
+            
+            // 5. Save State
+            await saveDB(); 
+
+            activeSession = null; 
+            
+            // 6. Show Summary UI
+            showSessionSummary();
+        }
+
+        function showSessionSummary() {
+            const T = TRANSLATIONS[appState.lang];
+            const { xp, gold, newAchievements, duration, routine } = sessionRewards;
+            
+            document.getElementById('summaryTitle').innerText = T.session_complete.toUpperCase();
+            document.getElementById('summaryRoutine').innerText = routine;
+            document.getElementById('summaryDuration').innerText = `${duration} min`;
+            document.getElementById('summaryXP').innerText = `+${xp}`;
+            document.getElementById('summaryGold').innerText = `+${gold}`;
+            
+            const achListEl = document.getElementById('summaryAchievements');
+            achListEl.innerHTML = '';
+
+            if (newAchievements.length > 0) {
+                achListEl.innerHTML = newAchievements.map(id => {
+                    const ach = ACHIEVEMENTS.find(a => a.id === id);
+                    return `<div class="flex items-center gap-2 bg-yellow-900/20 p-2 rounded-lg border border-yellow-500/50">
+                        <i class="fa-solid fa-trophy text-yellow-400"></i>
+                        <div>
+                            <span class="text-xs font-bold text-white">${ach.name}</span>
+                            <span class="text-[9px] text-gray-400">(${T.rewards_earned})</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            } else {
+                achListEl.innerHTML = `<p class="text-xs text-gray-500 italic">${T.no_new_rewards}</p>`;
+            }
+
+            document.getElementById('sessionSummaryModal').classList.remove('hidden');
+            document.getElementById('sessionSummaryModal').classList.add('flex');
+        }
+
+        function closeSessionSummary() {
+            document.getElementById('sessionSummaryModal').classList.add('hidden');
+            document.getElementById('sessionSummaryModal').classList.remove('flex');
+            navTo('hub');
+        }
+
         
         function openPresetCreator() { tempPresetExercises = []; document.getElementById('createPresetModal').classList.remove('hidden'); document.getElementById('createPresetModal').classList.add('flex'); document.getElementById('cpExSelect').innerHTML = FULL_EXERCISE_DB.map(e => `<option value="${e.name}">${e.name}</option>`).join(''); renderPresetExList(); }
         function closePresetModal() { document.getElementById('createPresetModal').classList.add('hidden'); document.getElementById('createPresetModal').classList.remove('flex'); }
-        function addExToPreset() { const name = document.getElementById('cpExSelect').value; const ref = FULL_EXERCISE_DB.find(e => e.name === name); const sets = document.getElementById('cpSets').value || 3; const reps = document.getElementById('cpReps').value || 10; tempPresetExercises.push({ name, sets: parseInt(sets), reps: ref.isTime?null:parseInt(reps), time: ref.isTime?parseInt(reps):null, type: ref.isTime?'Time Based':'Rep Based' }); renderPresetExList(); }
-        function renderPresetExList() { document.getElementById('cpExerciseList').innerHTML = tempPresetExercises.map(e => `<div class="text-[10px] text-gray-300 flex justify-between border-b border-gray-800 pb-1"><span>${e.name}</span><span>${e.sets} x ${e.type==='Time Based'?e.time+'s':e.reps}</span></div>`).join(''); }
-        function saveCustomPreset() { const name = document.getElementById('cpName').value; if(!name || tempPresetExercises.length === 0) return showToast("Invalid"); db.customPresets['custom_'+Date.now()] = { name, desc: "Custom", exercises: tempPresetExercises }; saveDB(); closePresetModal(); renderOperations(); showToast("Saved"); }
-        function checkQuestProgress(exName, amt) { let u = false; db.quests.forEach(q => { if(!q.done && exName.includes(q.type)) { q.current += amt; if(q.current >= q.target) { q.current=q.target; q.done=true; addXP(50); db.gold+=q.reward; showToast("Quest Complete"); } u=true; }}); if(u) saveDB(); }
-        function renderQuests() { document.getElementById('quest-list').innerHTML = db.quests.map(q => `<div class="tech-panel p-4 clip-tech-sm border-l-4 ${q.done?'border-green-500 opacity-60':'border-yellow-500'}"><div class="flex justify-between items-start mb-2"><div><h3 class="text-white font-bold text-sm">${q.title}</h3><p class="text-[10px] text-gray-400 font-mono">${q.desc}</p></div><div class="text-yellow-400 font-mono text-xs">+${q.reward} CR</div></div><div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden"><div class="h-full ${q.done?'bg-green-500':'bg-yellow-500'}" style="width: ${Math.min(100,(q.current/q.target)*100)}%"></div></div><div class="text-right text-[9px] text-gray-500 mt-1">${q.current} / ${q.target}</div></div>`).join(''); }
-        function addXP(amt) { db.xp+=amt; if(db.xp>=db.xpNext) { db.xp-=db.xpNext; db.level++; db.xpNext=Math.floor(db.xpNext*1.5); document.getElementById('levelUpModal').classList.remove('hidden'); document.getElementById('levelUpModal').classList.add('flex'); } updateHeader(); }
+        function addExToPreset() { 
+            const name = document.getElementById('cpExSelect').value; 
+            const ref = FULL_EXERCISE_DB.find(e => e.name === name); 
+            const sets = document.getElementById('cpSets').value || 3; 
+            const reps = document.getElementById('cpReps').value || 10; 
+            tempPresetExercises.push({ name, sets: parseInt(sets), reps: ref.isTime?null:parseInt(reps), time: ref.isTime?parseInt(reps):null, type: ref.isTime?'Time Based':'Rep Based' }); 
+            renderPresetExList(); 
+        }
+        function renderPresetExList() { 
+            document.getElementById('cpExerciseList').innerHTML = tempPresetExercises.map(e => `<div class="text-[10px] text-gray-300 flex justify-between border-b border-gray-800 pb-1"><span>${e.name}</span><span>${e.sets} x ${e.type==='Time Based'?e.time+'s':e.reps}</span></div>`).join(''); 
+        }
+        async function saveCustomPreset() { 
+            const name = document.getElementById('cpName').value; 
+            const T = TRANSLATIONS[appState.lang];
+            if(!name || tempPresetExercises.length === 0) return showToast(T.invalid_protocol); 
+            appState.customPresets['custom_'+Date.now()] = { name, desc: T.custom, exercises: tempPresetExercises }; 
+            await saveDB(); closePresetModal(); renderOperations(); showToast(T.protocol_saved); 
+        }
+        async function checkQuestProgress(exName, amt) { 
+            let u = false; 
+            const T = TRANSLATIONS[appState.lang];
+            appState.quests.forEach(q => { 
+                if(!q.done && exName.includes(q.type)) { 
+                    q.current += amt; 
+                    if(q.current >= q.target) { 
+                        q.current=q.target; 
+                        q.done=true; 
+                        addXP(50); 
+                        appState.gold+=q.reward; 
+                        showToast(T.quest_complete); 
+                    } 
+                    u=true; 
+                }
+            }); 
+            if(u) await saveDB(); 
+        }
+        function renderQuests() { 
+            const T = TRANSLATIONS[appState.lang];
+            document.getElementById('quest-list').innerHTML = appState.quests.map(q => `<div class="tech-panel p-4 clip-tech-sm border-l-4 ${q.done?'border-green-500 opacity-60':'border-yellow-500'}"><div class="flex justify-between items-start mb-2"><div><h3 class="text-white font-bold text-sm">${q.title}</h3><p class="text-[10px] text-gray-400 font-mono">${q.desc}</p></div><div class="text-yellow-400 font-mono text-xs">+${q.reward} CR</div></div><div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden"><div class="h-full ${q.done?'bg-green-500':'bg-yellow-500'}" style="width: ${Math.min(100,(q.current/q.target)*100)}%"></div></div><div class="text-right text-[9px] text-gray-500 mt-1">${q.current} / ${q.target}</div></div>`).join(''); 
+        }
+        function addXP(amt) { 
+            appState.xp+=amt; 
+            if(appState.xp>=appState.xpNext) { 
+                const oldLvlEl = document.getElementById('oldLvl');
+                const newLvlEl = document.getElementById('newLvl');
+                const modalEl = document.getElementById('levelUpModal');
+
+                if (oldLvlEl) oldLvlEl.innerText = appState.level; 
+                
+                appState.xp-=appState.xpNext; 
+                appState.level++; 
+                appState.xpNext=Math.floor(appState.xpNext*1.5); 
+                
+                if (newLvlEl) newLvlEl.innerText = appState.level; 
+                
+                if (modalEl) {
+                    modalEl.classList.remove('hidden'); 
+                    modalEl.classList.add('flex'); 
+                }
+            } 
+            updateHeader(); 
+        }
         function closeLevelModal() { document.getElementById('levelUpModal').classList.add('hidden'); document.getElementById('levelUpModal').classList.remove('flex'); }
-        function saveDB() { localStorage.setItem('glitchGymDB_v3.2', JSON.stringify(db)); updateHeader(); }
-        function resetData() { if(confirm("FACTORY RESET? (ALL DATA WILL BE ERASED)")) { localStorage.removeItem('glitchGymDB_v3.2'); location.reload(); } }
+        
+        // FIX: Replaced confirm() with showConfirmModal() and Firestore reset logic
+        function resetData() { 
+            const T = TRANSLATIONS[appState.lang];
+            showConfirmModal(T.factory_reset_title.toUpperCase(), T.factory_reset_confirm, async (confirmed) => {
+                if (confirmed) {
+                    // Reset appState to default state and save to Firestore
+                    appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                    appState.initialSkillsApplied = false; 
+                    applyInitialSkillBonuses(); // Re-apply initial bonuses
+                    await saveDB();
+                    showToast(T.system_reset_initiated);
+                    setTimeout(() => location.reload(), 500); // Reload after save confirmation
+                }
+            });
+        }
         function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.style.transform = "translate(-50%, 0)"; setTimeout(() => t.style.transform = "translate(-50%, -150%)", 3000); }
         function closeInputModal() { document.getElementById('inputModal').classList.add('hidden'); document.getElementById('inputModal').classList.remove('flex'); }
-        function calcManualPreview() { let xp = 0; if(manualLogType==='strength') { xp = (document.getElementById('mlSets').value||0) * (document.getElementById('mlReps').value||0) * 1.5; } else { xp = (document.getElementById('mlTime').value||0) * 5; } document.getElementById('xpPreview').innerText = Math.floor(xp); document.getElementById('goldPreview').innerText = Math.floor(xp/2); }
+        function calcManualPreview() { 
+            let xp = 0; 
+            if(manualLogType==='strength') { 
+                xp = (document.getElementById('mlSets').value||0) * (document.getElementById('mlReps').value||0) * 1.5; 
+            } else if (manualLogType === 'cardio' || manualLogType === 'vr') {
+                xp = (document.getElementById('mlTime').value||0) * 5; 
+            }
+            document.getElementById('xpPreview').innerText = Math.floor(xp); 
+            document.getElementById('goldPreview').innerText = Math.floor(xp/2); 
+        }
     </script>
 </body>
 </html>
