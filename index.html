@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GLITCH TECHS: SYSTEM V3.1</title>
+    <title>GLITCH TECHS: SYSTEM V3.2.1</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030305">
@@ -99,7 +99,7 @@
                 <div id="boot-bar" class="h-full bg-cyan-500 w-0 transition-all duration-200"></div>
             </div>
             <div class="mt-2 flex justify-between terminal-text text-xs">
-                <span>SYSTEM V3.1 LOADING</span>
+                <span>SYSTEM V3.2 LOADING</span>
                 <span id="boot-pct">0%</span>
             </div>
         </div>
@@ -112,7 +112,7 @@
                 <i class="fa-solid fa-bolt"></i>
             </div>
             <div class="leading-none">
-                <h1 class="text-xs font-bold tracking-[0.2em] text-white uppercase">SYSTEM <span class="text-green-500">V3.1</span></h1>
+                <h1 class="text-xs font-bold tracking-[0.2em] text-white uppercase">SYSTEM <span class="text-green-500">V3.2</span></h1>
                 <div class="flex items-center gap-2 text-[10px] font-mono text-gray-400 mt-1">
                     <span id="headerName">HUNTER</span> | LVL <span id="headerLevel" class="text-white">1</span>
                 </div>
@@ -166,7 +166,7 @@
 
                 <div onclick="navTo('profile')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-pink-500/50">
                     <div class="flex justify-between items-start"><i class="fa-solid fa-chart-pie text-pink-500 text-xl"></i></div>
-                    <div><div class="text-md font-bold text-white" data-i18n="stats">Stats</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="physique">PHYSIQUE</div></div>
+                    <div><div class="text-md font-bold text-white" data-i18n="stats">Stats</div><div class="text-[9px] text-gray-500 font-mono" data-i18n="physique">ANALYTICS</div></div>
                 </div>
 
                 <div onclick="navTo('quests')" class="tech-panel p-4 clip-tech-sm btn-glitch cursor-pointer flex flex-col justify-between h-24 hover:border-yellow-500/50">
@@ -298,21 +298,113 @@
         </div>
 
         <div id="view-profile" class="page-view hidden-page h-full w-full overflow-y-auto p-4 pb-20">
-            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4"><button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button><h2 class="text-white font-bold uppercase" data-i18n="profile">Profile</h2><div class="w-8"></div></div>
+            <div class="p-4 border-b border-gray-800 bg-black/80 flex items-center justify-between mb-4">
+                <button onclick="navTo('hub')" class="text-gray-500"><i class="fa-solid fa-chevron-left"></i> HUB</button>
+                <h2 class="text-white font-bold uppercase" data-i18n="profile">System Analytics</h2>
+                <button onclick="toggleLanguage()" class="text-cyan-400 border border-cyan-500/30 px-2 py-0.5 text-[10px] rounded hover:bg-cyan-900/20"><i class="fa-solid fa-globe mr-1"></i> <span id="langDisplay">EN</span></button>
+            </div>
             
-            <!-- Language Toggle -->
-            <div class="flex justify-end mb-4">
-                <button onclick="toggleLanguage()" class="tech-panel px-3 py-1 text-xs text-cyan-400 border-cyan-500/50 hover:bg-cyan-900/20">
-                    <i class="fa-solid fa-globe mr-1"></i> <span id="langDisplay">EN</span>
-                </button>
+            <!-- Header Profile Card -->
+            <div class="tech-panel p-6 clip-tech mb-6 bg-gradient-to-b from-gray-900 to-black">
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-20 border-2 border-cyan-500 bg-gray-800 flex items-center justify-center text-4xl text-white relative overflow-hidden group">
+                        <i class="fa-solid fa-user-ninja z-10"></i>
+                        <div class="absolute inset-0 bg-cyan-500/10 animate-pulse"></div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">IDENTITY</div>
+                        <div class="text-xl font-bold text-white uppercase leading-none mb-1" id="pName">HUNTER</div>
+                        <div class="text-[10px] text-cyan-500 font-bold uppercase tracking-wider mb-0.5">ARCHETYPE</div>
+                        <div class="text-xl font-black text-white uppercase italic leading-none mb-2 text-glow" id="pClass">SHADOW MONARCH</div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-gray-800 px-2 py-0.5 text-[10px] text-white rounded border border-gray-700 font-mono" id="pRank">E-RANK</span>
+                            <span class="text-gray-500 text-xs font-mono">LVL <span id="pLvl" class="text-white">1</span></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="tech-panel p-6 clip-tech mb-6 bg-gradient-to-b from-gray-900 to-black"><div class="flex items-center gap-4"><div class="w-20 h-20 border-2 border-cyan-500 bg-gray-800 flex items-center justify-center text-4xl text-white"><i class="fa-solid fa-user-ninja"></i></div><div><div class="text-xs text-cyan-500 font-bold uppercase">Class: Shadow Monarch</div><div class="text-3xl font-black text-white uppercase italic" id="pName">HUNTER</div><div class="flex items-center gap-2 mt-1"><span class="bg-gray-800 px-2 py-0.5 text-[10px] text-white rounded border border-gray-700" id="pRank">E-RANK</span><span class="text-gray-500 text-xs font-mono">LVL <span id="pLvl">1</span></span></div></div></div></div>
-            <div class="tech-panel p-2 mb-6"><div class="text-[10px] text-gray-500 text-center uppercase mb-2">Matrix</div><div class="h-64 relative"><canvas id="radarChart"></canvas></div></div>
-            <div class="space-y-2" id="stats-list"></div>
-            
-            <div class="mt-6 border-t border-gray-800 pt-4 text-center">
-                <button onclick="resetData()" class="text-red-500 text-xs hover:text-red-400">RESET DATA</button>
+            <!-- Detailed Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Stat Block: Strength -->
+                <div class="tech-panel p-3 border-l-2 border-red-500">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-red-500 font-bold text-xs uppercase">STRENGTH</span>
+                        <span class="text-white font-mono font-bold" id="statStrVal">10</span>
+                    </div>
+                    <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mb-1">
+                        <div id="barStr" class="h-full bg-red-600 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="text-[9px] text-gray-500 font-mono text-right">XP: <span id="xpStr">0</span> / <span id="xpStrNext">100</span></div>
+                </div>
+
+                <!-- Stat Block: Agility -->
+                <div class="tech-panel p-3 border-l-2 border-green-500">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-green-500 font-bold text-xs uppercase">AGILITY</span>
+                        <span class="text-white font-mono font-bold" id="statAgiVal">10</span>
+                    </div>
+                    <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mb-1">
+                        <div id="barAgi" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="text-[9px] text-gray-500 font-mono text-right">XP: <span id="xpAgi">0</span> / <span id="xpAgiNext">100</span></div>
+                </div>
+
+                <!-- Stat Block: Endurance -->
+                <div class="tech-panel p-3 border-l-2 border-yellow-500">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-yellow-500 font-bold text-xs uppercase">ENDURANCE</span>
+                        <span class="text-white font-mono font-bold" id="statEndVal">10</span>
+                    </div>
+                    <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mb-1">
+                        <div id="barEnd" class="h-full bg-yellow-500 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="text-[9px] text-gray-500 font-mono text-right">XP: <span id="xpEnd">0</span> / <span id="xpEndNext">100</span></div>
+                </div>
+            </div>
+
+            <!-- Charts & Analytics -->
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Radar Chart -->
+                <div class="tech-panel p-3">
+                    <div class="text-[10px] text-gray-500 text-center uppercase mb-2 tracking-widest">MUSCLE MATRIX</div>
+                    <div class="h-64 relative">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Activity Chart -->
+                <div class="tech-panel p-3">
+                    <div class="text-[10px] text-gray-500 text-center uppercase mb-2 tracking-widest">7-DAY ACTIVITY VOLUME</div>
+                    <div class="h-40 relative">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 1RM Calculator Section -->
+                <div class="tech-panel p-4">
+                    <h3 class="text-xs text-cyan-500 font-bold uppercase mb-3 border-b border-gray-800 pb-2">THEORETICAL 1RM ESTIMATOR</h3>
+                    <div class="flex gap-2 mb-4">
+                        <select id="ormSelect" class="bg-black border border-gray-700 text-white text-xs p-2 flex-1 font-mono outline-none" onchange="calculate1RM()">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="flex items-end justify-between bg-gray-900/50 p-3 rounded border border-gray-800">
+                        <div>
+                            <div class="text-[9px] text-gray-500 uppercase">ESTIMATED MAX</div>
+                            <div class="text-3xl font-mono font-bold text-white" id="ormDisplay">0 <span class="text-sm text-gray-600">kg</span></div>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-[9px] text-gray-500 uppercase">BASED ON RECORD</div>
+                             <div class="text-xs text-cyan-400 font-mono" id="ormBasis">-</div>
+                        </div>
+                    </div>
+                    <p class="text-[9px] text-gray-600 mt-2 text-center italic">*Calculated using Epley Formula based on log history.</p>
+                </div>
+            </div>
+
+            <div class="mt-8 border-t border-gray-800 pt-4 text-center">
+                <button onclick="resetData()" class="text-red-900 hover:text-red-500 text-[10px] uppercase font-bold tracking-widest transition-colors">FACTORY RESET SYSTEM</button>
             </div>
         </div>
 
@@ -386,7 +478,7 @@
         </div>
     </div>
     
-    <!-- SKILL UNLOCK MODAL (New for Bit Tracker Integration) -->
+    <!-- SKILL UNLOCK MODAL -->
     <div id="skillUnlockModal" class="fixed inset-0 bg-black/95 z-[160] hidden flex flex-col items-center justify-center p-6 text-center">
         <div class="tech-panel w-full max-w-sm p-6 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
             <div class="w-16 h-16 mx-auto bg-gray-900 border border-cyan-500/50 rounded-full flex items-center justify-center mb-4 text-2xl text-cyan-400">
@@ -414,7 +506,7 @@
             en: {
                 credits: "CREDITS", daily_protocol: "Daily Protocol", streak: "Streak",
                 engage: "ENGAGE", engage_desc: "START PROTOCOL / LOG DATA",
-                stats: "Stats", physique: "PHYSIQUE",
+                stats: "Stats", physique: "ANALYTICS",
                 missions: "Missions", targets: "TARGETS",
                 abilities: "Abilities", skill_tree: "SKILL TREE",
                 trophies: "Trophies", awards: "AWARDS",
@@ -424,14 +516,14 @@
                 generate: "Generate Protocol", gen_desc: "CUSTOMIZED BATTLE ROUTINE (HOME/GYM)",
                 quick_log: "Quick Log", strength: "Strength", cardio: "Cardio",
                 saved_protocols: "Saved Protocols", create_new: "Create New",
-                abort: "Abort", next: "Next", profile: "Profile",
+                abort: "Abort", next: "Next", profile: "System Analytics",
                 params: "PROTOCOL PARAMETERS", select_env: "SELECT ENVIRONMENT",
                 home: "HOME", gym: "GYM"
             },
             pt: {
                 credits: "CRÉDITOS", daily_protocol: "Protocolo Diário", streak: "Sequência",
                 engage: "INICIAR", engage_desc: "INICIAR TREINO / REGISTRO",
-                stats: "Status", physique: "FÍSICO",
+                stats: "Status", physique: "ANÁLISE",
                 missions: "Missões", targets: "ALVOS",
                 abilities: "Habilidades", skill_tree: "ÁRVORE DE SKILLS",
                 trophies: "Troféus", awards: "PRÊMIOS",
@@ -441,80 +533,40 @@
                 generate: "Gerar Protocolo", gen_desc: "ROTINA DE BATALHA (CASA/ACADEMIA)",
                 quick_log: "Registro Rápido", strength: "Força", cardio: "Cardio",
                 saved_protocols: "Protocolos Salvos", create_new: "Criar Novo",
-                abort: "Abortar", next: "Próximo", profile: "Perfil",
+                abort: "Abortar", next: "Próximo", profile: "Análise de Sistema",
                 params: "PARÂMETROS", select_env: "SELECIONAR AMBIENTE",
                 home: "CASA", gym: "ACADEMIA"
             }
         };
 
-        // --- SKILL TREE DATA (IMPORTED FROM BIT TRACKER) ---
         const SKILL_TREE = [
             { id: 'push1', name: 'Push Ups', cat: 'Striker', icon: 'fa-hand-back-fist', tier: 1, req: [], desc: 'The foundation of all pushing strength. Master your bodyweight.' },
             { id: 'push2', name: 'Diamond Push Ups', cat: 'Striker', icon: 'fa-gem', tier: 2, req: ['push1'], desc: 'Close grip push ups targeting triceps and inner chest.' },
             { id: 'push3', name: 'Dips', cat: 'Striker', icon: 'fa-bars', tier: 2, req: ['push1'], desc: 'Vertical pushing power. The upper body squat.' },
-            { id: 'push4', name: 'Archer Push Ups', cat: 'Striker', icon: 'fa-bow-arrow', tier: 3, req: ['push2'], desc: 'Unilateral loading, preparing for the one arm push up.' },
-            { id: 'push5', name: 'One Arm Push Up', cat: 'Striker', icon: 'fa-hand-fist', tier: 4, req: ['push4'], desc: 'The ultimate display of unilateral pushing strength.' },
-            { id: 'push6', name: 'Handstand Hold', cat: 'Striker', icon: 'fa-person-running', tier: 3, req: ['push3'], desc: 'Static overhead stability. Balance meets strength.' },
-            { id: 'push7', name: 'Handstand Push Up', cat: 'Striker', icon: 'fa-arrows-down-to-line', tier: 4, req: ['push6'], desc: 'Vertical pushing mastery against gravity.' },
-            { id: 'push8', name: 'Planche Lean', cat: 'Striker', icon: 'fa-ruler-horizontal', tier: 3, req: ['push2'], desc: 'Building straight arm strength.' },
-            { id: 'push9', name: 'Full Planche', cat: 'Striker', icon: 'fa-plane', tier: 5, req: ['push8'], desc: 'God-tier static strength. Defy gravity.' },
-
             { id: 'pull1', name: 'Pull Ups', cat: 'Assassin', icon: 'fa-arrow-up', tier: 1, req: [], desc: 'The king of back exercises.' },
             { id: 'pull2', name: 'L-Sit Pull Ups', cat: 'Assassin', icon: 'fa-chair', tier: 2, req: ['pull1'], desc: 'Engage the core while pulling.' },
-            { id: 'pull3', name: 'Explosive Pull Ups', cat: 'Assassin', icon: 'fa-explosion', tier: 2, req: ['pull1'], desc: 'Pulling high to the chest or waist.' },
-            { id: 'pull4', name: 'Muscle Up', cat: 'Assassin', icon: 'fa-angle-double-up', tier: 4, req: ['pull3', 'push3'], desc: 'Transition from pull to push in one fluid motion.' },
-            { id: 'pull5', name: 'Front Lever Tuck', cat: 'Assassin', icon: 'fa-anchor', tier: 3, req: ['pull2'], desc: 'Intro to straight arm pulling strength.' },
-            { id: 'pull6', name: 'Front Lever', cat: 'Assassin', icon: 'fa-scale-balanced', tier: 5, req: ['pull5'], desc: 'Horizontal static hold. Pure lat dominance.' },
-            { id: 'pull7', name: 'One Arm Pull Up', cat: 'Assassin', icon: 'fa-1', tier: 5, req: ['pull3'], desc: 'The pinnacle of vertical pulling strength.' },
-
             { id: 'core1', name: 'Plank', cat: 'Tank', icon: 'fa-minus', tier: 1, req: [], desc: 'Static core stability.' },
-            { id: 'core2', name: 'Leg Raises', cat: 'Tank', icon: 'fa-arrow-turn-up', tier: 2, req: ['core1'], desc: 'Dynamic compression strength.' },
-            { id: 'core3', name: 'L-Sit', cat: 'Tank', icon: 'fa-chair', tier: 3, req: ['core2', 'push3'], desc: 'Support hold requiring immense core and tricep strength.' },
-            { id: 'core4', name: 'Dragon Flag', cat: 'Tank', icon: 'fa-dragon', tier: 4, req: ['core2'], desc: 'The legendary Bruce Lee move.' },
-            { id: 'core5', name: 'Human Flag', cat: 'Tank', icon: 'fa-flag', tier: 5, req: ['core4', 'push6'], desc: 'Lateral chain mastery.' },
-
             { id: 'leg1', name: 'Squats', cat: 'Legion', icon: 'fa-person', tier: 1, req: [], desc: 'Fundamental leg strength.' },
-            { id: 'leg2', name: 'Jump Squats', cat: 'Legion', icon: 'fa-frog', tier: 2, req: ['leg1'], desc: 'Explosive lower body power.' },
-            { id: 'leg3', name: 'Pistol Squat', cat: 'Legion', icon: 'fa-gun', tier: 4, req: ['leg1'], desc: 'Single leg squat requiring balance and mobility.' },
-            
-            { id: 'run1', name: 'Runner', cat: 'Monarch', icon: 'fa-person-running', tier: 1, req: [], desc: 'Basic endurance.' },
-            { id: 'god1', name: 'Shadow Step', cat: 'Monarch', icon: 'fa-ghost', tier: 2, req: ['run1'], desc: 'Run 1km in under 4 minutes.' }
+            { id: 'run1', name: 'Runner', cat: 'Monarch', icon: 'fa-person-running', tier: 1, req: [], desc: 'Basic endurance.' }
         ];
 
-        // Exercise DB
         const FULL_EXERCISE_DB = [
-            // Home / Bodyweight
             { name: "Push Ups", type: "Home", muscle: "Chest", cat: "Push" },
             { name: "Diamond Push Ups", type: "Home", muscle: "Arms", cat: "Push" },
-            { name: "Pike Push Ups", type: "Home", muscle: "Shoulders", cat: "Push" },
             { name: "Pull Ups", type: "Home", muscle: "Back", cat: "Pull" },
-            { name: "Chin Ups", type: "Home", muscle: "Back", cat: "Pull" },
             { name: "Squats", type: "Home", muscle: "Legs", cat: "Legs" },
-            { name: "Lunges", type: "Home", muscle: "Legs", cat: "Legs" },
-            { name: "Jump Squats", type: "Home", muscle: "Legs", cat: "Legs" },
-            { name: "Calf Raises", type: "Home", muscle: "Legs", cat: "Legs" },
             { name: "Burpees", type: "Home", muscle: "Cardio", cat: "Cardio" },
             { name: "Plank", type: "Home", muscle: "Core", cat: "Core", isTime: true },
-            { name: "Leg Raises", type: "Home", muscle: "Core", cat: "Core" },
-            // Gym / Equipment
             { name: "Bench Press", type: "Gym", muscle: "Chest", cat: "Push" },
-            { name: "Incline Dumbbell Press", type: "Gym", muscle: "Chest", cat: "Push" },
-            { name: "Overhead Press", type: "Gym", muscle: "Shoulders", cat: "Push" },
-            { name: "Cable Flyes", type: "Gym", muscle: "Chest", cat: "Push" },
-            { name: "Lat Pulldown", type: "Gym", muscle: "Back", cat: "Pull" },
-            { name: "Barbell Row", type: "Gym", muscle: "Back", cat: "Pull" },
-            { name: "Face Pulls", type: "Gym", muscle: "Shoulders", cat: "Pull" },
             { name: "Deadlift", type: "Gym", muscle: "Back", cat: "Pull" },
-            { name: "Leg Press", type: "Gym", muscle: "Legs", cat: "Legs" },
-            { name: "Hamstring Curls", type: "Gym", muscle: "Legs", cat: "Legs" },
-            { name: "Cable Crunches", type: "Gym", muscle: "Core", cat: "Core" }
+            { name: "Overhead Press", type: "Gym", muscle: "Shoulders", cat: "Push" },
+            { name: "Leg Press", type: "Gym", muscle: "Legs", cat: "Legs" }
         ];
 
         const ACHIEVEMENTS = [
             { id: 'first_blood', name: 'First Blood', desc: 'Complete your first workout', reward: 100, unlocked: false },
             { id: 'consistent', name: 'System Stable', desc: 'Reach 3 day streak', reward: 300, unlocked: false },
             { id: 'veteran', name: 'Veteran Hunter', desc: 'Reach Level 5', reward: 1000, unlocked: false },
-            { id: 'rich', name: 'Crypto Miner', desc: 'Amass 1000 Credits', reward: 200, unlocked: false },
             { id: 'iron_body', name: 'Iron Body', desc: 'Complete 1000 total reps (Lifetime)', reward: 500, unlocked: false }
         ];
 
@@ -526,59 +578,59 @@
             ]}
         };
 
+        // --- NEW DATA STRUCTURE ---
         const DEFAULT_STATE = {
             name: "Hunter", level: 1, xp: 0, xpNext: 500, gold: 0, streak: 0, lastLogin: null,
-            lang: 'en', // New language field
-            stats: { str: 10, agi: 10, end: 10 },
+            lang: 'en',
+            // Updated Stats Structure
+            stats: { 
+                str: 10, strXp: 0, 
+                agi: 10, agiXp: 0, 
+                end: 10, endXp: 0 
+            },
             mastery: { Chest: 1, Back: 1, Legs: 1, Arms: 1, Core: 1 },
             quests: [], history: [], customPresets: {},
-            skills: ['push1', 'pull1', 'core1', 'leg1', 'run1'], // Default unlocked from new tree
+            skills: ['push1', 'pull1', 'core1', 'leg1', 'run1'],
             achievements: [],
             rewards: [{ id: 1, name: "Cheat Meal", cost: 500 }, { id: 2, name: "Rest Day", cost: 300 }],
-            totalReps: 0
+            totalReps: 0,
+            shadowRecords: {} // Stores max weights for 1RM calc
         };
 
-        let db = JSON.parse(localStorage.getItem('glitchGymDB_v3')) || JSON.parse(JSON.stringify(DEFAULT_STATE));
-        // Migration Check for Bit Tracker Data
-        let oldData = localStorage.getItem('rpgFitProfiles');
-        if (oldData && (!db.migratedFromBitTracker)) {
+        let db = JSON.parse(localStorage.getItem('glitchGymDB_v3.2')) || JSON.parse(JSON.stringify(DEFAULT_STATE));
+        
+        // --- MIGRATION LOGIC (V3 to V3.2) ---
+        let oldV3 = localStorage.getItem('glitchGymDB_v3');
+        if (oldV3 && !db.migratedV3) {
             try {
-                let profiles = JSON.parse(oldData);
-                let currentId = localStorage.getItem('rpgFitCurrentProfile') || Object.keys(profiles)[0];
-                let profile = profiles[currentId];
-                if(profile) {
-                    console.log("Migrating Bit Tracker Data...");
-                    db.name = profile.name || db.name;
-                    db.level = profile.level || db.level;
-                    db.xp = profile.xp || db.xp;
-                    db.gold = profile.gold || db.gold;
-                    db.streak = profile.streak || db.streak;
-                    // Migrate Skills: Map 'unlockedSkills' to 'skills'
-                    if (profile.unlockedSkills && Array.isArray(profile.unlockedSkills)) {
-                        // Merge avoiding duplicates
-                        db.skills = [...new Set([...db.skills, ...profile.unlockedSkills])];
-                    }
-                    // Migrate Stats
-                    if (profile.stats) {
-                        db.stats.str = profile.stats.str || 10;
-                        db.stats.agi = profile.stats.agi || 10;
-                        db.stats.end = profile.stats.end || 10;
-                    }
-                    db.migratedFromBitTracker = true;
-                    localStorage.setItem('glitchGymDB_v3', JSON.stringify(db));
+                let old = JSON.parse(oldV3);
+                db.level = old.level || 1;
+                db.xp = old.xp || 0;
+                db.gold = old.gold || 0;
+                db.streak = old.streak || 0;
+                db.history = old.history || [];
+                db.achievements = old.achievements || [];
+                db.skills = old.skills || [];
+                // Migrate simple stats to new structure if needed
+                if(old.stats) {
+                    db.stats.str = old.stats.str || 10;
+                    db.stats.agi = old.stats.agi || 10;
+                    db.stats.end = old.stats.end || 10;
                 }
+                db.migratedV3 = true;
+                localStorage.setItem('glitchGymDB_v3.2', JSON.stringify(db));
             } catch(e) { console.error("Migration Error", e); }
         }
 
-        // Basic safety check for array fields
-        if(!db.achievements) db.achievements = [];
-        if(!db.skills) db.skills = ['push1', 'pull1', 'core1', 'leg1', 'run1'];
-        if(!db.lang) db.lang = 'en';
-        
+        // Safety checks for new fields
+        if(db.stats.strXp === undefined) { db.stats.strXp = 0; db.stats.agiXp = 0; db.stats.endXp = 0; }
+        if(!db.shadowRecords) db.shadowRecords = {};
+
         let activeSession = null;
         let restInterval = null;
         let sessionTimerInterval = null;
         let chartInstance = null;
+        let activityChartInstance = null;
         let manualLogType = '';
         let tempPresetExercises = [];
         let selectedSkillId = null;
@@ -591,7 +643,7 @@
             const log = document.getElementById('boot-log');
             const bar = document.getElementById('boot-bar');
             const pct = document.getElementById('boot-pct');
-            const logs = ["CONNECTING TO NEURAL LINK...", "DETECTING LEGACY DATA...", "IMPORTING SKILL MATRIX...", "OPTIMIZING ALGORITHMS...", "SYSTEM ONLINE."];
+            const logs = ["INITIALIZING CORE...", "CALIBRATING BIOMETRICS...", "LOADING V3.2 KERNEL...", "SYNCING STAT MATRIX...", "SYSTEM OPTIMAL."];
             let i = 0;
             const logInt = setInterval(() => {
                 if(i < logs.length) {
@@ -629,19 +681,17 @@
                 if (t[key]) el.innerText = t[key];
             });
             document.getElementById('langDisplay').innerText = db.lang.toUpperCase();
-            renderHub(); // Re-render dynamic content
+            renderHub(); 
             if(!document.getElementById('view-skills').classList.contains('hidden-page')) renderSkills();
+            if(!document.getElementById('view-profile').classList.contains('hidden-page')) renderProfile();
         }
 
-        // --- CORE LOGIC ---
         function checkDailyLogin() {
             const today = new Date().toDateString();
             if (db.lastLogin !== today) {
                 const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
                 if (db.lastLogin === yesterday.toDateString()) { db.streak++; } 
-                else if (db.lastLogin !== null && db.lastLogin !== today) {
-                    db.streak = 0; 
-                }
+                else if (db.lastLogin !== null && db.lastLogin !== today) { db.streak = 0; }
                 if (db.lastLogin === null) db.streak = 1;
                 db.lastLogin = today;
                 generateDailyQuests();
@@ -664,9 +714,7 @@
             document.querySelectorAll('.page-view').forEach(p => { p.classList.add('hidden-page'); p.classList.remove('flex-page'); });
             const page = document.getElementById('view-' + pageId);
             page.classList.remove('hidden-page');
-            if(pageId === 'battle') page.classList.add('flex-page');
-            if(pageId === 'skills') page.classList.add('flex-page');
-            if(pageId === 'achievements') page.classList.add('flex-page');
+            if(['battle', 'skills', 'achievements'].includes(pageId)) page.classList.add('flex-page');
             
             if (pageId === 'profile') renderProfile();
             if (pageId === 'operations') renderOperations();
@@ -679,10 +727,17 @@
         }
 
         function updateHeader() {
-            document.getElementById('headerLevel').innerText = db.level;
-            document.getElementById('goldDisplay').innerText = db.gold;
-            document.getElementById('xpBar').style.width = (db.xp / db.xpNext * 100) + "%";
-            document.getElementById('questBadge').innerText = db.quests.filter(q => !q.done).length;
+            const headerLevel = document.getElementById('headerLevel');
+            if (headerLevel) headerLevel.innerText = db.level;
+            
+            const goldDisplay = document.getElementById('goldDisplay');
+            if (goldDisplay) goldDisplay.innerText = db.gold;
+            
+            const xpBar = document.getElementById('xpBar');
+            if (xpBar) xpBar.style.width = (db.xp / db.xpNext * 100) + "%";
+            
+            const questBadge = document.getElementById('questBadge');
+            if (questBadge) questBadge.innerText = db.quests.filter(q => !q.done).length;
         }
 
         function renderHub() {
@@ -693,212 +748,164 @@
             document.getElementById('greeting').innerText = greet;
         }
 
-        // --- SKILLS (UPDATED) ---
-        function renderSkills() {
-            document.getElementById('skillCredits').innerText = db.gold + ' CR';
-            const c = document.getElementById('skill-container');
-            c.innerHTML = '';
-            
-            const categories = [...new Set(SKILL_TREE.map(s => s.cat))];
+        // --- ADVANCED STATS & ANALYTICS ---
 
-            categories.forEach(cat => {
-                const skills = SKILL_TREE.filter(s => s.cat === cat).sort((a,b) => a.tier - b.tier);
-                let html = `<div class="mb-6">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 pl-2 border-l-2 border-cyan-500">${cat} PATH</h3>
-                    <div class="flex flex-wrap gap-3 items-center justify-start">`;
-                
-                skills.forEach(skill => {
-                    const isUnlocked = db.skills.includes(skill.id);
-                    const borderColor = isUnlocked ? 'border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'border-gray-700 opacity-60 grayscale';
-                    const iconColor = isUnlocked ? 'text-cyan-400' : 'text-gray-600';
-                    const bgClass = isUnlocked ? 'bg-cyan-900/20' : 'bg-gray-900/50';
-
-                    html += `
-                        <div onclick="openSkillModal('${skill.id}')" class="skill-node relative cursor-pointer w-14 h-14 rounded-lg border ${borderColor} ${bgClass} flex flex-col items-center justify-center transition-all active:scale-95">
-                            <i class="fa-solid ${skill.icon} text-lg ${iconColor} mb-1"></i>
-                            ${isUnlocked ? '<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border border-black"></div>' : ''}
-                        </div>
-                    `;
-                });
-                
-                html += `</div></div>`;
-                c.innerHTML += html;
-            });
+        function calculateArchetype() {
+            const { str, agi, end } = db.stats;
+            if (str >= agi && str >= end) return "JUGGERNAUT"; // High Str
+            if (agi >= str && agi >= end) return "SHADOW DANCER"; // High Agi
+            if (end >= str && end >= agi) return "IRONCLAD"; // High End
+            if (Math.abs(str - agi) < 2 && Math.abs(str - end) < 2) return "HYBRID";
+            return "NOVICE";
         }
-
-        function openSkillModal(skillId) {
-            selectedSkillId = skillId;
-            const skill = SKILL_TREE.find(s => s.id === skillId);
-            if(!skill) return;
-
-            const isUnlocked = db.skills.includes(skillId);
-            const m = document.getElementById('skillUnlockModal');
-            
-            document.getElementById('smIcon').className = `fa-solid ${skill.icon}`;
-            document.getElementById('smTitle').innerText = skill.name;
-            document.getElementById('smCat').innerText = `${skill.cat} | Tier ${skill.tier}`;
-            document.getElementById('smDesc').innerText = skill.desc;
-
-            let reqHtml = '';
-            let canUnlock = true;
-            if(skill.req.length === 0) {
-                reqHtml = '<li class="text-green-500">Starter Skill</li>';
-            } else {
-                skill.req.forEach(reqId => {
-                    const reqSkill = SKILL_TREE.find(s => s.id === reqId);
-                    const reqMet = db.skills.includes(reqId);
-                    if(!reqMet) canUnlock = false;
-                    reqHtml += `<li class="${reqMet ? 'text-green-500' : 'text-red-500'}"><i class="fa-solid ${reqMet ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${reqSkill ? reqSkill.name : reqId}</li>`;
-                });
-            }
-            document.getElementById('smReqs').innerHTML = reqHtml;
-
-            const btn = document.getElementById('smUnlockBtn');
-            const cost = skill.tier * 200; // Cost calculation
-            
-            if(isUnlocked) {
-                btn.innerText = "UNLOCKED";
-                btn.className = "w-full bg-green-900/30 text-green-400 font-bold py-3 uppercase tracking-widest text-xs border border-green-500/50 cursor-default";
-                btn.onclick = null;
-            } else if (canUnlock) {
-                if(db.gold >= cost) {
-                    btn.innerText = `UNLOCK (${cost} CR)`;
-                    btn.className = "w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 btn-glitch";
-                    btn.onclick = () => unlockSelectedSkill(cost);
-                } else {
-                    btn.innerText = `NEED ${cost} CR`;
-                    btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed";
-                    btn.onclick = null;
-                }
-            } else {
-                btn.innerText = "LOCKED";
-                btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed";
-                btn.onclick = null;
-            }
-
-            m.classList.remove('hidden');
-            m.classList.add('flex');
-        }
-
-        function closeSkillModal() {
-            document.getElementById('skillUnlockModal').classList.add('hidden');
-            document.getElementById('skillUnlockModal').classList.remove('flex');
-        }
-
-        function unlockSelectedSkill(cost) {
-            if(db.gold >= cost) {
-                db.gold -= cost;
-                db.skills.push(selectedSkillId);
-                const skill = SKILL_TREE.find(s => s.id === selectedSkillId);
-                // Stat boosts
-                if(skill.cat === 'Striker') db.stats.str += 1;
-                if(skill.cat === 'Assassin') db.stats.agi += 1;
-                if(skill.cat === 'Tank') db.stats.end += 1;
-                
-                saveDB();
-                renderSkills();
-                closeSkillModal();
-                updateHeader();
-                showToast(`Skill Unlocked: ${skill.name}`);
-            }
-        }
-
-        // --- PROTOCOL GENERATOR (Home/Gym) ---
-        function openGeneratorModal() { document.getElementById('generatorModal').classList.remove('hidden'); document.getElementById('generatorModal').classList.add('flex'); }
-        function closeGeneratorModal() { document.getElementById('generatorModal').classList.add('hidden'); document.getElementById('generatorModal').classList.remove('flex'); }
-
-        function generateProtocol(env) {
-            closeGeneratorModal();
-            const available = FULL_EXERCISE_DB.filter(e => e.type === env || e.type === 'Home'); 
-            const getEx = (cat) => {
-                const pool = available.filter(e => e.cat === cat);
-                return pool[Math.floor(Math.random() * pool.length)];
-            };
-
-            const routine = [
-                getEx('Push'),
-                getEx('Pull'),
-                getEx('Legs'),
-                getEx('Core'),
-                available[Math.floor(Math.random() * available.length)] 
-            ];
-
-            const exercises = routine.map(e => ({
-                name: e.name,
-                sets: 3,
-                reps: e.isTime ? null : (env === 'Home' ? 15 : 10),
-                time: e.isTime ? 45 : null,
-                type: e.isTime ? 'Time Based' : 'Rep Based'
-            }));
-
-            const routineName = `AI-${env.toUpperCase()}`;
-            startSessionDirect({ name: routineName, desc: `${env} Auto-Gen`, exercises: exercises });
-        }
-
-        // --- BATTLE & PRESETS (Reused) ---
-        function renderOperations() {
-            const list = document.getElementById('workout-list');
-            list.innerHTML = '';
-            let ALL_PRESETS = { ...PRESETS, ...db.customPresets };
-            Object.keys(ALL_PRESETS).forEach(key => {
-                const p = ALL_PRESETS[key];
-                list.innerHTML += `<div onclick="startSession('${key}')" class="tech-panel p-4 clip-tech btn-glitch cursor-pointer group hover:bg-cyan-900/20 transition-colors"><div class="flex justify-between items-center mb-2"><h3 class="text-xl font-bold text-white italic">${p.name.toUpperCase()}</h3><i class="fa-solid fa-play text-cyan-500 group-hover:scale-125 transition-transform"></i></div><p class="text-xs text-gray-400 font-mono mb-3">${p.desc}</p><div class="flex flex-wrap gap-2">${p.exercises.map(e => `<span class="bg-black border border-gray-800 text-[9px] px-2 py-1 text-gray-500 rounded">${e.name}</span>`).join('')}</div></div>`;
-            });
-        }
-        function startSession(key) { startSessionDirect({ ...PRESETS, ...db.customPresets }[key]); }
         
-        function startSessionDirect(presetData) {
-            activeSession = {
-                id: Date.now(),
-                routine: presetData.name,
-                startTime: Date.now(),
-                exercises: JSON.parse(JSON.stringify(presetData.exercises)),
-                currentExIndex: 0,
-                logs: []
-            };
-            activeSession.exercises.forEach(ex => {
-                ex.setsData = [];
-                for(let i=0; i<ex.sets; i++) { ex.setsData.push({ completed: false, val: ex.reps || ex.time }); }
-            });
-            document.getElementById('activeRoutineName').innerText = presetData.name;
-            startSessionTimer();
-            renderActiveExercise();
-            navTo('battle');
+        function calculateRank() {
+            if (db.level >= 50) return "S-RANK";
+            if (db.level >= 30) return "A-RANK";
+            if (db.level >= 20) return "B-RANK";
+            if (db.level >= 10) return "C-RANK";
+            if (db.level >= 5) return "D-RANK";
+            return "E-RANK";
         }
 
-        function startSessionTimer() {
-            clearInterval(sessionTimerInterval);
-            const start = Date.now();
-            const display = document.getElementById('sessionTimer');
-            sessionTimerInterval = setInterval(() => {
-                const diff = Math.floor((Date.now() - start) / 1000);
-                const m = Math.floor(diff / 60).toString().padStart(2, '0');
-                const s = (diff % 60).toString().padStart(2, '0');
-                display.innerText = `${m}:${s}`;
-            }, 1000);
-        }
-
-        function renderActiveExercise() {
-            const ex = activeSession.exercises[activeSession.currentExIndex];
-            document.getElementById('currentExIndex').innerText = activeSession.currentExIndex + 1;
-            document.getElementById('totalExCount').innerText = activeSession.exercises.length;
-            document.getElementById('currentExName').innerText = ex.name;
-            document.getElementById('currentExTarget').innerText = ex.type === 'Time Based' ? `Target: ${ex.sets} Sets x ${ex.time}s` : `Target: ${ex.sets} Sets x ${ex.reps} Reps`;
+        function renderProfile() {
+            // Header Info
+            const pNameEl = document.getElementById('pName');
+            if (pNameEl) pNameEl.innerText = db.name;
             
-            const container = document.getElementById('setsContainer');
-            container.innerHTML = '';
-            ex.setsData.forEach((set, idx) => {
-                container.innerHTML += `<div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded border ${set.completed ? 'border-green-500/50' : 'border-gray-700'} transition-all"><div class="w-8 text-center text-gray-500 font-mono text-xs">SET ${idx+1}</div><input type="number" value="${set.val}" id="set-val-${idx}" class="bg-black border border-gray-600 w-16 text-center text-white py-2 rounded focus:border-cyan-500 outline-none font-mono" ${set.completed?'disabled':''}><button onclick="completeSet(${idx})" class="flex-1 py-2 font-bold uppercase text-xs rounded transition-colors ${set.completed ? 'bg-green-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}">${set.completed ? '<i class="fa-solid fa-check"></i>' : 'LOG'}</button></div>`;
+            const pLvlEl = document.getElementById('pLvl');
+            if (pLvlEl) pLvlEl.innerText = db.level;
+            
+            const pClassEl = document.getElementById('pClass');
+            if (pClassEl) pClassEl.innerText = calculateArchetype();
+            
+            const pRankEl = document.getElementById('pRank');
+            if (pRankEl) pRankEl.innerText = calculateRank();
+
+            // Render Specific Stat Bars
+            const renderStatBar = (stat, val, xp, max) => {
+                const valEl = document.getElementById(`stat${stat}Val`);
+                if(valEl) valEl.innerText = val.toFixed(1);
+                
+                const barEl = document.getElementById(`bar${stat}`);
+                if(barEl) barEl.style.width = `${Math.min(100, (xp/max)*100)}%`;
+                
+                const xpEl = document.getElementById(`xp${stat}`);
+                if(xpEl) xpEl.innerText = Math.floor(xp);
+                
+                const xpNextEl = document.getElementById(`xp${stat}Next`);
+                if(xpNextEl) xpNextEl.innerText = Math.floor(max);
+            };
+
+            renderStatBar('Str', db.stats.str, db.stats.strXp, db.stats.str * 50);
+            renderStatBar('Agi', db.stats.agi, db.stats.agiXp, db.stats.agi * 50);
+            renderStatBar('End', db.stats.end, db.stats.endXp, db.stats.end * 50);
+
+            // Radar Chart
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { 
+                type: 'radar', 
+                data: { labels: Object.keys(db.mastery), datasets: [{ label: 'Mastery', data: Object.values(db.mastery), backgroundColor: 'rgba(6, 182, 212, 0.2)', borderColor: '#06b6d4', borderWidth: 2, pointBackgroundColor: '#fff' }] }, 
+                options: { scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#94a3b8', font: { family: 'Share Tech Mono' } }, ticks: { display: false } } }, plugins: { legend: { display: false } }, maintainAspectRatio: false } 
             });
-            const allDone = ex.setsData.every(s => s.completed);
-            const btn = document.getElementById('nextExBtn');
-            if (activeSession.currentExIndex >= activeSession.exercises.length - 1) {
-                btn.innerHTML = 'FINISH';
-                btn.onclick = allDone ? endSession : () => showToast("Complete sets!");
-                btn.className = allDone ? "bg-green-600 hover:bg-green-500 text-white py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" : "bg-gray-700 text-gray-500 py-3 font-bold uppercase text-xs clip-tech-sm cursor-not-allowed";
+
+            // Activity Chart (Last 7 Days)
+            renderActivityChart();
+
+            // 1RM Init
+            updateORMSelector();
+        }
+
+        function renderActivityChart() {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            if(activityChartInstance) activityChartInstance.destroy();
+            
+            // Generate last 7 days labels and data
+            const labels = [];
+            const data = [];
+            for(let i=6; i>=0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const dateStr = d.toLocaleDateString();
+                labels.push(i===0 ? 'Today' : d.getDate()); // Show number date
+                
+                // Count logs for this date
+                const logs = db.history.filter(h => new Date(h.date).toLocaleDateString() === dateStr).length;
+                data.push(logs);
+            }
+
+            activityChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Workouts',
+                        data: data,
+                        backgroundColor: '#d946ef',
+                        borderRadius: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#666' } },
+                        x: { grid: { display: false }, ticks: { color: '#666', font: { size: 10 } } }
+                    },
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateORMSelector() {
+            const sel = document.getElementById('ormSelect');
+            if (!sel) return;
+            sel.innerHTML = '';
+            // Only weighted exercises for 1RM
+            const weightedEx = FULL_EXERCISE_DB.filter(e => e.type === 'Gym' && e.cat === 'Push' || e.cat === 'Pull' || e.cat === 'Legs');
+            weightedEx.forEach(e => {
+                sel.innerHTML += `<option value="${e.name}">${e.name}</option>`;
+            });
+            sel.value = "Bench Press";
+            calculate1RM();
+        }
+
+        function calculate1RM() {
+            const exName = document.getElementById('ormSelect').value;
+            const record = db.shadowRecords[exName];
+            
+            const display = document.getElementById('ormDisplay');
+            const basis = document.getElementById('ormBasis');
+
+            if(record && record.weight > 0) {
+                // Epley Formula: w * (1 + r/30)
+                const orm = Math.floor(record.weight * (1 + record.reps / 30));
+                display.innerHTML = `${orm} <span class="text-sm text-gray-600">kg</span>`;
+                basis.innerText = `Record: ${record.weight}kg x ${record.reps}`;
             } else {
-                btn.innerHTML = 'NEXT';
-                btn.onclick = nextExercise;
+                display.innerHTML = `0 <span class="text-sm text-gray-600">kg</span>`;
+                basis.innerText = "NO DATA";
+            }
+        }
+
+        // --- BATTLE & LOGGING (Updated with Stat XP) ---
+
+        // Helper to update specific stat XP
+        function addStatXP(type, amt) {
+            // Config: Which stat gets XP based on exercise type
+            let targetStat = 'str'; // default
+            if(type === 'Pull' || type === 'Push') targetStat = 'str';
+            else if(type === 'Legs' || type === 'Cardio') targetStat = 'agi';
+            else if(type === 'Core') targetStat = 'end';
+
+            const xpKey = `${targetStat}Xp`;
+            db.stats[xpKey] += amt;
+
+            // Level up Stat check
+            const threshold = db.stats[targetStat] * 50;
+            if(db.stats[xpKey] >= threshold) {
+                db.stats[xpKey] -= threshold;
+                db.stats[targetStat]++;
+                showToast(`${targetStat.toUpperCase()} INCREASED!`);
             }
         }
 
@@ -907,147 +914,173 @@
             const val = parseInt(document.getElementById(`set-val-${idx}`).value);
             ex.setsData[idx].val = val;
             ex.setsData[idx].completed = true;
+            
             if(ex.type !== 'Time Based') db.totalReps += val;
+            
+            // Find exercise reference for stats
+            const ref = FULL_EXERCISE_DB.find(e => e.name === ex.name);
+            if(ref) {
+                // Add Mastery
+                const muscle = ref.muscle || 'Core';
+                db.mastery[muscle] = (db.mastery[muscle] || 1) + 0.05;
+                
+                // Add Specific Stat XP
+                // Rough formula: 1 rep = 0.5 XP (scaled down)
+                const xpGain = ex.type === 'Time Based' ? (val / 10) : (val * 0.5);
+                addStatXP(ref.cat, xpGain);
+            }
+
             checkQuestProgress(ex.name, val);
             addXP(15); saveDB(); renderActiveExercise();
             if (idx < ex.setsData.length - 1) triggerRest(45);
         }
 
-        function triggerRest(s) {
-            const o = document.getElementById('restOverlay');
-            const d = document.getElementById('restTimerDisplay');
-            o.classList.remove('hidden');
-            let t = s; d.innerText = `00:${t}`;
-            if(restInterval) clearInterval(restInterval);
-            restInterval = setInterval(() => { t--; d.innerText = `00:${t.toString().padStart(2,'0')}`; if(t<=0) skipRest(); }, 1000);
-        }
-        function skipRest() { clearInterval(restInterval); document.getElementById('restOverlay').classList.add('hidden'); }
-        function nextExercise() { if(activeSession.currentExIndex < activeSession.exercises.length - 1) { activeSession.currentExIndex++; renderActiveExercise(); } }
-        
-        function endSession() {
-            clearInterval(sessionTimerInterval);
-            const duration = Math.floor((Date.now() - activeSession.startTime)/1000/60);
-            const totalSets = activeSession.exercises.reduce((acc, ex) => acc + ex.setsData.filter(s=>s.completed).length, 0);
-            let xp = totalSets * 20 + duration * 5;
-            let gold = Math.floor(xp / 2);
-            addXP(xp); db.gold += gold;
-            db.history.unshift({ date: new Date().toLocaleString(), desc: `${activeSession.routine} (${duration}m)`, xp: xp });
-            if(db.history.length > 20) db.history.pop();
-            saveDB(); checkAchievements(); showToast(`Mission Complete! +${xp} XP`); navTo('hub'); activeSession = null;
-        }
+        // Manual Log Submission Update to include Shadow Records
+        function submitManualLog() {
+            const xp = parseInt(document.getElementById('xpPreview').innerText);
+            const gold = parseInt(document.getElementById('goldPreview').innerText);
+            const exName = document.getElementById('mlEx').value;
+            
+            const ref = FULL_EXERCISE_DB.find(e => e.name === exName);
 
-        // --- MANUAL, PRESETS, QUESTS, MARKET ---
+            if(manualLogType === 'strength') {
+                 const r = parseInt(document.getElementById('mlReps').value || 0);
+                 const s = parseInt(document.getElementById('mlSets').value || 0);
+                 
+                 db.totalReps += (r * s);
+                 checkQuestProgress(exName, r*s);
+                 
+                 if(ref) addStatXP(ref.cat, (r*s)*0.5);
+                 checkShadowRecord();
+
+            } else {
+                 const t = parseInt(document.getElementById('mlTime').value || 0);
+                 checkQuestProgress(exName, t);
+                 if(ref) addStatXP(ref.cat, t/5);
+            }
+            
+            addXP(xp); db.gold += gold; 
+            db.history.unshift({date: new Date().toLocaleString(), desc: "Manual: " + exName, xp: xp});
+            saveDB(); closeInputModal(); checkAchievements(); showToast("Logged");
+        }
+        
+        // Manual Log Modal Update
         function openManualLog(type) {
             manualLogType = type;
             document.getElementById('inputModal').classList.remove('hidden'); document.getElementById('inputModal').classList.add('flex');
             const f = document.getElementById('modalFields');
             if(type==='strength') {
                 const opts = FULL_EXERCISE_DB.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
-                f.innerHTML = `<select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3">${opts}</select><div class="flex gap-2"><input type="number" id="mlSets" placeholder="Sets" class="w-1/2 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()"><input type="number" id="mlReps" placeholder="Reps" class="w-1/2 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()"></div>`;
+                f.innerHTML = `
+                    <select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3">${opts}</select>
+                    <div class="flex gap-2 mb-2">
+                        <input type="number" id="mlSets" placeholder="Sets" class="w-1/2 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                        <input type="number" id="mlReps" placeholder="Reps" class="w-1/2 bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">
+                    </div>
+                    <input type="number" id="mlWeight" placeholder="Weight (kg) [Optional]" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono" onchange="checkShadowRecord()">
+                `;
             } else {
                 f.innerHTML = `<select id="mlEx" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono mb-3"><option>Running</option><option>Cycling</option></select><input type="number" id="mlTime" placeholder="Time (min)" class="w-full bg-black border border-gray-700 p-3 text-white text-xs font-mono" oninput="calcManualPreview()">`;
             }
             calcManualPreview();
         }
-        function calcManualPreview() {
-            let xp = 0;
-            if(manualLogType==='strength') { xp = (document.getElementById('mlSets').value||0) * (document.getElementById('mlReps').value||0) * 1.5; }
-            else { xp = (document.getElementById('mlTime').value||0) * 5; }
-            document.getElementById('xpPreview').innerText = Math.floor(xp);
-            document.getElementById('goldPreview').innerText = Math.floor(xp/2);
-        }
-        function submitManualLog() {
-            const xp = parseInt(document.getElementById('xpPreview').innerText);
-            const gold = parseInt(document.getElementById('goldPreview').innerText);
-            const exName = document.getElementById('mlEx').value;
-            if(manualLogType === 'strength') {
-                 const r = parseInt(document.getElementById('mlReps').value || 0);
-                 const s = parseInt(document.getElementById('mlSets').value || 0);
-                 db.totalReps += (r * s);
-                 checkQuestProgress(exName, r*s);
-            } else {
-                 checkQuestProgress(exName, parseInt(document.getElementById('mlTime').value || 0));
+
+        function checkShadowRecord() {
+            // Update shadow record if new weight is higher
+            const w = parseInt(document.getElementById('mlWeight')?.value || 0);
+            const r = parseInt(document.getElementById('mlReps')?.value || 0);
+            const ex = document.getElementById('mlEx')?.value;
+            
+            if(w > 0 && r > 0 && ex) {
+                const current = db.shadowRecords[ex] || { weight: 0 };
+                if(w > current.weight) {
+                    db.shadowRecords[ex] = { weight: w, reps: r };
+                    showToast(`NEW RECORD: ${ex} ${w}kg!`);
+                }
             }
-            addXP(xp); db.gold += gold; 
-            db.history.unshift({date: new Date().toLocaleString(), desc: "Manual: " + exName, xp: xp});
-            saveDB(); closeInputModal(); checkAchievements(); showToast("Logged");
-        }
-        function closeInputModal() { document.getElementById('inputModal').classList.add('hidden'); document.getElementById('inputModal').classList.remove('flex'); }
-
-        function openPresetCreator() {
-            tempPresetExercises = [];
-            document.getElementById('createPresetModal').classList.remove('hidden'); document.getElementById('createPresetModal').classList.add('flex');
-            document.getElementById('cpExSelect').innerHTML = FULL_EXERCISE_DB.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
-            renderPresetExList();
-        }
-        function closePresetModal() { document.getElementById('createPresetModal').classList.add('hidden'); document.getElementById('createPresetModal').classList.remove('flex'); }
-        function addExToPreset() {
-            const name = document.getElementById('cpExSelect').value;
-            const ref = FULL_EXERCISE_DB.find(e => e.name === name);
-            const sets = document.getElementById('cpSets').value || 3;
-            const reps = document.getElementById('cpReps').value || 10;
-            tempPresetExercises.push({ name, sets: parseInt(sets), reps: ref.isTime?null:parseInt(reps), time: ref.isTime?parseInt(reps):null, type: ref.isTime?'Time Based':'Rep Based' });
-            renderPresetExList();
-        }
-        function renderPresetExList() { document.getElementById('cpExerciseList').innerHTML = tempPresetExercises.map(e => `<div class="text-[10px] text-gray-300 flex justify-between border-b border-gray-800 pb-1"><span>${e.name}</span><span>${e.sets} x ${e.type==='Time Based'?e.time+'s':e.reps}</span></div>`).join(''); }
-        function saveCustomPreset() {
-            const name = document.getElementById('cpName').value;
-            if(!name || tempPresetExercises.length === 0) return showToast("Invalid");
-            db.customPresets['custom_'+Date.now()] = { name, desc: "Custom", exercises: tempPresetExercises };
-            saveDB(); closePresetModal(); renderOperations(); showToast("Saved");
         }
 
-        function checkQuestProgress(exName, amt) {
-            let u = false;
-            db.quests.forEach(q => { if(!q.done && exName.includes(q.type)) { q.current += amt; if(q.current >= q.target) { q.current=q.target; q.done=true; addXP(50); db.gold+=q.reward; showToast("Quest Complete"); } u=true; }});
-            if(u) saveDB();
-        }
-        function renderQuests() {
-            document.getElementById('quest-list').innerHTML = db.quests.map(q => `<div class="tech-panel p-4 clip-tech-sm border-l-4 ${q.done?'border-green-500 opacity-60':'border-yellow-500'}"><div class="flex justify-between items-start mb-2"><div><h3 class="text-white font-bold text-sm">${q.title}</h3><p class="text-[10px] text-gray-400 font-mono">${q.desc}</p></div><div class="text-yellow-400 font-mono text-xs">+${q.reward} CR</div></div><div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden"><div class="h-full ${q.done?'bg-green-500':'bg-yellow-500'}" style="width: ${Math.min(100,(q.current/q.target)*100)}%"></div></div><div class="text-right text-[9px] text-gray-500 mt-1">${q.current} / ${q.target}</div></div>`).join('');
-        }
-
-        function renderProfile() {
-            document.getElementById('pName').innerText = db.name; document.getElementById('pLvl').innerText = db.level;
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, { type: 'radar', data: { labels: Object.keys(db.mastery), datasets: [{ label: 'Mastery', data: Object.values(db.mastery), backgroundColor: 'rgba(6, 182, 212, 0.2)', borderColor: '#06b6d4', borderWidth: 2, pointBackgroundColor: '#fff' }] }, options: { scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#94a3b8', font: { family: 'Share Tech Mono' } }, ticks: { display: false } } }, plugins: { legend: { display: false } }, maintainAspectRatio: false } });
-            document.getElementById('stats-list').innerHTML = Object.keys(db.stats).map(k => `<div class="flex justify-between text-xs border-b border-gray-800 pb-1"><span class="text-gray-400 uppercase">${k}</span><span class="text-white font-mono font-bold">${db.stats[k].toFixed(1)}</span></div>`).join('');
-        }
-
-        function renderMarket() {
-            document.getElementById('marketCredits').innerText = db.gold;
-            document.getElementById('market-list').innerHTML = db.rewards.map(r => `<div class="tech-panel p-3 flex justify-between items-center group"><span class="text-white text-sm font-bold">${r.name}</span><button onclick="buyItem('${r.name}', ${r.cost})" class="text-[10px] bg-purple-900/30 border border-purple-500/50 text-purple-400 px-3 py-1 hover:bg-purple-500 hover:text-white transition-colors uppercase">${r.cost} CR</button></div>`).join('');
-        }
-        function buyItem(n, c) { if(db.gold >= c) { if(confirm("Buy?")) { db.gold -= c; saveDB(); renderMarket(); updateHeader(); showToast("Bought " + n); } } else showToast("Insufficient"); }
-        function addCustomReward() { const n = document.getElementById('newRewardName').value, c = parseInt(document.getElementById('newRewardCost').value); if(n && c) { db.rewards.push({id:Date.now(), name:n, cost:c}); saveDB(); renderMarket(); } }
-
-        function renderHistory() { document.getElementById('history-list').innerHTML = db.history.length ? db.history.map(h => `<div class="flex justify-between items-center border-b border-gray-800 pb-2"><div><div class="text-white">${h.desc}</div><div class="text-[9px] text-gray-500">${h.date}</div></div><div class="text-cyan-500">+${h.xp} XP</div></div>`).join('') : '<div class="text-gray-600 text-center">NO DATA</div>'; }
-        
-        function renderAchievements() {
-            const c = document.getElementById('achievement-list');
+        // --- SKILL & ACHIEVEMENTS (Standard) ---
+        function renderSkills() {
+            document.getElementById('skillCredits').innerText = db.gold + ' CR';
+            const c = document.getElementById('skill-container');
             c.innerHTML = '';
-            ACHIEVEMENTS.forEach(a => {
-                const unlocked = db.achievements.includes(a.id);
-                c.innerHTML += `<div class="tech-panel p-3 flex gap-3 ${unlocked ? 'border-green-500/50 bg-green-900/10' : 'grayscale opacity-50'}"><div class="text-2xl ${unlocked ? 'text-yellow-400' : 'text-gray-600'}"><i class="fa-solid fa-trophy"></i></div><div><div class="text-sm font-bold text-white">${a.name}</div><div class="text-[10px] text-gray-400 font-mono">${a.desc}</div></div>${unlocked ? '<div class="ml-auto text-green-500 text-xs"><i class="fa-solid fa-check"></i></div>' : ''}</div>`;
+            const categories = [...new Set(SKILL_TREE.map(s => s.cat))];
+            categories.forEach(cat => {
+                const skills = SKILL_TREE.filter(s => s.cat === cat).sort((a,b) => a.tier - b.tier);
+                let html = `<div class="mb-6"><h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 pl-2 border-l-2 border-cyan-500">${cat} PATH</h3><div class="flex flex-wrap gap-3 items-center justify-start">`;
+                skills.forEach(skill => {
+                    const isUnlocked = db.skills.includes(skill.id);
+                    const borderColor = isUnlocked ? 'border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'border-gray-700 opacity-60 grayscale';
+                    const iconColor = isUnlocked ? 'text-cyan-400' : 'text-gray-600';
+                    const bgClass = isUnlocked ? 'bg-cyan-900/20' : 'bg-gray-900/50';
+                    html += `<div onclick="openSkillModal('${skill.id}')" class="skill-node relative cursor-pointer w-14 h-14 rounded-lg border ${borderColor} ${bgClass} flex flex-col items-center justify-center transition-all active:scale-95"><i class="fa-solid ${skill.icon} text-lg ${iconColor} mb-1"></i>${isUnlocked ? '<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border border-black"></div>' : ''}</div>`;
+                });
+                html += `</div></div>`;
+                c.innerHTML += html;
             });
         }
-        function checkAchievements() {
-            let newlyUnlocked = false;
-            if(!db.achievements.includes('first_blood') && db.history.length > 0) { unlockAchievement('first_blood'); newlyUnlocked = true; }
-            if(!db.achievements.includes('consistent') && db.streak >= 3) { unlockAchievement('consistent'); newlyUnlocked = true; }
-            if(!db.achievements.includes('veteran') && db.level >= 5) { unlockAchievement('veteran'); newlyUnlocked = true; }
-            if(!db.achievements.includes('rich') && db.gold >= 1000) { unlockAchievement('rich'); newlyUnlocked = true; }
-            if(!db.achievements.includes('iron_body') && db.totalReps >= 1000) { unlockAchievement('iron_body'); newlyUnlocked = true; }
-            if(newlyUnlocked) saveDB();
+        function openSkillModal(skillId) {
+            selectedSkillId = skillId;
+            const skill = SKILL_TREE.find(s => s.id === skillId);
+            if(!skill) return;
+            const isUnlocked = db.skills.includes(skillId);
+            const m = document.getElementById('skillUnlockModal');
+            document.getElementById('smIcon').className = `fa-solid ${skill.icon}`;
+            document.getElementById('smTitle').innerText = skill.name;
+            document.getElementById('smCat').innerText = `${skill.cat} | Tier ${skill.tier}`;
+            document.getElementById('smDesc').innerText = skill.desc;
+            let reqHtml = '';
+            let canUnlock = true;
+            if(skill.req.length === 0) reqHtml = '<li class="text-green-500">Starter Skill</li>';
+            else skill.req.forEach(reqId => { const reqSkill = SKILL_TREE.find(s => s.id === reqId); const reqMet = db.skills.includes(reqId); if(!reqMet) canUnlock = false; reqHtml += `<li class="${reqMet ? 'text-green-500' : 'text-red-500'}"><i class="fa-solid ${reqMet ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${reqSkill ? reqSkill.name : reqId}</li>`; });
+            document.getElementById('smReqs').innerHTML = reqHtml;
+            const btn = document.getElementById('smUnlockBtn');
+            const cost = skill.tier * 200; 
+            if(isUnlocked) { btn.innerText = "UNLOCKED"; btn.className = "w-full bg-green-900/30 text-green-400 font-bold py-3 uppercase tracking-widest text-xs border border-green-500/50 cursor-default"; btn.onclick = null; } 
+            else if (canUnlock) { if(db.gold >= cost) { btn.innerText = `UNLOCK (${cost} CR)`; btn.className = "w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 btn-glitch"; btn.onclick = () => unlockSelectedSkill(cost); } else { btn.innerText = `NEED ${cost} CR`; btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed"; btn.onclick = null; } } 
+            else { btn.innerText = "LOCKED"; btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 cursor-not-allowed"; btn.onclick = null; }
+            m.classList.remove('hidden'); m.classList.add('flex');
         }
-        function unlockAchievement(id) { const a = ACHIEVEMENTS.find(x => x.id === id); db.achievements.push(id); db.gold += a.reward; showToast(`🏆 Unlocked: ${a.name}`); }
+        function closeSkillModal() { document.getElementById('skillUnlockModal').classList.add('hidden'); document.getElementById('skillUnlockModal').classList.remove('flex'); }
+        function unlockSelectedSkill(cost) { if(db.gold >= cost) { db.gold -= cost; db.skills.push(selectedSkillId); const skill = SKILL_TREE.find(s => s.id === selectedSkillId); if(skill.cat === 'Striker') db.stats.str += 1; if(skill.cat === 'Assassin') db.stats.agi += 1; if(skill.cat === 'Tank') db.stats.end += 1; saveDB(); renderSkills(); closeSkillModal(); updateHeader(); showToast(`Skill Unlocked: ${skill.name}`); } }
 
+        // --- STANDARD UTILS ---
+        function renderAchievements() { const c = document.getElementById('achievement-list'); c.innerHTML = ''; ACHIEVEMENTS.forEach(a => { const unlocked = db.achievements.includes(a.id); c.innerHTML += `<div class="tech-panel p-3 flex gap-3 ${unlocked ? 'border-green-500/50 bg-green-900/10' : 'grayscale opacity-50'}"><div class="text-2xl ${unlocked ? 'text-yellow-400' : 'text-gray-600'}"><i class="fa-solid fa-trophy"></i></div><div><div class="text-sm font-bold text-white">${a.name}</div><div class="text-[10px] text-gray-400 font-mono">${a.desc}</div></div>${unlocked ? '<div class="ml-auto text-green-500 text-xs"><i class="fa-solid fa-check"></i></div>' : ''}</div>`; }); }
+        function checkAchievements() { let newlyUnlocked = false; if(!db.achievements.includes('first_blood') && db.history.length > 0) { unlockAchievement('first_blood'); newlyUnlocked = true; } if(!db.achievements.includes('consistent') && db.streak >= 3) { unlockAchievement('consistent'); newlyUnlocked = true; } if(!db.achievements.includes('veteran') && db.level >= 5) { unlockAchievement('veteran'); newlyUnlocked = true; } if(!db.achievements.includes('rich') && db.gold >= 1000) { unlockAchievement('rich'); newlyUnlocked = true; } if(!db.achievements.includes('iron_body') && db.totalReps >= 1000) { unlockAchievement('iron_body'); newlyUnlocked = true; } if(newlyUnlocked) saveDB(); }
+        function unlockAchievement(id) { const a = ACHIEVEMENTS.find(x => x.id === id); db.achievements.push(id); db.gold += a.reward; showToast(`🏆 Unlocked: ${a.name}`); }
+        function renderMarket() { document.getElementById('marketCredits').innerText = db.gold; document.getElementById('market-list').innerHTML = db.rewards.map(r => `<div class="tech-panel p-3 flex justify-between items-center group"><span class="text-white text-sm font-bold">${r.name}</span><button onclick="buyItem('${r.name}', ${r.cost})" class="text-[10px] bg-purple-900/30 border border-purple-500/50 text-purple-400 px-3 py-1 hover:bg-purple-500 hover:text-white transition-colors uppercase">${r.cost} CR</button></div>`).join(''); }
+        function buyItem(n, c) { if(db.gold >= c) { if(confirm("Buy?")) { db.gold -= c; saveDB(); renderMarket(); updateHeader(); showToast("Bought " + n); } } else showToast("Insufficient"); }
+        function addCustomReward() { const n = document.getElementById('newRewardName').value, c = parseInt(document.getElementById('newRewardCost').value); if(n && c) { db.rewards.push({id:Date.now(), name:n, cost:c}); saveDB(); renderMarket(); } }
+        function renderHistory() { document.getElementById('history-list').innerHTML = db.history.length ? db.history.map(h => `<div class="flex justify-between items-center border-b border-gray-800 pb-2"><div><div class="text-white">${h.desc}</div><div class="text-[9px] text-gray-500">${h.date}</div></div><div class="text-cyan-500">+${h.xp} XP</div></div>`).join('') : '<div class="text-gray-600 text-center">NO DATA</div>'; }
+        
+        // Modal & Utils
+        function openGeneratorModal() { document.getElementById('generatorModal').classList.remove('hidden'); document.getElementById('generatorModal').classList.add('flex'); }
+        function closeGeneratorModal() { document.getElementById('generatorModal').classList.add('hidden'); document.getElementById('generatorModal').classList.remove('flex'); }
+        function generateProtocol(env) { closeGeneratorModal(); const available = FULL_EXERCISE_DB.filter(e => e.type === env || e.type === 'Home'); const getEx = (cat) => { const pool = available.filter(e => e.cat === cat); return pool[Math.floor(Math.random() * pool.length)]; }; const routine = [getEx('Push'), getEx('Pull'), getEx('Legs'), getEx('Core'), available[Math.floor(Math.random() * available.length)]]; const exercises = routine.map(e => ({ name: e.name, sets: 3, reps: e.isTime ? null : (env === 'Home' ? 15 : 10), time: e.isTime ? 45 : null, type: e.isTime ? 'Time Based' : 'Rep Based' })); const routineName = `AI-${env.toUpperCase()}`; startSessionDirect({ name: routineName, desc: `${env} Auto-Gen`, exercises: exercises }); }
+        function startSession(key) { startSessionDirect({ ...PRESETS, ...db.customPresets }[key]); }
+        function startSessionDirect(presetData) { activeSession = { id: Date.now(), routine: presetData.name, startTime: Date.now(), exercises: JSON.parse(JSON.stringify(presetData.exercises)), currentExIndex: 0, logs: [] }; activeSession.exercises.forEach(ex => { ex.setsData = []; for(let i=0; i<ex.sets; i++) { ex.setsData.push({ completed: false, val: ex.reps || ex.time }); } }); document.getElementById('activeRoutineName').innerText = presetData.name; startSessionTimer(); renderActiveExercise(); navTo('battle'); }
+        function startSessionTimer() { clearInterval(sessionTimerInterval); const start = Date.now(); const display = document.getElementById('sessionTimer'); sessionTimerInterval = setInterval(() => { const diff = Math.floor((Date.now() - start) / 1000); const m = Math.floor(diff / 60).toString().padStart(2, '0'); const s = (diff % 60).toString().padStart(2, '0'); display.innerText = `${m}:${s}`; }, 1000); }
+        function renderActiveExercise() { const ex = activeSession.exercises[activeSession.currentExIndex]; document.getElementById('currentExIndex').innerText = activeSession.currentExIndex + 1; document.getElementById('totalExCount').innerText = activeSession.exercises.length; document.getElementById('currentExName').innerText = ex.name; document.getElementById('currentExTarget').innerText = ex.type === 'Time Based' ? `Target: ${ex.sets} Sets x ${ex.time}s` : `Target: ${ex.sets} Sets x ${ex.reps} Reps`; const container = document.getElementById('setsContainer'); container.innerHTML = ''; ex.setsData.forEach((set, idx) => { container.innerHTML += `<div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded border ${set.completed ? 'border-green-500/50' : 'border-gray-700'} transition-all"><div class="w-8 text-center text-gray-500 font-mono text-xs">SET ${idx+1}</div><input type="number" value="${set.val}" id="set-val-${idx}" class="bg-black border border-gray-600 w-16 text-center text-white py-2 rounded focus:border-cyan-500 outline-none font-mono" ${set.completed?'disabled':''}><button onclick="completeSet(${idx})" class="flex-1 py-2 font-bold uppercase text-xs rounded transition-colors ${set.completed ? 'bg-green-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}">${set.completed ? '<i class="fa-solid fa-check"></i>' : 'LOG'}</button></div>`; }); const allDone = ex.setsData.every(s => s.completed); const btn = document.getElementById('nextExBtn'); if (activeSession.currentExIndex >= activeSession.exercises.length - 1) { btn.innerHTML = 'FINISH'; btn.onclick = allDone ? endSession : () => showToast("Complete sets!"); btn.className = allDone ? "bg-green-600 hover:bg-green-500 text-white py-3 font-bold uppercase text-xs clip-tech-sm btn-glitch" : "bg-gray-700 text-gray-500 py-3 font-bold uppercase text-xs clip-tech-sm cursor-not-allowed"; } else { btn.innerHTML = 'NEXT'; btn.onclick = nextExercise; } }
+        function triggerRest(s) { const o = document.getElementById('restOverlay'); const d = document.getElementById('restTimerDisplay'); o.classList.remove('hidden'); let t = s; d.innerText = `00:${t}`; if(restInterval) clearInterval(restInterval); restInterval = setInterval(() => { t--; d.innerText = `00:${t.toString().padStart(2,'0')}`; if(t<=0) skipRest(); }, 1000); }
+        function skipRest() { clearInterval(restInterval); document.getElementById('restOverlay').classList.add('hidden'); }
+        function nextExercise() { if(activeSession.currentExIndex < activeSession.exercises.length - 1) { activeSession.currentExIndex++; renderActiveExercise(); } }
+        function endSession() { clearInterval(sessionTimerInterval); const duration = Math.floor((Date.now() - activeSession.startTime)/1000/60); const totalSets = activeSession.exercises.reduce((acc, ex) => acc + ex.setsData.filter(s=>s.completed).length, 0); let xp = totalSets * 20 + duration * 5; let gold = Math.floor(xp / 2); addXP(xp); db.gold += gold; db.history.unshift({ date: new Date().toLocaleString(), desc: `${activeSession.routine} (${duration}m)`, xp: xp }); if(db.history.length > 20) db.history.pop(); saveDB(); checkAchievements(); showToast(`Mission Complete! +${xp} XP`); navTo('hub'); activeSession = null; }
+        
+        function openPresetCreator() { tempPresetExercises = []; document.getElementById('createPresetModal').classList.remove('hidden'); document.getElementById('createPresetModal').classList.add('flex'); document.getElementById('cpExSelect').innerHTML = FULL_EXERCISE_DB.map(e => `<option value="${e.name}">${e.name}</option>`).join(''); renderPresetExList(); }
+        function closePresetModal() { document.getElementById('createPresetModal').classList.add('hidden'); document.getElementById('createPresetModal').classList.remove('flex'); }
+        function addExToPreset() { const name = document.getElementById('cpExSelect').value; const ref = FULL_EXERCISE_DB.find(e => e.name === name); const sets = document.getElementById('cpSets').value || 3; const reps = document.getElementById('cpReps').value || 10; tempPresetExercises.push({ name, sets: parseInt(sets), reps: ref.isTime?null:parseInt(reps), time: ref.isTime?parseInt(reps):null, type: ref.isTime?'Time Based':'Rep Based' }); renderPresetExList(); }
+        function renderPresetExList() { document.getElementById('cpExerciseList').innerHTML = tempPresetExercises.map(e => `<div class="text-[10px] text-gray-300 flex justify-between border-b border-gray-800 pb-1"><span>${e.name}</span><span>${e.sets} x ${e.type==='Time Based'?e.time+'s':e.reps}</span></div>`).join(''); }
+        function saveCustomPreset() { const name = document.getElementById('cpName').value; if(!name || tempPresetExercises.length === 0) return showToast("Invalid"); db.customPresets['custom_'+Date.now()] = { name, desc: "Custom", exercises: tempPresetExercises }; saveDB(); closePresetModal(); renderOperations(); showToast("Saved"); }
+        function checkQuestProgress(exName, amt) { let u = false; db.quests.forEach(q => { if(!q.done && exName.includes(q.type)) { q.current += amt; if(q.current >= q.target) { q.current=q.target; q.done=true; addXP(50); db.gold+=q.reward; showToast("Quest Complete"); } u=true; }}); if(u) saveDB(); }
+        function renderQuests() { document.getElementById('quest-list').innerHTML = db.quests.map(q => `<div class="tech-panel p-4 clip-tech-sm border-l-4 ${q.done?'border-green-500 opacity-60':'border-yellow-500'}"><div class="flex justify-between items-start mb-2"><div><h3 class="text-white font-bold text-sm">${q.title}</h3><p class="text-[10px] text-gray-400 font-mono">${q.desc}</p></div><div class="text-yellow-400 font-mono text-xs">+${q.reward} CR</div></div><div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden"><div class="h-full ${q.done?'bg-green-500':'bg-yellow-500'}" style="width: ${Math.min(100,(q.current/q.target)*100)}%"></div></div><div class="text-right text-[9px] text-gray-500 mt-1">${q.current} / ${q.target}</div></div>`).join(''); }
         function addXP(amt) { db.xp+=amt; if(db.xp>=db.xpNext) { db.xp-=db.xpNext; db.level++; db.xpNext=Math.floor(db.xpNext*1.5); document.getElementById('levelUpModal').classList.remove('hidden'); document.getElementById('levelUpModal').classList.add('flex'); } updateHeader(); }
         function closeLevelModal() { document.getElementById('levelUpModal').classList.add('hidden'); document.getElementById('levelUpModal').classList.remove('flex'); }
-        function saveDB() { localStorage.setItem('glitchGymDB_v3', JSON.stringify(db)); updateHeader(); }
-        function resetData() { if(confirm("RESET ALL DATA?")) { localStorage.removeItem('glitchGymDB_v3'); location.reload(); } }
+        function saveDB() { localStorage.setItem('glitchGymDB_v3.2', JSON.stringify(db)); updateHeader(); }
+        function resetData() { if(confirm("FACTORY RESET? (ALL DATA WILL BE ERASED)")) { localStorage.removeItem('glitchGymDB_v3.2'); location.reload(); } }
         function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.style.transform = "translate(-50%, 0)"; setTimeout(() => t.style.transform = "translate(-50%, -150%)", 3000); }
-
+        function closeInputModal() { document.getElementById('inputModal').classList.add('hidden'); document.getElementById('inputModal').classList.remove('flex'); }
+        function calcManualPreview() { let xp = 0; if(manualLogType==='strength') { xp = (document.getElementById('mlSets').value||0) * (document.getElementById('mlReps').value||0) * 1.5; } else { xp = (document.getElementById('mlTime').value||0) * 5; } document.getElementById('xpPreview').innerText = Math.floor(xp); document.getElementById('goldPreview').innerText = Math.floor(xp/2); }
     </script>
 </body>
 </html>
