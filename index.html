@@ -553,7 +553,7 @@
 
                 <form id="workoutForm" onsubmit="submitWorkout(event)" class="space-y-4">
                     <input type="hidden" id="workoutType">
-                    <div id="fieldsContainer" class="space-y-3"></div>
+                    <div id="fieldsContainer" class="space-y-4"></div>
                     
                     <div class="flex justify-between gap-2 mt-4">
                          <div class="flex-1 bg-gray-900/50 border border-purple-500/20 p-2 text-center">
@@ -775,7 +775,15 @@
         function createNewProfile() {
             const name = getVal('newProfileName');
             if(!name) return;
-            if(profiles[name]) { alert("Profile already exists!"); return; }
+            // IMPORTANT: Replacing alert/confirm with custom modal UI is required in Canvas. 
+            // For now, retaining for quick functionality but should be replaced in the next iteration.
+            if(profiles[name]) { 
+                const messageBox = document.getElementById('systemMessage');
+                document.getElementById('sysMsgText').innerText = "Profile already exists!";
+                messageBox.classList.remove('hidden');
+                setTimeout(() => messageBox.classList.add('hidden'), 3000);
+                return; 
+            }
             profiles[name] = JSON.parse(JSON.stringify(defaultState));
             profiles[name].name = name;
             switchProfile(name);
@@ -825,6 +833,7 @@
         }
 
         function generateDailyQuests() {
+            // Generate 3 quests: 2 Strength (Bodyweight only) and 1 Agility (Run)
             gameState.dailyQuests = [
                 generateQuest('lift'),
                 generateQuest('lift'),
@@ -851,25 +860,30 @@
                     title = "Agility: Endurance";
                     desc = `Run a total distance of ${target}km.`;
                 }
-            } else {
-                const muscles = Object.keys(EXERCISE_CONFIG);
-                const muscle = muscles[Math.floor(Math.random() * muscles.length)];
-                const exercises = EXERCISE_CONFIG[muscle];
-                const exercise = exercises[Math.floor(Math.random() * exercises.length)];
+            } else { // type === 'lift'
+                // MODIFIED: Use only bodyweight exercises for home-friendly quests
+                const exercise = BODYWEIGHT_EXERCISES[Math.floor(Math.random() * BODYWEIGHT_EXERCISES.length)];
+                const muscle = BW_EXERCISE_MAP[exercise] || 'Core';
+                
                 subType = exercise;
-                target = Math.min(20, 3 + Math.floor(lvl / 4));
-                unit = 'sets';
+                // Target total repetitions for bodyweight exercises (Sets * Reps)
+                target = Math.min(200, 50 + (lvl * 5)); // Base 50 reps + 5 per level
+                unit = 'total reps';
                 title = `Strength: ${muscle}`;
-                desc = `Complete ${target} sets of ${exercise}.`;
+                desc = `Complete a total of ${target} repetitions of ${exercise}.`;
             }
+            
+            // Shared reward logic
+            const rewardXP = 50 + (lvl * 5);
+            const rewardGold = 100;
 
             return {
                 id: Date.now() + Math.random(),
                 type: type === 'run' ? 'run' : 'lift', 
                 subType, target, current: 0, completed: false, 
                 title, desc, unit,
-                rewardXP: 50 + (lvl * 5),
-                rewardGold: 100
+                rewardXP,
+                rewardGold
             };
         }
 
@@ -956,7 +970,7 @@
         function buyReward(idx) {
             const r = gameState.customRewards[idx];
             if(gameState.gold >= r.cost) {
-                // Using confirm() here, should be replaced by a custom modal for better UX
+                // IMPORTANT: Using confirm() here, should be replaced by a custom modal for better UX
                 if(window.confirm(`Purchase "${r.name}" for ${r.cost} Gold?`)) {
                     gameState.gold -= r.cost;
                     gameState.history.push({ type: 'shop', date: new Date().toISOString(), desc: `Bought Reward: ${r.name}`, xp: 0 });
@@ -1134,7 +1148,7 @@
             if(!selectedSkillId) return;
             const skill = SKILL_TREE.find(s => s.id === selectedSkillId);
             
-            // Using confirm() here, should be replaced by a custom modal for better UX
+            // IMPORTANT: Using confirm() here, should be replaced by a custom modal for better UX
             if(window.confirm(`Have you mastered the ${skill.name}? Awakening this skill will add it to your arsenal.`)) {
                 gameState.unlockedSkills.push(selectedSkillId);
                 gameState.xp += (skill.tier * 100); // XP Reward for unlocking
@@ -1158,20 +1172,27 @@
 
             if (type === 'lift') {
                 let liftWeight = details.weight || 0;
+                // Add bodyweight for Shadow Record check if it's a bodyweight exercise being tracked.
                 if (BODYWEIGHT_EXERCISES.includes(details.exercise) && gameState.bodyStats.weight > 0) {
-                    liftWeight += gameState.bodyStats.weight;
+                    // Only use bodyweight + external weight for liftWeight
+                    liftWeight += details.weight; 
                 }
-                const record = gameState.shadowRecords[details.exercise] || { maxWeight: 0 };
-                if (liftWeight > record.maxWeight) {
-                    record.maxWeight = liftWeight;
-                    multiplier = 1.5; 
-                    gameState.shadowTraces++;
-                    shadowSuccess = true;
-                } else if (liftWeight > (record.maxWeight * 0.5) && liftWeight < record.maxWeight) {
-                    multiplier = 0.5; 
-                    shadowFail = true;
+                
+                // Shadow record tracking for compound lifts like Bench Press, Squat, etc.
+                // Note: Shadow Records only track non-bodyweight exercises to maintain the competitive 'weight' target.
+                if(!BODYWEIGHT_EXERCISES.includes(details.exercise)) {
+                    const record = gameState.shadowRecords[details.exercise] || { maxWeight: 0 };
+                    if (liftWeight > record.maxWeight) {
+                        record.maxWeight = liftWeight;
+                        multiplier = 1.5; 
+                        gameState.shadowTraces++;
+                        shadowSuccess = true;
+                    } else if (liftWeight > (record.maxWeight * 0.5) && liftWeight < record.maxWeight) {
+                        multiplier = 0.5; 
+                        shadowFail = true;
+                    }
+                    gameState.shadowRecords[details.exercise] = record;
                 }
-                gameState.shadowRecords[details.exercise] = record;
             }
 
             // MUSCLE MASTERY (Volume Load Logic)
@@ -1211,10 +1232,15 @@
                 }
             });
 
+            // DAILY QUEST PROGRESS CHECK (MODIFIED)
             gameState.dailyQuests.forEach(q => {
                 if(!q.completed) {
                     let progress = 0;
-                    if(q.type === 'lift' && details.exercise === q.subType) progress = details.amount;
+                    if(q.type === 'lift' && details.exercise === q.subType) {
+                        // Since new 'lift' quests are now bodyweight total rep goals (sets * reps)
+                        progress = (details.amount || 0) * (details.reps || 0); 
+                    }
+                    
                     if(q.type === 'run') {
                         const isSprintActivity = details.isSprint;
                         const isSprintQuest = q.subType === 'Sprint';
@@ -1280,10 +1306,17 @@
         function showToast(msg) {
             const el = document.getElementById('systemMessage');
             const txt = document.getElementById('sysMsgText');
-            if(el && txt) {
+            if (el && txt) {
                 txt.innerText = msg;
-                el.classList.remove('hidden');
-                setTimeout(() => el.classList.add('hidden'), 3000);
+                el.classList.remove('hidden', 'opacity-0', 'scale-90');
+                el.classList.add('opacity-100', 'scale-100');
+                
+                clearTimeout(el.timer);
+                el.timer = setTimeout(() => {
+                    el.classList.remove('opacity-100', 'scale-100');
+                    el.classList.add('opacity-0', 'scale-90');
+                    setTimeout(() => el.classList.add('hidden'), 500); // Hide after transition
+                }, 3000);
             }
         }
 
@@ -1334,7 +1367,7 @@
                         <div class="w-full bg-gray-800 h-1 rounded overflow-hidden">
                             <div class="h-full ${q.completed ? 'bg-green-500' : 'bg-purple-500'}" style="width: ${pct}%"></div>
                         </div>
-                        <div class="text-right text-[9px] text-gray-600 mt-1 font-mono">${q.current.toFixed(1)} / ${q.target}</div>
+                        <div class="text-right text-[9px] text-gray-600 mt-1 font-mono">${Math.floor(q.current)} / ${q.target} ${q.unit}</div>
                     `;
                     qList.appendChild(div);
                 });
@@ -1390,7 +1423,8 @@
                 recList.innerHTML = '';
                 let hasRecs = false;
                 for(const [ex, data] of Object.entries(gameState.shadowRecords)) {
-                    if(data.maxWeight > 0) {
+                    // Only show records for non-bodyweight exercises
+                    if(data.maxWeight > 0 && !BODYWEIGHT_EXERCISES.includes(ex)) {
                         hasRecs = true;
                         recList.innerHTML += `<div class="flex justify-between text-[10px] border-b border-gray-800 pb-1">
                             <span class="text-gray-400">${ex}</span>
@@ -1398,7 +1432,7 @@
                         </div>`;
                     }
                 }
-                if(!hasRecs) recList.innerHTML = '<div class="text-[10px] text-gray-600 italic">No records set. Lift heavy to forge shadows.</div>';
+                if(!hasRecs) recList.innerHTML = '<div class="text-[10px] text-gray-600 italic">No weighted records set. Lift heavy to forge shadows.</div>';
             }
         }
 
@@ -1442,9 +1476,8 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             for (let i = 0; i < 6; i++) {
-                const outer = getCoords(maxVal, i, maxVal);
-                const labelPos = getCoords(maxVal * 1.25, i, maxVal);
-                ctx.fillText(labels[i], labelPos.x, labelPos.y);
+                const outer = getCoords(maxVal * 1.05, i, maxVal); // Slightly outside the grid
+                ctx.fillText(labels[i], outer.x, outer.y);
             }
 
             ctx.beginPath();
@@ -1501,7 +1534,7 @@
         function openModal(t) {
             currType = t;
             if(t === 'penalty') {
-                // Using confirm() here, should be replaced by a custom modal for better UX
+                // IMPORTANT: Using confirm() here, should be replaced by a custom modal for better UX
                 if(!window.confirm("Are you ready to perform 100 Pushups?")) return;
                 gameState.penaltyActive = false;
                 hide('penaltyOverlay');
@@ -1520,10 +1553,11 @@
             cont.innerHTML = '';
             
             if(t === 'lift') {
-                // Add 'Bodyweight' to the start of muscle options
-                const ms = ['Bodyweight', ...Object.keys(EXERCISE_CONFIG)].map(m => `<option value="${m}">${m}</option>`).join('');
+                // Modified: Now includes all exercise types, including non-bodyweight
+                const muscleOptions = Object.keys(EXERCISE_CONFIG).map(m => `<option value="${m}">${m}</option>`).join('');
+                
                 cont.innerHTML = `
-                    <select id="mSel" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="updEx()">${ms}</select>
+                    <select id="mSel" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="updEx()">${muscleOptions}</select>
                     <select id="eSel" class="w-full bg-gray-900 border border-gray-700 text-xs p-2 text-gray-300" onchange="updShadow()"></select>
                     
                     <div class="flex gap-2">
@@ -1531,7 +1565,7 @@
                         <input type="number" id="rIn" placeholder="Reps" class="w-1/2 bg-gray-900 border border-gray-700 p-2 text-white text-xs" oninput="calcPrev()">
                     </div>
                     
-                    <input type="number" id="wIn" placeholder="Weight (kg)" class="w-full bg-gray-900 border border-gray-700 p-2 text-white text-xs" oninput="calcPrev()">
+                    <input type="number" id="wIn" placeholder="Weight (kg) - 0 for Bodyweight" class="w-full bg-gray-900 border border-gray-700 p-2 text-white text-xs" oninput="calcPrev()">
                 `;
                 setTimeout(() => { updEx(); }, 0);
             } else if (t === 'run') {
@@ -1563,34 +1597,43 @@
             const m = document.getElementById('mSel').value;
             const el = document.getElementById('eSel');
             
-            if (m === 'Bodyweight') {
-                el.innerHTML = BODYWEIGHT_EXERCISES.map(e => `<option value="${e}">${e}</option>`).join('');
-            } else {
-                const filtered = EXERCISE_CONFIG[m].filter(e => !BODYWEIGHT_EXERCISES.includes(e));
-                el.innerHTML = filtered.map(e => `<option value="${e}">${e}</option>`).join('');
+            // Combine machine exercises and bodyweight exercises for the selected muscle
+            let exercises = EXERCISE_CONFIG[m] || [];
+            
+            // Add relevant bodyweight exercises to the list for multi-purpose tracking
+            for(const bwEx of BODYWEIGHT_EXERCISES) {
+                if(BW_EXERCISE_MAP[bwEx] === m) {
+                    exercises.unshift(bwEx); // Add to the start
+                }
             }
+
+            el.innerHTML = exercises.map(e => `<option value="${e}">${e}</option>`).join('');
+            
+            // Also add the 'Bodyweight' option back to the muscle list in case user wants an unsupported BW movement
+            // This is complex to manage here, so we stick to the categorized options.
             updShadow();
         }
 
         function updShadow() {
-            const ex = document.getElementById('eSel').value;
-            const wInput = document.getElementById('wIn');
+            const ex = document.getElementById('eSel')?.value;
+            if(!ex) return;
             
+            const wInput = document.getElementById('wIn');
             if(wInput) {
-                if(BODYWEIGHT_EXERCISES.includes(ex)) {
-                    wInput.classList.add('hidden');
-                    wInput.value = ''; 
-                } else {
-                    wInput.classList.remove('hidden');
-                }
+                 if(BODYWEIGHT_EXERCISES.includes(ex)) {
+                    wInput.placeholder = "External Weight (e.g. 10kg Vest)";
+                    wInput.value = 0; // Default to 0 for bodyweight exercises
+                 } else {
+                    wInput.placeholder = "Weight (kg)";
+                    wInput.value = '';
+                 }
             }
 
-            if(!ex) return;
             const rec = gameState.shadowRecords[ex] ? gameState.shadowRecords[ex].maxWeight : 0;
             const el = document.getElementById('shadowRecordDisplay');
             const target = document.getElementById('shadowTarget');
             
-            if (rec > 0 || BODYWEIGHT_EXERCISES.includes(ex)) {
+            if (rec > 0 && !BODYWEIGHT_EXERCISES.includes(ex)) {
                 el.classList.remove('hidden');
                 target.innerText = rec + "kg";
             } else {
@@ -1609,6 +1652,7 @@
                 let w = parseFloat(document.getElementById('wIn')?.value)||0;
                 const ex = document.getElementById('eSel')?.value;
                 
+                // Add bodyweight to weight for volume calculation if it's a bodyweight exercise (using 0 external weight)
                 if(ex && BODYWEIGHT_EXERCISES.includes(ex)) w += weight;
                 
                 cals = MET_VALUES.lift * weight * (3 * s / 60);
@@ -1654,19 +1698,17 @@
             if(currType === 'lift') {
                 details.amount = parseFloat(document.getElementById('sIn').value);
                 details.reps = parseFloat(document.getElementById('rIn').value);
-                details.weight = parseFloat(document.getElementById('wIn').value) || 0;
+                
+                // Track external weight only for shadow record/volume calc
+                details.externalWeight = parseFloat(document.getElementById('wIn').value) || 0;
+                details.weight = details.externalWeight; // Use this for Shadow Check
                 
                 const selectedMuscle = document.getElementById('mSel').value;
                 const selectedEx = document.getElementById('eSel').value;
                 
                 details.exercise = selectedEx;
+                details.muscle = selectedMuscle; // Use the selected category
                 
-                if (selectedMuscle === 'Bodyweight') {
-                    details.muscle = BW_EXERCISE_MAP[selectedEx] || 'Core';
-                } else {
-                    details.muscle = selectedMuscle;
-                }
-
                 desc = `${details.exercise} (${details.amount}x${details.reps} @ ${details.weight}kg)`;
                 
             } else if (currType === 'run') {
@@ -1700,7 +1742,7 @@
             resetTimer(); 
         }
         function resetData() { 
-            // Using confirm() here, should be replaced by a custom modal for better UX
+            // IMPORTANT: Using confirm() here, should be replaced by a custom modal for better UX
             if(window.confirm("Delete current profile data?")) { 
                 profiles[currentProfileId] = JSON.parse(JSON.stringify(defaultState));
                 profiles[currentProfileId].name = currentProfileId;
