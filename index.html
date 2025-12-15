@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RPG FitTracker: Shadow Monarch</title>
+    <title>Glitch Techs: Bit Tracker Protocol</title>
     <!-- iOS / PWA Meta Tags for Add to Home Screen -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Shadow Monarch">
+    <meta name="apple-mobile-web-app-title" content="Bit Tracker">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -15,11 +15,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;700&family=Share+Tech+Mono&display=swap');
 
         :root {
-            --system-purple: #a855f7;
-            --system-bg: #0b0c15;
+            --system-cyan: #06b6d4; /* Electric Cyan (Primary Accent) */
+            --system-magenta: #ec4899; /* Neon Pink/Magenta (Secondary Accent) */
+            --system-bg: #0a0a14; /* Deep dark blue-black */
             --panel-bg: rgba(15, 15, 25, 0.95);
-            --border-color: rgba(168, 85, 247, 0.3);
-            --text-glow: 0 0 10px rgba(168, 85, 247, 0.4);
+            --border-color: rgba(6, 182, 212, 0.4);
+            --text-glow: 0 0 10px rgba(6, 182, 212, 0.6);
         }
 
         body {
@@ -27,8 +28,9 @@
             background-color: var(--system-bg);
             color: #e5e7eb;
             -webkit-tap-highlight-color: transparent;
+            /* Changed background gradient to use darker theme and cyan accent */
             background-image: 
-                radial-gradient(circle at 50% 0%, #2e1065 0%, transparent 40%),
+                radial-gradient(circle at 50% 0%, #083344 0%, transparent 40%),
                 linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,1));
             background-attachment: fixed;
         }
@@ -48,7 +50,7 @@
             border: 1px solid var(--border-color);
             backdrop-filter: blur(12px);
             border-radius: 4px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 10px -1px rgba(0, 0, 0, 0.7);
             position: relative;
             overflow: hidden;
         }
@@ -57,7 +59,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; width: 2px; height: 100%;
-            background: var(--system-purple);
+            background: var(--system-cyan); /* Cyan line */
             opacity: 0.7;
         }
 
@@ -69,8 +71,8 @@
         }
         
         .quest-item.active {
-            border-left-color: var(--system-purple);
-            background: rgba(45, 20, 60, 0.4);
+            border-left-color: var(--system-cyan); /* Cyan */
+            background: rgba(10, 30, 40, 0.4);
         }
 
         .quest-item.completed {
@@ -81,32 +83,14 @@
 
         /* Animations */
         @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.3); }
-            50% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); border-color: rgba(168, 85, 247, 0.6); }
+            0%, 100% { box-shadow: 0 0 5px rgba(6, 182, 212, 0.2); border-color: rgba(6, 182, 212, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.7); border-color: rgba(6, 182, 212, 0.8); }
         }
 
         .animate-pulse-glow {
             animation: pulse-glow 3s infinite;
         }
-
-        @keyframes levelUp {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .animate-in {
-            animation: levelUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .shake-anim {
-            animation: shake 0.4s ease-in-out;
-        }
+        /* (LevelUp and Shake remain) */
 
         /* Progress Bar */
         .xp-bar-bg {
@@ -115,58 +99,56 @@
         }
         
         .xp-bar-fill {
-            background: linear-gradient(90deg, #7e22ce, #a855f7);
-            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+            background: linear-gradient(90deg, #0e7490, var(--system-cyan)); /* Cyan gradient */
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
             transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Calorie Bar */
         .cal-bar-fill {
-            background: linear-gradient(90deg, #ea580c, #f97316);
-            box-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+            background: linear-gradient(90deg, var(--system-magenta), #db2777); /* Magenta gradient */
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
             transition: width 1s ease;
         }
 
-        /* Skill Tree Styles */
-        .skill-node {
-            position: relative;
-            z-index: 2;
-            transition: all 0.3s ease;
+        /* Heatmap Grid - UPDATED FOR CLARITY */
+        .heatmap-wrapper {
+            display: flex;
+            gap: 4px; /* Space between labels and grid */
         }
-        .skill-node.locked {
-            filter: grayscale(1) opacity(0.5);
-            border-color: #555;
+        .day-labels {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 110px; /* Aligned with grid content */
+            padding-top: 2px;
+            padding-bottom: 2px;
         }
-        .skill-node.locked i { color: #555; }
-        
-        /* Heatmap Grid */
         .heatmap-grid {
             display: grid;
-            grid-template-rows: repeat(7, 1fr);
-            grid-auto-flow: column;
+            grid-template-rows: repeat(7, minmax(0, 1fr)); /* 7 rows (days) */
+            grid-auto-flow: column; /* Fill columns first (weeks) */
             gap: 2px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            height: 110px; 
+            /* Grid width is set dynamically by JS */
         }
-        .heatmap-cell {
-            width: 8px;
-            height: 8px;
+        .heatmap-grid .heatmap-cell {
+            width: 14px; /* Fixed width for columns (weeks) */
+            height: 14px; /* Fixed height for rows (days) */
             border-radius: 1px;
+            cursor: pointer;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #444; }
+        
+        /* Color mapping (Tailwind classes linked to Cyan theme) */
+        .heatmap-grid div.bg-purple-900 { background-color: #0e7490; } /* Cyan dark */
+        .heatmap-grid div.bg-purple-700 { background-color: #06b6d4; } /* Cyan mid */
+        .heatmap-grid div.bg-purple-500 { background-color: #22d3ee; } /* Cyan light */
 
         /* Table Styles */
-        .rank-table th, .rank-table td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #333;
-            font-size: 11px;
-            font-family: 'Share Tech Mono', monospace;
-        }
         .rank-table th {
-            color: #a855f7;
+            color: var(--system-cyan);
             text-transform: uppercase;
         }
     </style>
@@ -176,17 +158,17 @@
     <!-- PENALTY OVERLAY -->
     <div id="penaltyOverlay" class="fixed inset-0 z-[100] bg-black hidden flex flex-col items-center justify-center p-6 text-center">
         <div class="system-card w-full max-w-md p-8 border-red-600/50 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
-            <h1 class="text-4xl font-black text-red-600 font-mono mb-2 tracking-tighter">PENALTY ZONE</h1>
-            <p class="text-gray-400 text-xs font-mono mb-6 uppercase">Daily Quests Failed. System Access Restricted.</p>
+            <h1 class="text-4xl font-black text-red-600 font-mono mb-2 tracking-tighter">DATA CORRUPTION</h1>
+            <p class="text-gray-400 text-xs font-mono mb-6 uppercase">Daily Protocol Failed. System Access Restricted.</p>
             
             <div class="bg-red-950/30 border border-red-500/30 p-4 mb-6 text-left">
-                <h3 class="text-red-400 font-bold uppercase text-xs tracking-widest mb-1">Survival Quest</h3>
+                <h3 class="text-red-400 font-bold uppercase text-xs tracking-widest mb-1">Emergency Reset Protocol</h3>
                 <p class="text-white text-lg font-bold system-font">Complete 100 Push Ups</p>
                 <p class="text-[10px] text-gray-500 mt-1">Status: <span id="penaltyProgress">0</span> / 100</p>
             </div>
 
             <button onclick="openModal('penalty')" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-3 uppercase tracking-widest text-sm transition-colors">
-                Begin Penalty
+                Initiate Protocol
             </button>
         </div>
     </div>
@@ -195,13 +177,13 @@
     <header class="p-4 z-10">
         <div class="system-card p-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gray-900 border border-purple-500/30 flex items-center justify-center text-purple-500 rounded cursor-pointer transition-all hover:bg-purple-900/20" onclick="show('profileModal')">
+                <div class="w-10 h-10 bg-gray-900 border border-cyan-500/30 flex items-center justify-center text-cyan-500 rounded cursor-pointer transition-all hover:bg-cyan-900/20" onclick="show('profileModal')">
                     <i id="rankIcon" class="fa-solid fa-user"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold tracking-widest text-white uppercase cursor-pointer" onclick="show('profileModal')" id="heroName">Player</h1>
+                    <h1 class="text-sm font-bold tracking-widest text-white uppercase cursor-pointer" onclick="show('profileModal')" id="heroName">Tech Hunter</h1>
                     <div class="flex items-center gap-2 text-[10px] font-mono">
-                        <span class="text-purple-400">LVL <span id="headerLevel">1</span></span>
+                        <span class="text-cyan-400">LVL <span id="headerLevel">1</span></span>
                         <span class="text-gray-600">|</span>
                         <span class="text-white" id="headerRank">E-RANK</span>
                     </div>
@@ -212,17 +194,17 @@
                  <!-- Streak & Gold Display -->
                 <div class="flex flex-col items-end gap-0.5 mb-1">
                     <div class="flex items-center gap-1">
-                         <i class="fa-solid fa-fire text-orange-500 text-[10px] animate-pulse"></i>
-                         <span class="text-[10px] font-mono text-orange-400" id="streakDisplay">1</span>
+                         <i class="fa-solid fa-bolt text-yellow-500 text-[10px] animate-pulse"></i>
+                         <span class="text-[10px] font-mono text-yellow-400" id="streakDisplay">1</span>
                     </div>
                     <div class="flex items-center gap-1">
-                        <i class="fa-solid fa-coins text-yellow-500 text-[10px]"></i>
-                        <span class="text-[10px] font-mono text-yellow-400" id="goldDisplay">0</span>
+                        <i class="fa-solid fa-microchip text-fuchsia-500 text-[10px]"></i>
+                        <span class="text-[10px] font-mono text-fuchsia-400" id="goldDisplay">0</span>
                     </div>
                 </div>
                 
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">XP Progress</div>
-                <div class="text-[10px] font-mono text-purple-300"><span id="currentXP">0</span> / <span id="nextLevelXP">500</span></div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Bit Flow</div>
+                <div class="text-[10px] font-mono text-cyan-300"><span id="currentXP">0</span> / <span id="nextLevelXP">500</span></div>
             </div>
         </div>
         
@@ -241,21 +223,21 @@
             <!-- Daily Calorie Goal -->
             <div class="system-card p-3">
                 <div class="flex justify-between items-center mb-1">
-                    <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-fire mr-1"></i>Daily Burn</span>
+                    <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-radiation mr-1"></i>Thermal Load</span>
                     <span class="text-[10px] font-mono text-white"><span id="calCurrent">0</span> / <span id="calGoal">500</span> kcal</span>
                 </div>
                 <div class="w-full bg-gray-800 h-1.5 rounded overflow-hidden">
                     <div id="calBar" class="cal-bar-fill h-full w-0"></div>
                 </div>
                 <div class="text-right mt-1">
-                    <button onclick="setCalorieGoal()" class="text-[9px] text-gray-500 hover:text-orange-300 underline">Set Goal</button>
+                    <button onclick="setCalorieGoal()" class="text-[9px] text-gray-500 hover:text-orange-300 underline">Set Protocol Limit</button>
                 </div>
             </div>
 
             <!-- Daily Quests -->
             <div class="system-card p-4">
                 <div class="flex justify-between items-end mb-4 border-b border-gray-800 pb-2">
-                    <h2 class="text-purple-400 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-scroll mr-2"></i>Daily Quests</h2>
+                    <h2 class="text-cyan-400 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-list-check mr-2"></i>Daily Protocol Missions</h2>
                     <span class="text-[9px] text-gray-600 font-mono" id="dateDisplay">TODAY</span>
                 </div>
                 <div id="questList" class="space-y-2"></div>
@@ -264,40 +246,40 @@
             <!-- Stats Grid -->
             <div class="grid grid-cols-3 gap-2">
                 <div class="system-card p-2 text-center bg-gray-900/40">
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">STR</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">STR (PWR)</div>
                     <div class="text-xl font-bold text-white system-font" id="statStr">10</div>
                 </div>
                 <div class="system-card p-2 text-center bg-gray-900/40">
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">AGI</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">AGI (SPD)</div>
                     <div class="text-xl font-bold text-white system-font" id="statAgi">10</div>
                 </div>
                 <div class="system-card p-2 text-center bg-gray-900/40">
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">VIT</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest">VIT (CORE)</div>
                     <div class="text-xl font-bold text-white system-font" id="statEnd">10</div>
                 </div>
             </div>
 
             <!-- Training Menu -->
             <div>
-                <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 ml-1">Training Protocols</h3>
+                <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 ml-1">Training Modules</h3>
                 <div class="space-y-2">
                     <button onclick="openModal('run')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left">
-                        <div class="w-8 h-8 rounded bg-green-900/20 text-green-500 flex items-center justify-center border border-green-500/30">
+                        <div class="w-8 h-8 rounded bg-cyan-900/20 text-cyan-500 flex items-center justify-center border border-cyan-500/30">
                             <i class="fa-solid fa-person-running"></i>
                         </div>
                         <div>
-                            <div class="text-sm font-bold text-gray-200 group-hover:text-green-400 transition-colors">Agility Training</div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">Speed Protocol</div>
                             <div class="text-[10px] text-gray-500">Run / Sprint (Timer Added)</div>
                         </div>
                     </button>
 
                     <button onclick="openModal('lift')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left">
-                        <div class="w-8 h-8 rounded bg-red-900/20 text-red-500 flex items-center justify-center border border-red-500/30">
+                        <div class="w-8 h-8 rounded bg-fuchsia-900/20 text-fuchsia-500 flex items-center justify-center border border-fuchsia-500/30">
                             <i class="fa-solid fa-dumbbell"></i>
                         </div>
                         <div>
-                            <div class="text-sm font-bold text-gray-200 group-hover:text-red-400 transition-colors">Strength Training</div>
-                            <div class="text-[10px] text-gray-500">Weight & Volume</div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-fuchsia-400 transition-colors">Power Calibration</div>
+                            <div class="text-[10px] text-gray-500">Weight & Volume Input</div>
                         </div>
                     </button>
 
@@ -306,19 +288,19 @@
                             <i class="fa-solid fa-hand-fist"></i>
                         </div>
                         <div>
-                            <div class="text-sm font-bold text-gray-200 group-hover:text-yellow-400 transition-colors">Combat Drills</div>
-                            <div class="text-[10px] text-gray-500">Endurance</div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-yellow-400 transition-colors">Combat Simulation</div>
+                            <div class="text-[10px] text-gray-500">Core/Endurance</div>
                         </div>
                     </button>
                     
                     <button onclick="openModal('vr')" class="system-card w-full p-3 flex items-center gap-4 hover:bg-white/5 transition-colors group text-left relative overflow-hidden">
                         <div class="absolute inset-0 bg-blue-900/10 pointer-events-none"></div>
-                        <div class="w-8 h-8 rounded bg-cyan-900/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30 z-10">
+                        <div class="w-8 h-8 rounded bg-sky-900/20 text-sky-400 flex items-center justify-center border border-sky-500/30 z-10">
                             <i class="fa-solid fa-vr-cardboard"></i>
                         </div>
                         <div class="z-10">
-                            <div class="text-sm font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">VR Rhythm Protocol</div>
-                            <div class="text-[10px] text-gray-500">Track Beat Saber / VR Cardio</div>
+                            <div class="text-sm font-bold text-gray-200 group-hover:text-sky-400 transition-colors">VR Immersion Protocol</div>
+                            <div class="text-[10px] text-gray-500">Track VR Cardio / Game Time</div>
                         </div>
                     </button>
                 </div>
@@ -334,9 +316,9 @@
 
         <!-- SKILLS VIEW -->
         <div id="view-skills" class="hidden space-y-4 animate-in">
-            <div class="system-card p-4 sticky top-0 z-20 bg-[#0b0c15]/95 backdrop-blur-md border-b border-purple-500/30">
-                <h2 class="text-purple-400 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-tree mr-2"></i>Skill Tree</h2>
-                <p class="text-[10px] text-gray-500">Awaken new abilities to increase your power.</p>
+            <div class="system-card p-4 sticky top-0 z-20 bg-[#0b0c15]/95 backdrop-blur-md border-b border-cyan-500/30">
+                <h2 class="text-cyan-400 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-sitemap mr-2"></i>Skill Tree Upgrades</h2>
+                <p class="text-[10px] text-gray-500">Unlock new abilities to optimize your data-self.</p>
             </div>
             
             <div id="skillTreeContainer" class="pb-20 space-y-6">
@@ -348,8 +330,8 @@
         <div id="view-market" class="hidden space-y-4 animate-in">
              <div class="system-card p-4">
                 <div class="flex justify-between items-center border-b border-yellow-900/50 pb-2 mb-4">
-                    <h2 class="text-yellow-500 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-shop mr-2"></i>Hunter's Store</h2>
-                    <span class="font-mono text-yellow-400 text-sm"><i class="fa-solid fa-coins mr-1"></i><span id="storeGoldDisplay">0</span></span>
+                    <h2 class="text-fuchsia-500 font-bold text-sm tracking-widest uppercase"><i class="fa-solid fa-shop mr-2"></i>Reformat Shop</h2>
+                    <span class="font-mono text-fuchsia-400 text-sm"><i class="fa-solid fa-microchip mr-1"></i><span id="storeGoldDisplay">0</span></span>
                 </div>
                 
                 <div class="mb-6">
@@ -363,7 +345,7 @@
                         <input type="text" id="newRewardName" placeholder="Reward Name (e.g. Cheat Meal)" class="flex-1 bg-black border border-gray-600 text-xs p-2 text-white">
                         <input type="number" id="newRewardCost" placeholder="Cost" class="w-16 bg-black border border-gray-600 text-xs p-2 text-white">
                     </div>
-                    <button onclick="addCustomReward()" class="w-full bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 py-2 text-xs uppercase font-bold hover:bg-yellow-900/50">Add to Store</button>
+                    <button onclick="addCustomReward()" class="w-full bg-fuchsia-900/30 text-fuchsia-500 border border-fuchsia-700/50 py-2 text-xs uppercase font-bold hover:bg-fuchsia-900/50">Add to Shop</button>
                 </div>
              </div>
         </div>
@@ -372,26 +354,37 @@
         <div id="view-profile" class="hidden space-y-4 animate-in">
             <div class="system-card p-4">
                  <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
-                    <h2 class="text-purple-400 font-bold text-sm tracking-widest uppercase">Status</h2>
+                    <h2 class="text-cyan-400 font-bold text-sm tracking-widest uppercase">System Status</h2>
                     <div class="flex gap-2">
-                         <button onclick="show('profileModal')" class="text-[10px] bg-gray-800 text-gray-300 px-2 py-1 border border-gray-600 rounded">Profiles</button>
-                        <button onclick="show('rankModal')" class="text-[10px] bg-purple-900/40 text-purple-300 px-2 py-1 border border-purple-500/30 rounded">Guide</button>
+                         <button onclick="show('profileModal')" class="text-[10px] bg-gray-800 text-gray-300 px-2 py-1 border border-gray-600 rounded">User Data</button>
+                        <button onclick="show('rankModal')" class="text-[10px] bg-cyan-900/40 text-cyan-300 px-2 py-1 border border-cyan-500/30 rounded">Classification</button>
                     </div>
                  </div>
                  
                  <div class="grid grid-cols-2 gap-y-2 text-xs system-font mb-4">
                      <div class="text-gray-500">NAME</div><div class="text-white text-right" id="profileNameDisplay">Player</div>
                      <div class="text-gray-500">ARCHETYPE</div><div class="text-white text-right" id="jobTitle">Civilian</div>
-                     <div class="text-gray-500">RANK TITLE</div><div class="text-purple-300 text-right font-bold" id="rankTitle">Okarun</div>
-                     <div class="text-gray-500">SHADOWS</div><div class="text-purple-400 text-right font-bold" id="shadowTraces">0</div>
+                     <div class="text-gray-500">RANK TITLE</div><div class="text-cyan-300 text-right font-bold" id="rankTitle">Okarun</div>
+                     <div class="text-gray-500">SHADOWS</div><div class="text-fuchsia-400 text-right font-bold" id="shadowTraces">0</div>
                  </div>
             </div>
 
-            <!-- Heatmap -->
+            <!-- Heatmap - UPDATED STRUCTURE -->
             <div class="system-card p-4">
-                 <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Consistency (90 Days)</h3>
+                 <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Consistency (Ping Log)</h3>
                  <div id="heatmapContainer" class="w-full overflow-x-auto pb-2">
-                     <div id="heatmapGrid" class="heatmap-grid h-[68px]"></div>
+                     <div class="heatmap-wrapper">
+                         <!-- Day Labels -->
+                         <div id="dayLabels" class="day-labels text-[9px] font-bold text-gray-600 uppercase">
+                            <!-- JS will fill this: M, T, W, T, F, S, S -->
+                         </div>
+                         <!-- Heatmap Grid -->
+                         <div class="flex-1 overflow-x-auto">
+                              <div id="heatmapGrid" class="heatmap-grid w-fit">
+                                 <!-- Cells filled by JS -->
+                              </div>
+                         </div>
+                     </div>
                  </div>
                  <div class="flex justify-end gap-2 text-[8px] text-gray-600 mt-1">
                      <span class="flex items-center gap-1"><div class="w-2 h-2 bg-gray-800 rounded-[1px]"></div> 0</span>
@@ -406,17 +399,17 @@
                 <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Physique & Goals</h3>
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                        <label class="text-[9px] text-purple-400 uppercase">Weight (kg)</label>
+                        <label class="text-[9px] text-cyan-400 uppercase">Weight (kg)</label>
                         <input type="number" id="currentWeightInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-white" placeholder="Current">
                         <input type="number" id="goalWeightInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-gray-400 mt-1" placeholder="Goal">
                     </div>
                     <div>
-                        <label class="text-[9px] text-purple-400 uppercase">Body Fat (%)</label>
+                        <label class="text-[9px] text-cyan-400 uppercase">Body Fat (%)</label>
                         <input type="number" id="currentFatInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-white" placeholder="Current">
                         <input type="number" id="goalFatInput" class="w-full bg-gray-900 border border-gray-700 text-xs p-1 text-gray-400 mt-1" placeholder="Goal">
                     </div>
                 </div>
-                <button onclick="updatePhysique()" class="w-full py-2 bg-purple-900/30 text-purple-300 text-[10px] uppercase border border-purple-500/30 hover:bg-purple-900/50">Update & Check Goals</button>
+                <button onclick="updatePhysique()" class="w-full py-2 bg-cyan-900/30 text-cyan-300 text-[10px] uppercase border border-cyan-500/30 hover:bg-cyan-900/50">Update & Check Goals</button>
             </div>
 
             <!-- Muscle Mastery Spider Chart -->
@@ -434,7 +427,7 @@
             </div>
             
             <button onclick="resetData()" class="w-full py-3 text-xs text-red-500 border border-red-900/30 bg-red-900/10 hover:bg-red-900/20 transition-colors uppercase tracking-widest">
-                System Reset
+                System Data Wipe
             </button>
         </div>
 
@@ -443,20 +436,20 @@
     <!-- NAV -->
     <nav class="fixed bottom-0 w-full bg-[#0b0c15]/95 border-t border-gray-800 z-20 backdrop-blur-md">
         <div class="flex h-16">
-            <button onclick="switchView('dashboard')" id="nav-dashboard" class="flex-1 flex flex-col items-center justify-center text-purple-500">
-                <i class="fa-solid fa-dungeon mb-1"></i>
-                <span class="text-[9px] uppercase tracking-widest">System</span>
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="flex-1 flex flex-col items-center justify-center text-cyan-500">
+                <i class="fa-solid fa-gauge-high mb-1"></i>
+                <span class="text-[9px] uppercase tracking-widest">Core</span>
             </button>
-            <button onclick="switchView('skills')" id="nav-skills" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors">
-                <i class="fa-solid fa-sitemap mb-1"></i>
+            <button onclick="switchView('skills')" id="nav-skills" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-code-branch mb-1"></i>
                 <span class="text-[9px] uppercase tracking-widest">Abilities</span>
             </button>
-            <button onclick="switchView('market')" id="nav-market" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors">
-                <i class="fa-solid fa-shop mb-1"></i>
-                <span class="text-[9px] uppercase tracking-widest">Market</span>
+            <button onclick="switchView('market')" id="nav-market" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-cart-shopping mb-1"></i>
+                <span class="text-[9px] uppercase tracking-widest">Shop</span>
             </button>
-            <button onclick="switchView('profile')" id="nav-profile" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors">
-                <i class="fa-solid fa-address-card mb-1"></i>
+            <button onclick="switchView('profile')" id="nav-profile" class="flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-database mb-1"></i>
                 <span class="text-[9px] uppercase tracking-widest">Status</span>
             </button>
         </div>
@@ -464,28 +457,28 @@
 
     <!-- PROFILES MODAL -->
     <div id="profileModal" class="fixed inset-0 bg-black/95 z-[99] hidden flex items-center justify-center p-4">
-        <div class="system-card w-full max-w-sm p-4 border-purple-500/50">
+        <div class="system-card w-full max-w-sm p-4 border-cyan-500/50">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-purple-400 system-font uppercase text-lg">System Profiles</h3>
+                <h3 class="text-cyan-400 system-font uppercase text-lg">System Profiles</h3>
                 <button onclick="hide('profileModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="profileList" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></div>
             
             <div class="border-t border-gray-700 pt-3">
                 <input type="text" id="newProfileName" placeholder="New Hunter Name" class="w-full bg-gray-900 border border-gray-700 p-2 text-white mb-2 text-sm font-mono">
-                <button onclick="createNewProfile()" class="w-full bg-purple-700 text-white font-bold py-2 uppercase tracking-widest text-xs hover:bg-purple-600">Create Profile</button>
+                <button onclick="createNewProfile()" class="w-full bg-cyan-700 text-white font-bold py-2 uppercase tracking-widest text-xs hover:bg-cyan-600">Create Profile</button>
             </div>
         </div>
     </div>
 
     <!-- SKILL DETAILS MODAL -->
     <div id="skillModal" class="fixed inset-0 bg-black/95 z-[95] hidden flex flex-col items-center justify-center p-6 text-center">
-        <div class="animate-in w-full max-w-sm system-card p-6 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]">
-            <div class="w-16 h-16 mx-auto bg-gray-900 border border-purple-500/50 rounded-full flex items-center justify-center mb-4 text-2xl text-purple-400">
+        <div class="animate-in w-full max-w-sm system-card p-6 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+            <div class="w-16 h-16 mx-auto bg-gray-900 border border-cyan-500/50 rounded-full flex items-center justify-center mb-4 text-2xl text-cyan-400">
                 <i id="skillIcon" class="fa-solid fa-star"></i>
             </div>
             <h2 id="skillTitle" class="text-xl font-bold text-white mb-1 uppercase system-font tracking-wide">Skill Name</h2>
-            <div id="skillCategory" class="text-[10px] text-purple-400 uppercase tracking-widest mb-4">Category</div>
+            <div id="skillCategory" class="text-[10px] text-cyan-400 uppercase tracking-widest mb-4">Category</div>
             
             <p id="skillDesc" class="text-xs text-gray-400 mb-6 font-mono leading-relaxed">Description goes here.</p>
             
@@ -505,9 +498,9 @@
 
     <!-- RANK GUIDE MODAL -->
     <div id="rankModal" class="fixed inset-0 bg-black/95 z-[95] hidden flex items-center justify-center p-4">
-        <div class="system-card w-full max-w-sm p-4 border-purple-500/50">
+        <div class="system-card w-full max-w-sm p-4 border-cyan-500/50">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-purple-400 system-font uppercase text-lg">Rank Classification</h3>
+                <h3 class="text-cyan-400 system-font uppercase text-lg">Rank Classification</h3>
                 <button onclick="hide('rankModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <table class="w-full rank-table text-gray-300">
@@ -521,7 +514,7 @@
                     <tr><td class="text-blue-500">Ranma (B)</td><td>60+</td></tr>
                     <tr><td class="text-red-500">Ichigo (A)</td><td>100+</td></tr>
                     <tr><td class="text-yellow-500">Naruto (S)</td><td>150+</td></tr>
-                    <tr><td class="text-purple-400 font-bold">Goku (SS)</td><td>250+</td></tr>
+                    <tr><td class="text-fuchsia-400 font-bold">Goku (SS)</td><td>250+</td></tr>
                     <tr><td class="text-white font-black drop-shadow">Saitama (SSS)</td><td>400+</td></tr>
                 </tbody>
             </table>
@@ -532,7 +525,7 @@
     <div id="inputModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="system-card w-full max-w-sm animate-pulse-glow">
             <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-900/50">
-                <h3 class="text-purple-400 system-font uppercase text-sm tracking-widest" id="modalTitle">Protocol</h3>
+                <h3 class="text-cyan-400 system-font uppercase text-sm tracking-widest" id="modalTitle">Protocol</h3>
                 <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -556,9 +549,9 @@
                     <div id="fieldsContainer" class="space-y-4"></div>
                     
                     <div class="flex justify-between gap-2 mt-4">
-                         <div class="flex-1 bg-gray-900/50 border border-purple-500/20 p-2 text-center">
-                            <div class="text-[9px] text-gray-500 uppercase">Est. XP</div>
-                            <div class="text-purple-300 font-mono text-lg"><span id="xpPreview">0</span></div>
+                         <div class="flex-1 bg-gray-900/50 border border-cyan-500/20 p-2 text-center">
+                            <div class="text-[9px] text-gray-500 uppercase">Bit Gain</div>
+                            <div class="text-cyan-300 font-mono text-lg"><span id="xpPreview">0</span></div>
                         </div>
                         <div class="flex-1 bg-gray-900/50 border border-orange-500/20 p-2 text-center">
                             <div class="text-[9px] text-gray-500 uppercase">Est. Burn</div>
@@ -566,8 +559,8 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 text-xs uppercase tracking-widest border border-purple-500/30">
-                        Confirm
+                    <button type="submit" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 text-xs uppercase tracking-widest border border-cyan-500/30">
+                        Confirm Transmission
                     </button>
                 </form>
             </div>
@@ -576,26 +569,26 @@
 
     <!-- LEVEL UP MODAL -->
     <div id="levelUpModal" class="fixed inset-0 bg-black/95 z-[60] hidden flex flex-col items-center justify-center p-6 text-center">
-        <div class="animate-in w-full max-w-sm system-card p-8 border-purple-500 shadow-[0_0_50px_rgba(168,85,247,0.15)]">
-            <i class="fa-solid fa-crown text-5xl text-purple-500 mb-4 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]"></i>
-            <h2 class="text-3xl font-black text-white mb-1 uppercase system-font tracking-tighter">Level Up</h2>
+        <div class="animate-in w-full max-w-sm system-card p-8 border-cyan-500 shadow-[0_0_50px_rgba(6,182,212,0.15)]">
+            <i class="fa-solid fa-chart-line text-5xl text-cyan-500 mb-4 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]"></i>
+            <h2 class="text-3xl font-black text-white mb-1 uppercase system-font tracking-tighter">System Upgrade</h2>
             <div class="flex justify-center items-center gap-4 my-6 font-mono">
                 <div class="text-2xl text-gray-500" id="oldLevelDisplay">1</div>
-                <i class="fa-solid fa-arrow-right text-purple-500"></i>
+                <i class="fa-solid fa-arrow-right text-cyan-500"></i>
                 <div class="text-4xl text-white font-bold text-glow" id="newLevelDisplay">2</div>
             </div>
-            <button onclick="closeLevelUp()" class="w-full bg-purple-600 text-white font-bold py-3 uppercase tracking-widest hover:bg-purple-500">Accept Power</button>
+            <button onclick="closeLevelUp()" class="w-full bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest hover:bg-cyan-500">Accept Upgrade</button>
         </div>
     </div>
 
     <!-- SUCCESS MODAL (Shadow Arise) -->
     <div id="shadowSuccessModal" class="fixed inset-0 bg-black/95 z-[90] hidden flex flex-col items-center justify-center p-6 text-center">
-        <div class="animate-in w-full max-w-sm system-card p-6 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
-            <i class="fa-solid fa-ghost text-4xl text-purple-400 mb-4 animate-bounce"></i>
-            <h2 class="text-2xl font-black text-white mb-2 uppercase tracking-widest system-font">Shadow Arise!</h2>
-            <p class="text-xs text-purple-200 font-mono mb-4">You have surpassed your limits.</p>
-            <div class="text-lg text-white font-bold mb-6">New Record Set</div>
-            <button onclick="hide('shadowSuccessModal')" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 uppercase tracking-widest text-xs">Command</button>
+        <div class="animate-in w-full max-w-sm system-card p-6 border-fuchsia-500 shadow-[0_0_30px_rgba(236,72,153,0.4)]">
+            <i class="fa-solid fa-ghost text-4xl text-fuchsia-400 mb-4 animate-bounce"></i>
+            <h2 class="text-2xl font-black text-white mb-2 uppercase tracking-widest system-font">Data Echo Forged!</h2>
+            <p class="text-xs text-fuchsia-200 font-mono mb-4">You have set a new performance record.</p>
+            <div class="text-lg text-white font-bold mb-6">New Shadow Record Set</div>
+            <button onclick="hide('shadowSuccessModal')" class="w-full bg-fuchsia-700 hover:bg-fuchsia-600 text-white font-bold py-3 uppercase tracking-widest text-xs">Acknowledge</button>
         </div>
     </div>
 
@@ -603,16 +596,16 @@
     <div id="shadowFailModal" class="fixed inset-0 bg-black/95 z-[90] hidden flex flex-col items-center justify-center p-6 text-center">
         <div class="shake-anim w-full max-w-sm system-card p-6 border-gray-600">
             <i class="fa-solid fa-eye-slash text-4xl text-gray-600 mb-4"></i>
-            <h2 class="text-xl font-bold text-gray-400 mb-2 uppercase tracking-widest">Shadow Rejection</h2>
-            <p class="text-xs text-gray-500 font-mono mb-4">You are weaker than your shadow.</p>
-            <div class="text-[10px] text-red-500 font-bold uppercase mb-6 bg-red-900/10 p-1 inline-block px-2 rounded">XP Gain Reduced</div>
-            <button onclick="hide('shadowFailModal')" class="w-full bg-gray-800 text-gray-400 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 hover:bg-gray-700">Accept Shame</button>
+            <h2 class="text-xl font-bold text-gray-400 mb-2 uppercase tracking-widest">Performance Sub-Optimal</h2>
+            <p class="text-xs text-gray-500 font-mono mb-4">Your current performance lags behind previous metrics.</p>
+            <div class="text-[10px] text-red-500 font-bold uppercase mb-6 bg-red-900/10 p-1 inline-block px-2 rounded">Bit Gain Reduced</div>
+            <button onclick="hide('shadowFailModal')" class="w-full bg-gray-800 text-gray-400 font-bold py-3 uppercase tracking-widest text-xs border border-gray-600 hover:bg-gray-700">Continue</button>
         </div>
     </div>
 
     <!-- NOTIFICATION -->
-    <div id="systemMessage" class="fixed top-8 left-1/2 -translate-x-1/2 w-3/4 max-w-sm system-card p-3 z-[70] hidden transition-all duration-500 border-l-4 border-l-purple-500 shadow-lg">
-        <div class="text-[9px] uppercase text-purple-400 mb-0.5">System Notification</div>
+    <div id="systemMessage" class="fixed top-8 left-1/2 -translate-x-1/2 w-3/4 max-w-sm system-card p-3 z-[70] hidden transition-all duration-500 border-l-4 border-l-cyan-500 shadow-lg">
+        <div class="text-[9px] uppercase text-cyan-400 mb-0.5">System Notification</div>
         <div id="sysMsgText" class="font-mono text-xs text-white">Message</div>
     </div>
 
@@ -796,9 +789,9 @@
             for(const name in profiles) {
                 const isActive = name === currentProfileId;
                 list.innerHTML += `
-                    <div class="flex justify-between items-center p-2 border border-gray-700 bg-gray-900/50 mb-1 ${isActive ? 'border-purple-500' : ''}">
+                    <div class="flex justify-between items-center p-2 border border-gray-700 bg-gray-900/50 mb-1 ${isActive ? 'border-cyan-500' : ''}">
                         <div class="text-xs text-white">${name} <span class="text-gray-500">Lv.${profiles[name].level}</span></div>
-                        ${!isActive ? `<button onclick="switchProfile('${name}')" class="text-[9px] bg-purple-900 text-purple-200 px-2 py-1">LOAD</button>` : '<span class="text-[9px] text-green-500">ACTIVE</span>'}
+                        ${!isActive ? `<button onclick="switchProfile('${name}')" class="text-[9px] bg-cyan-900 text-cyan-200 px-2 py-1">LOAD</button>` : '<span class="text-[9px] text-green-500">ACTIVE</span>'}
                     </div>
                 `;
             }
@@ -888,7 +881,7 @@
         }
 
         function setCalorieGoal() {
-            // Using a simple prompt here, should be replaced by a custom modal for better UX
+            // IMPORTANT: Using confirm() here, should be replaced by a custom modal for better UX
             const g = prompt("Set Daily Calorie Goal:", gameState.calorieGoal);
             if(g && !isNaN(g)) {
                 gameState.calorieGoal = parseInt(g);
@@ -905,12 +898,12 @@
             let msg = "Physique Updated.";
             if (gameState.bodyStats.weightGoal !== 0 && w !== 0 && Math.abs(w - wg) < 0.5) {
                 gameState.xp += 1000;
-                msg += " WEIGHT GOAL REACHED! (+1000 XP)";
+                msg += " WEIGHT GOAL REACHED! (+1000 Bit)";
                 gameState.bodyStats.weightGoal = 0;
             }
              if (gameState.bodyStats.fatGoal !== 0 && f !== 0 && f <= fg) {
                 gameState.xp += 1000;
-                msg += " FAT % GOAL REACHED! (+1000 XP)";
+                msg += " FAT % GOAL REACHED! (+1000 Bit)";
                 gameState.bodyStats.fatGoal = 0;
             }
             gameState.bodyStats = { weight: w, fat: f, weightGoal: wg, fatGoal: fg };
@@ -938,10 +931,10 @@
                     <div class="flex justify-between items-center p-2 border border-gray-800 bg-gray-900/40 rounded">
                         <div>
                             <div class="text-xs text-white font-bold">${r.name}</div>
-                            <div class="text-[10px] text-yellow-500 font-mono">${r.cost} G</div>
+                            <div class="text-[10px] text-fuchsia-500 font-mono">${r.cost} BITS</div>
                         </div>
                         <div class="flex gap-2">
-                             <button onclick="buyReward(${idx})" class="${canAfford ? 'bg-yellow-900 text-yellow-200 border-yellow-700' : 'bg-gray-800 text-gray-500 border-gray-700 cursor-not-allowed'} border px-3 py-1 text-[9px] uppercase font-bold rounded">Buy</button>
+                             <button onclick="buyReward(${idx})" class="${canAfford ? 'bg-fuchsia-900 text-fuchsia-200 border-fuchsia-700' : 'bg-gray-800 text-gray-500 border-gray-700 cursor-not-allowed'} border px-3 py-1 text-[9px] uppercase font-bold rounded">Buy</button>
                              <button onclick="deleteReward(${idx})" class="text-red-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
                         </div>
                     </div>
@@ -971,7 +964,7 @@
             const r = gameState.customRewards[idx];
             if(gameState.gold >= r.cost) {
                 // IMPORTANT: Using confirm() here, should be replaced by a custom modal for better UX
-                if(window.confirm(`Purchase "${r.name}" for ${r.cost} Gold?`)) {
+                if(window.confirm(`Purchase "${r.name}" for ${r.cost} BITS?`)) {
                     gameState.gold -= r.cost;
                     gameState.history.push({ type: 'shop', date: new Date().toISOString(), desc: `Bought Reward: ${r.name}`, xp: 0 });
                     saveAllProfiles();
@@ -980,45 +973,82 @@
                     showToast(`Purchased: ${r.name}`);
                 }
             } else {
-                showToast("Not enough Gold!");
+                showToast("Not enough BITS!");
             }
         }
 
         // --- HEATMAP LOGIC ---
         function renderHeatmap() {
             const grid = document.getElementById('heatmapGrid');
-            if(!grid) return;
+            const dayLabelsContainer = document.getElementById('dayLabels');
+            if(!grid || !dayLabelsContainer) return;
+
             grid.innerHTML = '';
             
-            // Generate last 90 days
+            // Render Day Labels (Monday to Sunday)
+            const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+            dayLabelsContainer.innerHTML = daysOfWeek.map(d => `<div class="h-[14px] leading-[14px] text-right">${d}</div>`).join('');
+
             const today = new Date();
+            const NUM_DAYS = 84; // 12 Weeks of data
+
+            // 1. Create an array of the last NUM_DAYS dates, starting from the oldest
             const dates = [];
-            for(let i=0; i<84; i++) { // 12 weeks = 84 days
+            for(let i=NUM_DAYS - 1; i>=0; i--) {
                 const d = new Date(today);
-                d.setDate(today.getDate() - (83 - i));
+                d.setDate(today.getDate() - i);
                 dates.push(d);
             }
 
-            // Map history to dates
+            // 2. Map history to dates
             const activityMap = {};
             gameState.history.forEach(h => {
                 const dateStr = h.date.split('T')[0];
                 activityMap[dateStr] = (activityMap[dateStr] || 0) + 1;
             });
 
+            // 3. Add initial empty cells for alignment (to start the first date on its correct day row: Monday=0, Sunday=6)
+            // getDay() returns 0 (Sunday) to 6 (Saturday). We convert to Monday=0.
+            const firstDateDay = (dates[0].getDay() + 6) % 7; // 0=Mon, 6=Sun
+            
+            for (let i = 0; i < firstDateDay; i++) {
+                 const cell = document.createElement('div');
+                 // Use bg-transparent and pointer-events-none for non-clickable empty cells
+                 cell.className = `heatmap-cell bg-transparent pointer-events-none`;
+                 grid.appendChild(cell);
+            }
+            
+            // 4. Render the actual data cells
             dates.forEach(d => {
                 const dateStr = d.toISOString().split('T')[0];
                 const count = activityMap[dateStr] || 0;
                 let colorClass = 'bg-gray-800/50';
-                if(count > 0) colorClass = 'bg-purple-900';
-                if(count > 1) colorClass = 'bg-purple-700';
-                if(count > 2) colorClass = 'bg-purple-500';
+
+                // Using hardcoded Tailwind classes that map to the new CSS variable colors
+                if(count > 0) colorClass = 'bg-purple-900'; // 1 activity
+                if(count > 1) colorClass = 'bg-purple-700'; // 2 activities
+                if(count > 2) colorClass = 'bg-purple-500'; // 3+ activities
                 
                 const cell = document.createElement('div');
                 cell.className = `heatmap-cell ${colorClass}`;
                 cell.title = `${dateStr}: ${count} activities`;
                 grid.appendChild(cell);
             });
+            
+            // 5. Add final empty cells if the last week (containing Today) is incomplete
+            const lastDateDay = (today.getDay() + 6) % 7; // 0=Mon, 6=Sun
+            const remaining = 6 - lastDateDay;
+            for (let i = 0; i < remaining; i++) {
+                 const cell = document.createElement('div');
+                 cell.className = `heatmap-cell bg-transparent pointer-events-none`;
+                 grid.appendChild(cell);
+            }
+            
+            // 6. Set the grid width dynamically based on the total number of cells/weeks
+            const totalCells = grid.children.length;
+            const numWeeks = Math.ceil(totalCells / 7);
+            // Cell width (14px) + gap (2px) = 16px per column. Add 2px for final padding.
+            grid.style.width = `${(numWeeks * 16)}px`; 
         }
 
         function toggleTimer() {
@@ -1073,14 +1103,14 @@
                 const skills = SKILL_TREE.filter(s => s.cat === cat).sort((a,b) => a.tier - b.tier);
                 
                 let html = `<div class="mb-4">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 pl-2 border-l-2 border-purple-500">${cat} Path</h3>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 pl-2 border-l-2 border-cyan-500">${cat} Path</h3>
                     <div class="flex flex-wrap gap-4 items-center justify-start relative">`;
                 
                 skills.forEach(skill => {
                     const isUnlocked = gameState.unlockedSkills.includes(skill.id);
-                    const borderColor = isUnlocked ? 'border-purple-500' : 'border-gray-700';
-                    const iconColor = isUnlocked ? 'text-purple-400' : 'text-gray-600';
-                    const bgClass = isUnlocked ? 'bg-purple-900/20 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-gray-900/50 grayscale';
+                    const borderColor = isUnlocked ? 'border-cyan-500' : 'border-gray-700';
+                    const iconColor = isUnlocked ? 'text-cyan-400' : 'text-gray-600';
+                    const bgClass = isUnlocked ? 'bg-cyan-900/20 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-900/50 grayscale';
 
                     html += `
                         <div onclick="openSkillModal('${skill.id}')" class="skill-node relative cursor-pointer w-16 h-16 rounded-lg border ${borderColor} ${bgClass} flex flex-col items-center justify-center transition-all hover:scale-105 z-10">
@@ -1133,7 +1163,7 @@
                 btn.onclick = null;
             } else if (canUnlock) {
                 btn.innerText = "Awaken Ability";
-                btn.className = "w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-purple-500/50 animate-pulse";
+                btn.className = "w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 animate-pulse";
                 btn.onclick = attemptUnlockSkill;
             } else {
                 btn.innerText = "Locked";
@@ -1214,6 +1244,13 @@
             const finalXP = Math.floor(amount * multiplier);
             gameState.xp += finalXP;
             gameState.gold += Math.floor(amount / 5); // Add Gold
+            
+            // Check if calorie goal is met
+            if (gameState.dailyCalories >= gameState.calorieGoal && gameState.dailyCalories - Math.floor(calories) < gameState.calorieGoal) {
+                gameState.gold += 500; // Bonus gold for hitting goal
+                showToast("Thermal Load Limit Reached! +500 BITS!");
+            }
+
 
             let stats = XP_MODIFIERS[type].stat;
             if(type === 'run' && details.isSprint) stats = XP_MODIFIERS.sprint.stat;
@@ -1254,7 +1291,7 @@
                             q.completed = true;
                             gameState.xp += q.rewardXP;
                             gameState.gold += q.rewardGold; // Quest gold
-                            showToast(`Quest Complete: ${q.title}`);
+                            showToast(`Mission Complete: ${q.title}`);
                         }
                     }
                 }
@@ -1338,7 +1375,7 @@
             const xpPct = Math.min(100, (gameState.xp / gameState.xpToNext) * 100);
             setStyle('mainXpBar', 'width', `${xpPct}%`);
 
-            // Update Streak & Gold
+            // Update Streak & Gold (now BITS)
             setText('streakDisplay', gameState.streak || 1);
             setText('goldDisplay', gameState.gold);
 
@@ -1361,11 +1398,11 @@
                     div.innerHTML = `
                         <div class="flex justify-between items-center text-[10px] mb-1">
                             <span class="font-bold text-gray-300 uppercase">${q.title}</span>
-                            <span class="text-purple-400">${q.rewardXP} XP</span>
+                            <span class="text-cyan-400">${q.rewardXP} BITS</span>
                         </div>
                         <div class="text-[10px] text-gray-500 mb-1">${q.desc}</div>
                         <div class="w-full bg-gray-800 h-1 rounded overflow-hidden">
-                            <div class="h-full ${q.completed ? 'bg-green-500' : 'bg-purple-500'}" style="width: ${pct}%"></div>
+                            <div class="h-full ${q.completed ? 'bg-green-500' : 'bg-cyan-500'}" style="width: ${pct}%"></div>
                         </div>
                         <div class="text-right text-[9px] text-gray-600 mt-1 font-mono">${Math.floor(q.current)} / ${q.target} ${q.unit}</div>
                     `;
@@ -1392,10 +1429,10 @@
             const jobEl = document.getElementById('jobTitle');
             if(jobEl) {
                 const s = gameState.stats;
-                if (s.str > s.agi * 1.5) jobEl.innerText = "Baki Type"; 
-                else if (s.agi > s.str * 1.5) jobEl.innerText = "Killua Type"; 
-                else if (s.end > s.str && s.end > s.agi) jobEl.innerText = "Ippo Type"; 
-                else jobEl.innerText = "Deku Type"; 
+                if (s.str > s.agi * 1.5) jobEl.innerText = "Heavy-Frame"; 
+                else if (s.agi > s.str * 1.5) jobEl.innerText = "Speed-Daemon"; 
+                else if (s.end > s.str && s.end > s.agi) jobEl.innerText = "Core-Sentinel"; 
+                else jobEl.innerText = "Generalist"; 
             }
 
             renderSpiderChart();
@@ -1410,9 +1447,9 @@
                         <div class="flex items-center text-[10px] font-mono">
                             <div class="w-16 text-gray-500">${m}</div>
                             <div class="flex-1 bg-gray-900 h-1.5 mx-2 rounded overflow-hidden">
-                                <div class="bg-purple-600 h-full" style="width: ${pct}%"></div>
+                                <div class="bg-cyan-600 h-full" style="width: ${pct}%"></div>
                             </div>
-                            <div class="w-8 text-right text-purple-300">Lv.${Math.floor(val)}</div>
+                            <div class="w-8 text-right text-cyan-300">Lv.${Math.floor(val)}</div>
                         </div>
                     `;
                 }
@@ -1471,7 +1508,7 @@
                 ctx.stroke();
             }
 
-            ctx.fillStyle = '#a855f7';
+            ctx.fillStyle = '#06b6d4'; /* Cyan */
             ctx.font = '10px "Share Tech Mono"';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -1481,8 +1518,8 @@
             }
 
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(168, 85, 247, 0.4)';
-            ctx.strokeStyle = '#a855f7';
+            ctx.fillStyle = 'rgba(6, 182, 212, 0.4)'; /* Cyan Fill */
+            ctx.strokeStyle = '#06b6d4'; /* Cyan Border */
             ctx.lineWidth = 2;
             for (let i = 0; i < 6; i++) {
                 const coords = getCoords(values[i], i, maxVal);
@@ -1507,7 +1544,7 @@
                     <div class="flex justify-between border-b border-gray-800 pb-1">
                         <span class="text-gray-500">[${h.type.toUpperCase().substr(0,3)}]</span>
                         <span class="text-gray-300 truncate px-2 flex-1">${h.desc}</span>
-                        <span class="text-purple-500">+${h.xp}XP</span>
+                        <span class="text-cyan-500">+${h.xp}BITS</span>
                     </div>
                 `;
             });
@@ -1517,13 +1554,13 @@
         function switchView(v) {
             hide('view-dashboard'); hide('view-profile'); hide('view-skills'); hide('view-market');
             
-            document.getElementById('nav-dashboard').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
-            document.getElementById('nav-profile').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
-            document.getElementById('nav-skills').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
-            document.getElementById('nav-market').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-purple-400 transition-colors';
+            document.getElementById('nav-dashboard').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors';
+            document.getElementById('nav-profile').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors';
+            document.getElementById('nav-skills').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors';
+            document.getElementById('nav-market').className = 'flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-cyan-400 transition-colors';
             
             show(`view-${v}`);
-            document.getElementById(`nav-${v}`).className = 'flex-1 flex flex-col items-center justify-center text-purple-500';
+            document.getElementById(`nav-${v}`).className = 'flex-1 flex flex-col items-center justify-center text-cyan-500';
             
             if(v === 'profile') { updateProfileUI(); renderHeatmap(); }
             if(v === 'skills') renderSkillTree();
@@ -1543,7 +1580,7 @@
                 return;
             }
 
-            setText('modalTitle', t === 'lift' ? 'Strength Protocol' : (t === 'run' ? 'Agility Protocol' : (t === 'vr' ? 'VR Protocol' : 'Combat Protocol')));
+            setText('modalTitle', t === 'lift' ? 'Power Calibration' : (t === 'run' ? 'Speed Protocol' : (t === 'vr' ? 'VR Protocol' : 'Combat Protocol')));
             show('inputModal');
             hide('shadowRecordDisplay');
             hide('timerSection'); 
