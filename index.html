@@ -331,7 +331,7 @@
         <!-- OTHER VIEWS (Battle, Profile, Quests, Market, History) -->
         <div id="view-battle" class="page-view hidden-page h-full w-full flex flex-col bg-black">
              <div class="p-3 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center">
-                <div><div class="text-[10px] text-gray-500 uppercase" data-i18n="protocol">PROTOCOL</div><div id="activeRoutineName" class="text-white font-bold font-mono text-sm">ROUTINE</div></div>
+                <div><div class="text-[10px] text-gray-500 uppercase" data-i18n="protocol">ROTINA ATIVA</div><div id="activeRoutineName" class="text-white font-bold font-mono text-sm">ROUTINE</div></div>
                 <div id="sessionTimer" class="font-mono text-xl text-cyan-400">00:00</div>
             </div>
             <div class="flex-1 overflow-y-auto p-4 flex flex-col" id="battle-container">
@@ -492,7 +492,9 @@
                 <!-- Equipment Shop -->
                 <div>
                     <h3 class="text-xs text-purple-500 font-bold uppercase tracking-widest mb-3 border-b border-gray-800 pb-1" data-i18n="cosmetic_equipment">COSMETIC EQUIPMENT</h3>
-                    <div id="market-equipment-list" class="space-y-3"></div>
+                    <div id="equipment-inventory" class="grid grid-cols-2 gap-3">
+                         <!-- Equipment rendered here -->
+                    </div>
                 </div>
              </div>
              
@@ -581,7 +583,7 @@
     <!-- PRESET CREATOR MODAL -->
     <div id="createPresetModal" class="fixed inset-0 bg-black/90 backdrop-blur z-[150] hidden flex items-center justify-center p-4">
         <div class="tech-panel w-full max-w-sm clip-tech border-purple-500/50">
-            <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-purple-900/10"><h3 class="text-purple-400 font-mono uppercase text-lg" data-i18n="new_protocol">NEW MISSION FILE</h3><button onclick="closePresetModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-purple-900/10"><h3 class="text-purple-400 font-mono uppercase text-lg" data-i18n="new_protocol">NOVA ROTINA DE TREINO</h3><button onclick="closePresetModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="p-4 space-y-3">
                 <input type="text" id="cpName" placeholder="Protocol Name" class="w-full bg-black border border-gray-700 p-2 text-white text-sm font-mono outline-none" data-i18n-placeholder="protocol_name">
                 <div class="text-xs text-gray-500 uppercase mt-2" data-i18n="exercises">Exercises</div>
@@ -607,7 +609,7 @@
             <div id="smCat" class="text-[10px] text-cyan-400 uppercase tracking-widest mb-4">Category</div>
             <p id="smDesc" class="text-xs text-gray-400 mb-6 font-mono leading-relaxed">Description goes here.</p>
             <div class="bg-gray-900/50 p-3 rounded border border-gray-800 mb-6 text-left">
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-2" data-i18n="requirements">Requirements</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest" data-i18n="requirements">Requirements</div>
                 <ul id="smReqs" class="space-y-1 text-xs font-mono text-gray-300"></ul>
             </div>
             <button id="smUnlockBtn" onclick="unlockSelectedSkill()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 uppercase tracking-widest text-xs border border-cyan-500/50 btn-glitch" data-i18n="awaken_ability">Awaken Ability</button>
@@ -624,7 +626,7 @@
             </div>
             <div class="p-6">
                 <div class="text-center mb-6">
-                    <div class="text-[10px] text-gray-500 uppercase" data-i18n="protocol">PROTOCOL</div>
+                    <div class="text-[10px] text-gray-500 uppercase" data-i18n="protocol">ROTINA ATIVA</div>
                     <h2 id="summaryRoutine" class="text-2xl font-black italic text-white mb-2">ROUTINE NAME</h2>
                     <div class="text-xs text-cyan-400 font-mono">
                         <i class="fa-solid fa-clock mr-1"></i> <span id="summaryDuration">0 min</span>
@@ -754,51 +756,87 @@
                 register_user: "REGISTER USER",
                 auth_toggle_register: "Already Registered? Sign In.",
                 delete_protocol_confirm: "Are you sure you want to permanently delete this custom protocol?",
-                protocol_deleted: "Protocol deleted."
+                protocol_deleted: "Protocol deleted.",
+
+                // --- NEW ACHIEVEMENT NAMES (EN) ---
+                lvl10: "Rank C Agent", lvl20: "Rank B Agent", lvl30: "Rank A Agent", lvl50: "Grandmaster S-Rank",
+                str20: "Power Core Activated", agi20: "Ghosting Efficiency", end20: "Infinite Battery",
+                str50: "Juggernaut Status", agi50: "Shadow Clone", end50: "Hyper-Stamina Drive",
+                reps5k: "Mass Production", reps10k: "Factory Output", reps25k: "Cybernetic Engine", reps50k: "Global Domination",
+                streak7: "Weekly Reset Prevented", streak30: "Monthly Cycle", streak100: "Perpetual Motion",
+                gold1k: "First Glimmer of Wealth", gold5k: "Digital Hoarder", gold10k: "Galactic Banker",
+                skill10: "Specialization Engaged", skill15: "Path Mastery", skillAll: "Master Algorithm",
+                custom1: "Creator Privilege", session5: "Warm-Up Protocol", session25: "Data Spike", session100: "System Maintenance",
+                rm100kg: "The 100kg Club", rm180kg: "Cyber-Strength Limit", rm250kg: "Gravity Defier", rm3x: "Architect of Strength",
+                market_buy: "First Acquisition", log_str: "Strength Entry"
             },
             pt: {
-                credits: "CRÉDITOS", daily_protocol: "Protocolo Diário", streak: "Sequência",
-                engage: "INICIAR", engage_desc: "INICIAR TREINO / REGISTRO",
-                stats: "Status", physique: "ANÁLISE",
-                missions: "Missões", targets: "ALVOS", 
-                abilities: "Habilidades", skill_tree: "ÁRVORE DE SKILLS",
-                trophies: "Troféus", awards: "PRÊMIOS",
-                log: "Registro", history: "HISTÓRICO",
-                shop: "Loja", rewards: "RECOMPENSAS",
-                command_center: "Centro de Comando", ai_gen: "Gerador IA",
-                generate: "Gerar Protocolo", gen_desc: "ROTINA GERADA PELO SISTEMA (CASA/ACADEMIA)",
-                quick_log: "Registro Rápido", strength: "Força", cardio: "Cardio",
-                vr_training: "Treinamento VR", 
-                saved_protocols: "Protocolos Salvos", create_new: "Criar Novo",
-                abort: "Abortar", next: "Próximo", finish: "Concluir",
+                credits: "DATA CHIPS", 
+                daily_protocol: "ROTINA DIÁRIA DE ACESSO", // Changed from Protocolo Diário
+                streak: "Sequência",
+                engage: "INICIAR MISSÃO", // Changed from INICIAR
+                engage_desc: "INICIAR TREINO / REGISTRO",
+                stats: "Data Matrix", physique: "ANÁLISE DE SISTEMA",
+                missions: "REGISTRO DE MISSÃO", // Changed from Missões
+                targets: "OBJETIVOS", 
+                abilities: "HABILIDADES NÚCLEO", // Changed from Habilidades
+                skill_tree: "ALGORITMO DE TREINO", // Changed from ÁRVORE DE SKILLS
+                trophies: "REGISTRO DE RECOMPENSAS", // Changed from Troféus
+                awards: "PRÊMIOS DO SISTEMA", // Changed from PRÊMIOS
+                log: "REGISTROS DE DADOS", // Changed from Registro
+                history: "HISTÓRICO DE SESSÃO", // Changed from HISTÓRICO
+                shop: "TERMINAL DE RECOMPENSAS", // Changed from Loja
+                rewards: "ASSETS COSMÉTICOS", // Changed from RECOMPENSAS
+                command_center: "CENTRAL DE MISSÕES", // Changed from Centro de Comando
+                ai_gen: "GERADOR DE SISTEMA", // Changed from Gerador IA
+                generate: "Gerar Arquivo de Missão", // Changed from Gerar Protocolo
+                gen_desc: "ROTINA GERADA PELO SISTEMA (HQ/GYM SIM)", // Changed from ROTINA GERADA PELO SISTEMA
+                quick_log: "ENTRADA MANUAL DE DADOS", // Changed from Registro Rápido
+                strength: "Força", cardio: "Cardio",
+                vr_training: "SIMULAÇÃO VR", // Changed from Treinamento VR
+                saved_protocols: "ROTINAS SALVAS", // Changed from Protocolos Salvos
+                create_new: "Criar Novo",
+                abort: "Abortar", next: "Próximo", finish: "Missão Concluída", // Changed from Concluir
                 profile: "Análise de Sistema",
-                params: "PARÂMETROS", select_env: "SELECIONAR AMBIENTE",
-                home: "CASA", gym: "ACADEMIA",
+                params: "PARÂMETROS DE ROTINA", // Changed from PARÂMETROS
+                select_env: "SELECIONAR AMBIENTE",
+                home: "HQ (CASA)", // Changed from CASA
+                gym: "SIMULAÇÃO GYM", // Changed from ACADEMIA
                 rhythm: "Ritmo", combat: "Combate", 
                 good_morning: "BOM DIA", good_afternoon: "BOA TARDE", good_evening: "BOA NOITE",
-                sign_out: "SAIR", sign_in: "ENTRAR", protocol: "PROTOCOLO", recovering: "RECUPERANDO",
+                sign_out: "DESLOGAR", // Changed from SAIR
+                sign_in: "CHAVE DE ACESSO", // Changed from ENTRAR
+                protocol: "ROTINA ATIVA", // Changed from PROTOCOLO
+                recovering: "RECALIBRANDO", // Changed from RECUPERANDO
                 identity: "IDENTIDADE", archetype: "ARQUÉTIPO", level_short: "NÍVEL", stat_str: "FORÇA", 
                 stat_agi: "AGILIDADE", stat_end: "RESISTÊNCIA", xp_tracker: "EXP:", 
-                muscle_matrix: "MATRIZ MUSCULAR", activity_volume: "VOLUME DE ATIVIDADE DE 7 DIAS",
+                muscle_matrix: "MATRIZ MUSCULAR", activity_volume: "VOLUME DE ATIVIDADE (7 DIAS)",
                 orm_title: "ESTIMADOR TEÓRICO DE 1RM", estimated_max: "MÁXIMO ESTIMADO",
                 orm_disclaimer: "*Calculado usando a Fórmula de Epley com base no histórico de registro.",
                 factory_reset: "RESET DE FÁBRICA DO SISTEMA", custom_reward: "Recompensa Personalizada",
-                item_name: "Nome do Item", cost: "Custo", confirm_action_title: "CONFIRMAR AÇÃO",
+                item_name: "ID DO ASSET", // Changed from Nome do Item
+                cost: "Custo", confirm_action_title: "CONFIRMAR AÇÃO",
                 cancel: "CANCELAR", confirm: "CONFIRMAR", access_email: "Email de Acesso", decryption_key: "Chave de Decifração (Senha)",
-                auth_toggle_login: "Precisa de Acesso? Registre Novo Usuário.",
+                auth_toggle_login: "Precisa de Acesso? Registrar Novo Usuário.",
                 home_desc: "PESO CORPORAL / HALTERES", gym_desc: "MÁQUINAS / BARRA",
-                xp_est: "EST XP", transmit_data: "TRANSMITIR DADOS", target: "Alvo",
-                new_protocol: "NOVO PROTOCOLO", protocol_name: "Nome do Protocolo", exercises: "Exercícios",
+                xp_est: "EST EXP", // Changed from EST XP
+                transmit_data: "TRANSMITIR DADOS", // Changed from TRANSMITIR DADOS
+                target: "Alvo",
+                new_protocol: "NOVA ROTINA DE TREINO", // Changed from NOVO PROTOCOLO
+                protocol_name: "Nome da Rotina", // Changed from Nome do Protocolo
+                exercises: "Exercícios",
                 sets: "Séries", reps: "Repetições", time: "Tempo", weight: "Peso",
                 save_system: "SALVAR SISTEMA", requirements: "Requisitos", awaken_ability: "Despertar Habilidade",
-                close: "FECHAR", system_alert: "Alerta do Sistema", level_up: "SUBIU DE NÍVEL!", 
+                close: "FECHAR", system_alert: "ALERTA GLITCH", // Changed from Alerta do Sistema
+                level_up: "RANK PROMOVIDO!", // Changed from SUBIU DE NÍVEL!
                 level_transition: "NÍVEL", acknowledge: "RECONHECER",
-                session_complete: "SESSÃO COMPLETA", rewards_earned: "RECOMPENSAS GANHAS",
-                new_rewards: "NOVAS RECOMPENSAS", summary_acknowledge: "RECONHECER E VOLTAR AO HUB",
+                session_complete: "MISSÃO CUMPRIDA", // Changed from SESSÃO COMPLETA
+                rewards_earned: "RECOMPENSAS GANHAS",
+                new_rewards: "NOVAS RECOMPENSAS", summary_acknowledge: "RETORNAR AO HUB", // Changed from RECONHECER E VOLTAR AO HUB
 
                 // Inventory & Shop Additions
                 inventory: "Inventário", assets: "ASSETS",
-                flair_assets: "ASSETS DE FLAIR DE ARQUÉTIPO",
+                flair_assets: "SELO DE ARQUÉTIPO", // Changed from ASSETS DE FLAIR DE ARQUÉTIPO
                 cosmetic_equipment: "EQUIPAMENTO COSMÉTICO",
                 equipped: "EQUIPADO", equip: "EQUIPAR", owned: "ADQUIRIDO",
                 
@@ -808,25 +846,37 @@
                 unlock: "DESBLOQUEAR",
                 need_credits: "NECESSITA",
                 locked: "BLOQUEADO",
-                invalid_protocol: "Nome do Protocolo Inválido ou Nenhum Exercício Adicionado",
+                invalid_protocol: "Nome de Rotina Inválido ou Nenhum Exercício Adicionado", // Changed from Nome do Protocolo Inválido
                 custom: "Personalizado",
-                protocol_saved: "Protocolo Salvo",
+                protocol_saved: "Rotina Salva", // Changed from Protocolo Salvo
                 quest_complete: "Missão Completa",
                 factory_reset_title: "AVISO DE RESET DE FÁBRICA",
                 factory_reset_confirm: "PERIGO: Todo o progresso, estatísticas e registros serão permanentemente apagados. Continuar?",
                 system_reset_initiated: "Reset do Sistema Iniciado.",
                 confirm_purchase: "Confirmar compra de",
                 for_credits: "por",
-                bought: "Comprou",
-                insufficient_credits: "Créditos Insuficientes",
+                bought: "Adquirido", // Changed from Comprou
+                insufficient_credits: "Chips de Dados Insuficientes", // Changed from Créditos Insuficientes
                 no_data: "SEM DADOS",
                 no_new_rewards: "Nenhum novo troféu ganho nesta sessão.",
                 new_user_registration: "REGISTRO DE NOVO USUÁRIO",
                 access_system: "ACESSAR SISTEMA",
                 register_user: "REGISTRAR USUÁRIO",
                 auth_toggle_register: "Já Registrado? Entrar.",
-                delete_protocol_confirm: "Tem certeza de que deseja excluir permanentemente este protocolo personalizado?",
-                protocol_deleted: "Protocolo excluído."
+                delete_protocol_confirm: "Tem certeza de que deseja excluir permanentemente esta rotina personalizada?", // Changed from este protocolo
+                protocol_deleted: "Rotina excluída.", // Changed from Protocolo excluído.
+
+                // --- NEW ACHIEVEMENT NAMES (PT) ---
+                lvl10: "Agente Rank C", lvl20: "Agente Rank B", lvl30: "Agente Rank A", lvl50: "Grão-Mestre Rank S",
+                str20: "Núcleo de Força Ativado", agi20: "Eficiência Fantasma", end20: "Bateria Infinita",
+                str50: "Status Colosso", agi50: "Clone das Sombras", end50: "Motor Hiper-Resistência",
+                reps5k: "Produção em Massa", reps10k: "Saída de Fábrica", reps25k: "Motor Cibernético", reps50k: "Domínio Global",
+                streak7: "Reset Semanal Bloqueado", streak30: "Ciclo Mensal", streak100: "Movimento Perpétuo",
+                gold1k: "Primeiro Brilho de Riqueza", gold5k: "Acumulador Digital", gold10k: "Banqueiro Galáctico",
+                skill10: "Especialização Engajada", skill15: "Maestria de Caminho", skillAll: "Algoritmo Mestre",
+                custom1: "Privilégio de Criador", session5: "Rotina de Aquecimento", session25: "Pico de Dados", session100: "Manutenção do Sistema",
+                rm100kg: "O Clube dos 100kg", rm180kg: "Limite Ciber-Força", rm250kg: "Desafiador da Gravidade", rm3x: "Arquiteto da Força",
+                market_buy: "Primeira Aquisição", log_str: "Entrada de Força Manual"
             }
         };
 
@@ -857,11 +907,66 @@
             { name: "Thrill of the Fight", type: "VR", muscle: "Arms", cat: "Push", isTime: true }
         ];
 
+        // --- UPDATED ACHIEVEMENTS LIST (34 Total) ---
         const ACHIEVEMENTS = [
             { id: 'first_blood', name: 'First Blood', desc: 'Complete your first workout', reward: 100, unlocked: false },
             { id: 'consistent', name: 'System Stable', desc: 'Reach 3 day streak', reward: 300, unlocked: false },
             { id: 'veteran', name: 'Veteran Hunter', desc: 'Reach Level 5', reward: 1000, unlocked: false },
-            { id: 'iron_body', name: 'Iron Body', desc: 'Complete 1000 total reps (Lifetime)', reward: 500, unlocked: false }
+            { id: 'iron_body', name: 'Iron Body', desc: 'Complete 1000 total reps/secs (Lifetime)', reward: 500, unlocked: false },
+            
+            // Leveling Tiers
+            { id: 'lvl10', name: 'Rank C Agent', desc: 'Reach Level 10', reward: 1500, unlocked: false },
+            { id: 'lvl20', name: 'Rank B Agent', desc: 'Reach Level 20', reward: 2500, unlocked: false },
+            { id: 'lvl30', name: 'Rank A Agent', desc: 'Reach Level 30', reward: 5000, unlocked: false },
+            { id: 'lvl50', name: 'Grandmaster S-Rank', desc: 'Reach Level 50', reward: 15000, unlocked: false },
+
+            // Stat Tiers
+            { id: 'str20', name: 'Power Core Activated', desc: 'Reach STR 20', reward: 1000, unlocked: false },
+            { id: 'agi20', name: 'Ghosting Efficiency', desc: 'Reach AGI 20', reward: 1000, unlocked: false },
+            { id: 'end20', name: 'Infinite Battery', desc: 'Reach END 20', reward: 1000, unlocked: false },
+            { id: 'str50', name: 'Juggernaut Status', desc: 'Reach STR 50', reward: 5000, unlocked: false },
+            { id: 'agi50', name: 'Shadow Clone', desc: 'Reach AGI 50', reward: 5000, unlocked: false },
+            { id: 'end50', name: 'Hyper-Stamina Drive', desc: 'Reach END 50', reward: 5000, unlocked: false },
+
+            // Reps/Volume Tiers
+            { id: 'reps5k', name: 'Mass Production', desc: 'Log 5,000 Total Reps/Seconds', reward: 1000, unlocked: false },
+            { id: 'reps10k', name: 'Factory Output', desc: 'Log 10,000 Total Reps/Seconds', reward: 2000, unlocked: false },
+            { id: 'reps25k', name: 'Cybernetic Engine', desc: 'Log 25,000 Total Reps/Seconds', reward: 5000, unlocked: false },
+            { id: 'reps50k', name: 'Global Domination', desc: 'Log 50,000 Total Reps/Seconds', reward: 10000, unlocked: false },
+
+            // Streak Tiers
+            { id: 'streak7', name: 'Weekly Reset Prevented', desc: 'Reach a 7 day streak', reward: 700, unlocked: false },
+            { id: 'streak30', name: 'Monthly Cycle', desc: 'Reach a 30 day streak', reward: 3000, unlocked: false },
+            { id: 'streak100', name: 'Perpetual Motion', desc: 'Reach a 100 day streak', reward: 10000, unlocked: false },
+
+            // Wealth Tiers
+            { id: 'gold1k', name: 'First Glimmer of Wealth', desc: 'Accumulate 1,000 Data Chips (lifetime)', reward: 500, unlocked: false },
+            { id: 'gold5k', name: 'Digital Hoarder', desc: 'Accumulate 5,000 Data Chips (lifetime)', reward: 2000, unlocked: false },
+            { id: 'gold10k', name: 'Galactic Banker', desc: 'Accumulate 10,000 Data Chips (lifetime)', reward: 5000, unlocked: false },
+
+            // Session Count Tiers (uses history length)
+            { id: 'session5', name: 'Warm-Up Protocol', desc: 'Complete 5 total sessions', reward: 500, unlocked: false },
+            { id: 'session25', name: 'Data Spike', desc: 'Complete 25 total sessions', reward: 1500, unlocked: false },
+            { id: 'session100', name: 'System Maintenance', desc: 'Complete 100 total sessions', reward: 5000, unlocked: false },
+
+            // Skill & Customization
+            { id: 'skill10', name: 'Specialization Engaged', desc: 'Unlock 10 unique skills', reward: 1500, unlocked: false },
+            { id: 'skill15', name: 'Path Mastery', desc: 'Unlock 15 unique skills', reward: 3000, unlocked: false },
+            { id: 'skillAll', name: 'Master Algorithm', desc: 'Unlock every available skill', reward: 5000, unlocked: false },
+            { id: 'custom1', name: 'Creator Privilege', desc: 'Save your first custom routine', reward: 500, unlocked: false },
+            { id: 'market_buy', name: 'First Acquisition', desc: 'Acquire your first cosmetic item', reward: 500, unlocked: false },
+
+            // Strength Records (1RM) - Measured in KG
+            { id: 'rm100kg', name: 'The 100kg Club', desc: 'Estimate a 1RM of 100kg (220lbs)', reward: 1000, unlocked: false },
+            { id: 'rm180kg', name: 'Cyber-Strength Limit', desc: 'Estimate a 1RM of 180kg (400lbs)', reward: 3000, unlocked: false },
+            { id: 'rm250kg', name: 'Gravity Defier', desc: 'Estimate a 1RM of 250kg (550lbs)', reward: 7500, unlocked: false },
+            
+            // Relative Strength
+            { id: 'rm3x', name: 'Architect of Strength', desc: 'Achieve a 1RM 3x higher than base STR (30kg)', reward: 3000, unlocked: false },
+            
+            // Manual Log
+            { id: 'log_str', name: 'Strength Entry', desc: 'Log a manual strength workout for the first time', reward: 500, unlocked: false }
+
         ];
 
         const PRESETS = {
@@ -931,6 +1036,22 @@
         function kgToLb(kg) { return kg * LB_PER_KG; }
         function lbToKg(lb) { return lb / LB_PER_KG; }
         function getUnitDisplay() { return appState.unit === 'kg' ? 'kg' : 'lbs'; }
+
+        function getMaxEstimated1RM(records) {
+            let maxOrm = 0;
+            // records are stored in KG
+            for (const exName in records) {
+                const { weight, reps } = records[exName];
+                if (weight > 0 && reps > 0) {
+                    // Epley Formula (using weight in KG)
+                    const orm = weight * (1 + reps / 30);
+                    if (orm > maxOrm) {
+                        maxOrm = orm;
+                    }
+                }
+            }
+            return maxOrm; // returns max 1RM in KG
+        }
         
         // --- FIREBASE / INIT FUNCTIONS ---
 
@@ -1457,11 +1578,14 @@
                     `<button onclick="deletePreset('${key}')" class="text-red-500 hover:text-red-300 text-[10px] ml-2"><i class="fa-solid fa-trash"></i></button>` 
                     : '';
 
+                // FIX: Updated "Protocol" reference in preset description for Portuguese
+                const presetDesc = (appState.lang === 'pt' && preset.name === 'Daily Protocol') ? 'Verificação de Consistência' : preset.desc;
+
                 listEl.innerHTML += `
                     <div class="tech-panel p-3 flex justify-between items-center clip-tech-sm border-l-4 border-cyan-500/50">
                         <div>
                             <div class="text-white font-bold">${preset.name}</div>
-                            <div class="text-[9px] text-gray-500 font-mono">${preset.desc}</div>
+                            <div class="text-[9px] text-gray-500 font-mono">${presetDesc}</div>
                         </div>
                         <div class="flex items-center">
                             ${deleteBtn}
@@ -1783,7 +1907,10 @@
             const exName = document.getElementById('mlEx').value;
             const ref = FULL_EXERCISE_DB.find(e => e.name === exName);
 
+            let isStrengthLog = false;
+
             if(manualLogType === 'strength') {
+                 isStrengthLog = true;
                  const r = parseInt(document.getElementById('mlReps').value || 0);
                  const s = parseInt(document.getElementById('mlSets').value || 0);
                  const wInput = parseInt(document.getElementById('mlWeight')?.value || 0); // Input in KG or LB
@@ -1834,6 +1961,12 @@
             }
             
             addXP(xp); appState.gold += gold; 
+            
+            // Check for achievement log_str
+            if (isStrengthLog) {
+                unlockAchievement('log_str', true); // Unlocked achievement now shows toast immediately
+            }
+
             appState.history.unshift({date: new Date().toLocaleString(), desc: "Manual: " + exName, xp: xp});
             await saveDB(); // Save all updates, including shadowRecords
             closeInputModal(); await checkAchievements(); showToast("Logged");
@@ -1945,41 +2078,106 @@
             c.innerHTML = ''; 
             ACHIEVEMENTS.forEach(a => { 
                 const unlocked = appState.achievements.includes(a.id); 
-                c.innerHTML += `<div class="tech-panel p-3 flex gap-3 ${unlocked ? 'border-green-500/50 bg-green-900/10' : 'grayscale opacity-50'}"><div class="text-2xl ${unlocked ? 'text-yellow-400' : 'text-gray-600'}"><i class="fa-solid fa-trophy"></i></div><div><div class="text-sm font-bold text-white">${a.name}</div><div class="text-[10px] text-gray-400 font-mono">${a.desc}</div></div>${unlocked ? '<div class="ml-auto text-green-500 text-xs"><i class="fa-solid fa-check"></i></div>' : ''}</div>`; 
+                // Use translations for display name and description
+                const tKey = a.id;
+                const name = TRANSLATIONS[appState.lang][tKey] || a.name;
+                const desc = a.desc; // Keep English desc in code for now
+                
+                c.innerHTML += `<div class="tech-panel p-3 flex gap-3 ${unlocked ? 'border-green-500/50 bg-green-900/10' : 'grayscale opacity-50'}"><div class="text-2xl ${unlocked ? 'text-yellow-400' : 'text-gray-600'}"><i class="fa-solid fa-trophy"></i></div><div><div class="text-sm font-bold text-white">${name}</div><div class="text-[10px] text-gray-400 font-mono">${desc}</div></div>${unlocked ? '<div class="ml-auto text-green-500 text-xs"><i class="fa-solid fa-check"></i></div>' : ''}</div>`; 
             }); 
         }
-        // MODIFIED: Takes initialAchievements to determine newly unlocked ones for summary screen.
+
+        // --- NEW ACHIEVEMENT CHECK LOGIC ---
         async function checkAchievements(initialAchievements = new Set(appState.achievements)) { 
             let newlyUnlocked = [];
-            let changed = false;
             
-            // Note: unlockAchievement only adds the ID and Gold, it no longer saves or shows toast.
-            
-            if(!appState.achievements.includes('first_blood') && appState.history.length > 0) { 
-                if(!initialAchievements.has('first_blood')) { unlockAchievement('first_blood', false); newlyUnlocked.push('first_blood'); changed=true; }
-            } 
-            if(!appState.achievements.includes('consistent') && appState.streak >= 3) { 
-                 if(!initialAchievements.has('consistent')) { unlockAchievement('consistent', false); newlyUnlocked.push('consistent'); changed=true; }
-            } 
-            if(!appState.achievements.includes('veteran') && appState.level >= 5) { 
-                 if(!initialAchievements.has('veteran')) { unlockAchievement('veteran', false); newlyUnlocked.push('veteran'); changed=true; }
-            } 
-            if(!appState.achievements.includes('iron_body') && appState.totalReps >= 1000) { 
-                 if(!initialAchievements.has('iron_body')) { unlockAchievement('iron_body', false); newlyUnlocked.push('iron_body'); changed=true; }
-            } 
+            // Helper function to check and unlock
+            const check = (id, condition) => {
+                if (condition && !appState.achievements.includes(id)) {
+                    unlockAchievement(id, false); 
+                    newlyUnlocked.push(id);
+                    return true;
+                }
+                return false;
+            };
 
-            // If called outside of endSession (like from initApp), we save here.
-            if(changed && initialAchievements.size === 0) { await saveDB(); }
+            // Get Max 1RM in KG
+            const maxOrmKg = getMaxEstimated1RM(appState.shadowRecords);
+
+            // 1. Session Count
+            check('first_blood', appState.history.length > 0);
+            check('session5', appState.history.length >= 5);
+            check('session25', appState.history.length >= 25);
+            check('session100', appState.history.length >= 100);
+
+            // 2. Leveling
+            check('veteran', appState.level >= 5);
+            check('lvl10', appState.level >= 10);
+            check('lvl20', appState.level >= 20);
+            check('lvl30', appState.level >= 30);
+            check('lvl50', appState.level >= 50);
+
+            // 3. Streak
+            check('consistent', appState.streak >= 3);
+            check('streak7', appState.streak >= 7);
+            check('streak30', appState.streak >= 30);
+            check('streak100', appState.streak >= 100);
+
+            // 4. Lifetime Reps/Volume (totalReps)
+            check('iron_body', appState.totalReps >= 1000);
+            check('reps5k', appState.totalReps >= 5000);
+            check('reps10k', appState.totalReps >= 10000);
+            check('reps25k', appState.totalReps >= 25000);
+            check('reps50k', appState.totalReps >= 50000);
+
+            // 5. Stats
+            check('str20', appState.stats.str >= 20);
+            check('agi20', appState.stats.agi >= 20);
+            check('end20', appState.stats.end >= 20);
+            check('str50', appState.stats.str >= 50);
+            check('agi50', appState.stats.agi >= 50);
+            check('end50', appState.stats.end >= 50);
+
+            // 6. Wealth (Gold - Note: gold is total lifetime earnings as it's only spent, not reset)
+            check('gold1k', appState.gold >= 1000);
+            check('gold5k', appState.gold >= 5000);
+            check('gold10k', appState.gold >= 10000);
+
+            // 7. Skills & Customization
+            check('skill10', appState.skills.length >= 10);
+            check('skill15', appState.skills.length >= 15);
+            check('skillAll', appState.skills.length >= SKILL_TREE.length); // 8 skills currently
+            check('custom1', Object.keys(appState.customPresets).length > 0);
+            check('market_buy', appState.inventory.ownedFlairs.length > 1 || appState.inventory.ownedEquipment.length > 0);
+
+            // 8. 1RM Records (MaxOrmKg is in KG)
+            check('rm100kg', maxOrmKg >= 100);
+            check('rm180kg', maxOrmKg >= 180);
+            check('rm250kg', maxOrmKg >= 250);
+            
+            // Relative strength check (3x base STR)
+            check('rm3x', maxOrmKg >= appState.stats.str * 3);
+            
+            // Note: log_str is checked in submitManualLog, not here.
+
+            // If any synchronous operation (init, corruption revert, daily check) changed the state, save it asynchronously.
+            if(newlyUnlocked.length > 0 && initialAchievements.size === 0) { 
+                await saveDB(); 
+            }
             
             return newlyUnlocked; 
         }
+
         // MODIFIED: Removed saving/toasting
         function unlockAchievement(id, showToastMsg = true) { 
             const a = ACHIEVEMENTS.find(x => x.id === id); 
+            const nameKey = a.id; // Use ID as the translation key
+            const displayName = TRANSLATIONS[appState.lang][nameKey] || a.name;
+
             if (!appState.achievements.includes(id)) { 
                 appState.achievements.push(id); 
                 appState.gold += a.reward; 
-                if(showToastMsg) showToast(`🏆 Unlocked: ${a.name}`); 
+                if(showToastMsg) showToast(`🏆 ${displayName} Unlocked!`); 
             }
         }
         
@@ -2045,17 +2243,23 @@
                     if (confirmed) {
                         appState.gold -= cost;
                         
+                        let changed = false;
                         if (type === 'flair') {
                             if (!appState.inventory.ownedFlairs.includes(id)) {
                                 appState.inventory.ownedFlairs.push(id);
+                                changed = true;
                             }
                         } else if (type === 'equipment') {
                             if (!appState.inventory.ownedEquipment.includes(id)) {
                                 appState.inventory.ownedEquipment.push(id);
+                                changed = true;
                             }
                         } else if (type === 'reward') {
                             // Logic for consumption/removal of non-cosmetic rewards would go here.
-                            // For simplicity, we just log the purchase for now.
+                        }
+                        
+                        if (changed) {
+                            unlockAchievement('market_buy', true); // Check first cosmetic purchase
                         }
                         
                         await saveDB();
@@ -2187,10 +2391,12 @@
             if (newAchievements.length > 0) {
                 achListEl.innerHTML = newAchievements.map(id => {
                     const ach = ACHIEVEMENTS.find(a => a.id === id);
+                    const nameKey = ach.id;
+                    const displayName = TRANSLATIONS[appState.lang][nameKey] || ach.name;
                     return `<div class="flex items-center gap-2 bg-yellow-900/20 p-2 rounded-lg border border-yellow-500/50">
                         <i class="fa-solid fa-trophy text-yellow-400"></i>
                         <div>
-                            <span class="text-xs font-bold text-white">${ach.name}</span>
+                            <span class="text-xs font-bold text-white">${displayName}</span>
                             <span class="text-[9px] text-gray-400">(${T.rewards_earned})</span>
                         </div>
                     </div>`;
@@ -2228,7 +2434,11 @@
             const T = TRANSLATIONS[appState.lang];
             if(!name || tempPresetExercises.length === 0) return showToast(T.invalid_protocol); 
             appState.customPresets['custom_'+Date.now()] = { name, desc: T.custom, exercises: tempPresetExercises }; 
-            await saveDB(); closePresetModal(); renderOperations(); showToast(T.protocol_saved); 
+            unlockAchievement('custom1', true); // Check first custom save
+            await saveDB(); 
+            closePresetModal(); 
+            renderOperations(); 
+            showToast(T.protocol_saved); 
         }
         async function checkQuestProgress(exName, amt) { 
             let u = false; 
